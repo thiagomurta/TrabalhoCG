@@ -18,8 +18,8 @@ export function genStair(width,height,length,number_of_steps,materialForStair)
         center.add(aux_buff);
         center.step_array.push(aux_buff);
 
-        center.step_array[i].translateZ(-0.05+(length-l_p_step/2)-l_p_step*i);
-        center.step_array[i].translateY(-0.05+h_p_step/2+(h_p_step*i));
+        center.step_array[i].translateZ((length-l_p_step/2)-l_p_step*i);
+        center.step_array[i].translateY(h_p_step/2+(h_p_step*i));
 
     }
 

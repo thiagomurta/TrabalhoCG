@@ -1,6 +1,7 @@
 import * as THREE from  'three';
-import * as GB from './generic_box.js';
-import * as GS from './generic_stair.js';
+import * as SL from './staired_level.js';
+
+
 import { OrbitControls } from '../build/jsm/controls/OrbitControls.js';
 import {initRenderer, 
         initCamera,
@@ -26,7 +27,7 @@ let axesHelper = new THREE.AxesHelper( 12 );
 scene.add( axesHelper );
 
 // create the ground plane
-let plane = createGroundPlaneXZ(20, 20)
+let plane = createGroundPlaneXZ(500, 500)
 scene.add(plane);
 
 // create a cube
@@ -39,6 +40,9 @@ scene.add(plane);
 
 
 //do the test instancing under here
+let sl=SL.genStairedLevel(21,5,21,7,10.5,10,material);
+//sl.translateY(-0.05);
+scene.add(sl);
 
 // Use this to show information onscreen
 let controls = new InfoBox();
