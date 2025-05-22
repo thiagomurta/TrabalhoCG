@@ -26,6 +26,10 @@ export function genBox(width,height,length,stair_w,stair_l,materialForBox)
     center.leftBox.translateX(-(width-stair_w)/4 -(stair_w/2));
     center.rightBox.translateX((width-stair_w)/4 + (stair_w/2));
 
+    center.lowerBox.translateY(height/2);
+    center.leftBox.translateY(height/2);
+    center.rightBox.translateY(height/2);
+
     return center;
 
 }

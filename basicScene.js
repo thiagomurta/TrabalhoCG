@@ -27,7 +27,7 @@ let axesHelper = new THREE.AxesHelper( 12 );
 scene.add( axesHelper );
 
 // create the ground plane
-let plane = createGroundPlaneXZ(500, 500)
+let plane = createGroundPlaneXZ(500, 500);
 scene.add(plane);
 
 // create a cube
