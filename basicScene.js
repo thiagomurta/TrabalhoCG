@@ -1,5 +1,6 @@
 import * as THREE from  'three';
 import * as GB from './generic_box.js';
+import * as GS from './generic_stair.js';
 import { OrbitControls } from '../build/jsm/controls/OrbitControls.js';
 import {initRenderer, 
         initCamera,
@@ -36,9 +37,9 @@ scene.add(plane);
 // // add the cube to the scene
 // scene.add(cube);
 
-let test_box=GB.genBox(4.0,6.0,1.0,2.0,4.0,material);
-test_box.translateY(test_box.height/2);
-scene.add(test_box);
+
+//do the test instancing under here
+
 // Use this to show information onscreen
 let controls = new InfoBox();
   controls.add("Basic Scene");
