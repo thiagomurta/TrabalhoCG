@@ -1,5 +1,7 @@
 import * as THREE from  'three';
-import * as GB from './generic_box.js';
+import * as S0 from './scene0.js';
+
+
 import { OrbitControls } from '../build/jsm/controls/OrbitControls.js';
 import {initRenderer, 
         initCamera,
@@ -25,8 +27,7 @@ let axesHelper = new THREE.AxesHelper( 12 );
 scene.add( axesHelper );
 
 // create the ground plane
-let plane = createGroundPlaneXZ(20, 20)
-scene.add(plane);
+
 
 // create a cube
 // let cubeGeometry = new THREE.BoxGeometry(4, 4, 4);
@@ -36,9 +37,15 @@ scene.add(plane);
 // // add the cube to the scene
 // scene.add(cube);
 
-let test_box=GB.genBox(4.0,6.0,1.0,2.0,4.0,material);
-test_box.translateY(test_box.height/2);
-scene.add(test_box);
+
+//do the test instancing under here
+let scenario=S0.Scene0();
+//sl.translateY(-0.05);
+scene.add(scenario);
+let plane = createGroundPlaneXZ(500, 500);
+scene.add(plane);
+scenario.translateY(-0.15);
+
 // Use this to show information onscreen
 let controls = new InfoBox();
   controls.add("Basic Scene");
