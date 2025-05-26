@@ -28,27 +28,58 @@ scene.add( axesHelper );
 let plane = createGroundPlaneXZ(20, 20)
 scene.add(plane);
 
-// create a cube
-// let cubeGeometry = new THREE.BoxGeometry(4, 4, 4);
-// let cube = new THREE.Mesh(cubeGeometry, material);
-// // position the cube
-// cube.position.set(0.0, 2.0, 0.0);
-// // add the cube to the scene
-// scene.add(cube);
+
+var cylinderGeometry = new THREE.CylinderGeometry(15, 15, 75, 25);
+var cylinderMaterial = setDefaultMaterial('rgb(100,255,100)');            
+var cylinder = new THREE.Mesh( cylinderGeometry, cylinderMaterial );
+cylinderMaterial.depthTest = false;
+cylinderMaterial.renderOrder = 2;
+cylinder.position.set(0.0, -30.0, -70);
+cylinder.rotateZ(THREE.MathUtils.degToRad(60));
+cylinder.rotateX(THREE.MathUtils.degToRad(-90));
+scene.add(camera);
+camera.add(cylinder);
+
+const crosshair = document.createElement('div');
+crosshair.className = 'crosshair';
+document.body.appendChild(crosshair);
+
+/*
+let crosshairGeometry = new THREE.BoxGeometry(0.25, 2, 1);
+let crosshairMaterial = setDefaultMaterial(); //basic material doesnt have shading i think so it works here
+
+//crosshairMaterial.color = Color(100,255,100);
+
+//{color:'rgb(100,255,100)'}
+
+
+let crosshairHorizontal = new THREE.Mesh(crosshairGeometry, crosshairMaterial);
+crosshairMaterial.depthTest = false;
+crosshairMaterial.renderOrder = 2;
+crosshairHorizontal.position.set(0.0, 0.0, -100);
+camera.add(crosshairHorizontal)
+
+let crosshairVertical = new THREE.Mesh(crosshairGeometry, crosshairMaterial);
+crosshairVertical.position.set(0.0, 0.0, -100);
+crosshairHorizontal.rotateZ(THREE.MathUtils.degToRad(90));
+camera.add(crosshairVertical); */
+
 
 let test_box=GB.genBox(4.0,6.0,1.0,2.0,4.0,material);
 test_box.translateY(test_box.height/2);
 scene.add(test_box);
-// Use this to show information onscreen
-let controls = new InfoBox();
-  controls.add("Basic Scene");
-  controls.addParagraph();
-  controls.add("Use mouse to interact:");
-  controls.add("* Left button to rotate");
-  controls.add("* Right button to translate (pan)");
-  controls.add("* Scroll to zoom in/out.");
-  controls.show();
 
+
+// Use this to show information onscreen
+//let controls = new InfoBox();
+//  controls.add("Basic Scene");
+//  controls.addParagraph();
+//  controls.add("Use mouse to interact:");
+//  controls.add("* Left button to rotate");
+//  controls.add("* Right button to translate (pan)");
+//  controls.add("* Scroll to zoom in/out.");
+//  controls.show();
+//
 render();
 function render()
 {
