@@ -12,11 +12,10 @@ body, html {
     transform: translate(-50%, -50%);
     width: 20px;
     height: 20px;
-    pointer-events: none; /* Allows mouse interactions with the 3D scene */
-    z-index: 999; /* Ensures it stays on top */
+    pointer-events: none; 
+    z-index: 999;
 }
 
-/* Creates a simple plus-sign crosshair */
 .crosshair::before,
 .crosshair::after {
     content: '';
