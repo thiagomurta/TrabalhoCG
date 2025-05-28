@@ -46,6 +46,18 @@ let plane = createGroundPlaneXZ(500, 500);
 scene.add(plane);
 scenario.translateY(-0.15);
 
+let test0=new THREE.Mesh(new THREE.BoxGeometry(1,100,1),setDefaultMaterial());
+    scene.add(test0);
+
+    test0.translateZ(-120);
+    //test0.updateMatrixWorld(true);
+    let bb=new THREE.Box3().setFromObject(test0);
+    test0.bb=bb;
+    
+    
+  scenario.objects[1].isColliding(test0);
+
+
 // Use this to show information onscreen
 let controls = new InfoBox();
   controls.add("Basic Scene");
