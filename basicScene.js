@@ -1,139 +1,126 @@
-import * as THREE from  'three';
+import * as THREE from 'three';
 import * as GB from './generic_box.js';
 import { OrbitControls } from '../build/jsm/controls/OrbitControls.js';
-import {initRenderer, 
-        initCamera,
-        initDefaultBasicLight,
-        setDefaultMaterial,
-        InfoBox,
-        onWindowResize,
-        createGroundPlaneXZ} from "../libs/util/util.js";
+import {
+  initRenderer, 
+  initCamera,
+  initDefaultBasicLight,
+  setDefaultMaterial,
+  InfoBox,
+  onWindowResize,
+  createGroundPlaneXZ
+} from "../libs/util/util.js";
 import KeyboardState from '../libs/util/KeyboardState.js';
 
-let scene, renderer, camera, material, light, orbit; // Initial variables
-scene = new THREE.Scene();    // Create main scene
-renderer = initRenderer();    // Init a basic renderer
-camera = initCamera(new THREE.Vector3(0, 15, 30)); // Init camera in this position
-material = setDefaultMaterial(); // create a basic material
-light = initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
-orbit = new OrbitControls( camera, renderer.domElement ); // Enable mouse rotation, pan, zoom etc.
-var keyboard = new KeyboardState(); // use the keyboard
+// macros 
+const GUN_COLOR = 'rgb(100,255,100)';
+const BALL_COLOR = 'rgb(100,255,100)';
+const GUN_SIZE = { radius: 15, height: 75, segments: 25 };
+const BALL_SIZE = { radius: 1, widthSegments: 20, heightSegments: 20 };
+const BALL_SPEED = 1.0;
+const GROUND_SIZE = { width: 20, height: 20 };
+
+const scene = new THREE.Scene();
+const renderer = initRenderer();
+const camera = initCamera(new THREE.Vector3(0, 15, 30));
+const material = setDefaultMaterial();
+const light = initDefaultBasicLight(scene);
+const orbit = new OrbitControls(camera, renderer.domElement);
+const keyboard = new KeyboardState();
+
 let shootBall = false;
+const ballArray = [];
 
-// Listen window size changes
-window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
+function initScene() {
+  const axesHelper = new THREE.AxesHelper(12);
+  scene.add(axesHelper);
 
-// Show axes (parameter is size of each axis)
-let axesHelper = new THREE.AxesHelper( 12 );
-scene.add( axesHelper );
+  const plane = createGroundPlaneXZ(GROUND_SIZE.width, GROUND_SIZE.height);
+  scene.add(plane);
 
-// create the ground plane
-let plane = createGroundPlaneXZ(20, 20)
-scene.add(plane);
+  const cylinderGeometry = new THREE.CylinderGeometry(
+    GUN_SIZE.radius,
+    GUN_SIZE.radius,
+    GUN_SIZE.height,
+    GUN_SIZE.segments
+  );
+  const gunMaterial = setDefaultMaterial(GUN_COLOR);
+  gunMaterial.depthTest = false;
+  gunMaterial.renderOrder = 2;
+  
+  const gun = new THREE.Mesh(cylinderGeometry, gunMaterial);
+  gun.position.set(0.0, -30.0, -70);
+  gun.rotateZ(THREE.MathUtils.degToRad(60));
+  gun.rotateX(THREE.MathUtils.degToRad(-90));
 
+  const crosshair = document.createElement('div');
+  crosshair.className = 'crosshair';
+  document.body.appendChild(crosshair);
 
-var cylinderGeometry = new THREE.CylinderGeometry(15, 15, 75, 25);
-var gunMaterial = setDefaultMaterial('rgb(100,255,100)');            
-var cylinder = new THREE.Mesh( cylinderGeometry, gunMaterial );
-gunMaterial.depthTest = false;
-gunMaterial.renderOrder = 2;
-console.log("Gun Material ID:", gunMaterial.id);
-cylinder.position.set(0.0, -30.0, -70);
-cylinder.rotateZ(THREE.MathUtils.degToRad(60));
-cylinder.rotateX(THREE.MathUtils.degToRad(-90));
+  scene.add(camera);
+  camera.add(gun);
 
+  const testBox = GB.genBox(4.0, 6.0, 1.0, 2.0, 4.0, material);
+  testBox.translateY(testBox.height / 2);
+  scene.add(testBox);
 
-
-const crosshair = document.createElement('div');
-crosshair.className = 'crosshair';
-document.body.appendChild(crosshair);
-
-scene.add(camera);
-camera.add(cylinder);
-
-let test_box=GB.genBox(4.0,6.0,1.0,2.0,4.0,material);
-test_box.translateY(test_box.height/2);
-scene.add(test_box);
-
-let ballArrays = [];
-
-
-// Use this to show information onscreen
-//let controls = new InfoBox();
-//  controls.add("Basic Scene");
-//  controls.addParagraph();
-//  controls.add("Use mouse to interact:");
-//  controls.add("* Left button to rotate");
-//  controls.add("* Right button to translate (pan)");
-//  controls.add("* Scroll to zoom in/out.");
-//  controls.show();
-//
-render();
-function render()
-{
-
-  if (shootBall) {
-    shoot();
-  }
-
-  for (var sphere of ballArrays){
-    moveSphere(sphere);
-  }
-
-  keyboardUpdate();
-
-  requestAnimationFrame(render);
-  renderer.render(scene, camera) // Render scene
+  window.addEventListener('resize', () => onWindowResize(camera, renderer), false);
 }
 
 
+function shoot() {
+  const sphereGeometry = new THREE.SphereGeometry(
+    BALL_SIZE.radius,
+    BALL_SIZE.widthSegments,
+    BALL_SIZE.heightSegments
+  );
+  const ballMaterial = setDefaultMaterial(BALL_COLOR);
+  const sphere = new THREE.Mesh(sphereGeometry, ballMaterial);
 
-function shoot(){
-  console.log("created a ball")
-  var sphGeo = new THREE.SphereGeometry(1, 20, 20);
-  var ballMaterial = setDefaultMaterial('rgb(100,255,100)');      
-  var sphere = new THREE.Mesh(sphGeo, ballMaterial);
-
-  console.log("Ball Material ID:", ballMaterial.id);
-  console.log("Ball Material depthTest:", ballMaterial.depthTest);
-  console.log("Ball Material depthWrite:", ballMaterial.depthWrite);
-  console.log("Ball Material transparent:", ballMaterial.transparent);
-  console.log("Ball Material renderOrder:", ballMaterial.renderOrder);
-  
   const spawnPosition = new THREE.Vector3();
-  cylinder.getWorldPosition(spawnPosition); 
-  //const offset = new THREE.Vector3(0, 0, -cylinder.geometry.parameters.height / 2); // Local offset to the tip
-  //offset.applyQuaternion(cylinder.getWorldQuaternion(new THREE.Quaternion())); // Rotate offset to world space
-  //spawnPosition.add(offset); // Add world-space offset
-
+  camera.getWorldPosition(spawnPosition);
   sphere.position.copy(spawnPosition);
-
 
   const direction = new THREE.Vector3();
   camera.getWorldDirection(direction);
-  sphere.userData.velocity = direction.multiplyScalar(3.0);
+  sphere.userData.velocity = direction.multiplyScalar(BALL_SPEED);
 
   scene.add(sphere);
-  ballArrays.push(sphere);
-  shootBall = false;
+  ballArray.push(sphere);
 }
 
-function moveSphere(sphere) {
-  sphere.position.add(sphere.userData.velocity);
+function updateBalls() {
+  for (let i = ballArray.length - 1; i >= 0; i--) {
+    const sphere = ballArray[i];
+    sphere.position.add(sphere.userData.velocity);
 
-  /*
-  if (sphere.position.length() > 100) {
-    scene.remove(sphere);
-    ballArrays.splice(ballArrays.indexOf(sphere), 1);
-  }*/
+    // Optional: Remove balls that are too far away
+    // if (sphere.position.length() > 100) {
+    //   scene.remove(sphere);
+    //   ballArray.splice(i, 1);
+    // }
+  }
 }
 
-function keyboardUpdate() 
-{
-   keyboard.update();
-
-   if ( keyboard.down("space") ) 
-   {
-      shootBall = true;
-   }
+function handleKeyboardInput() {
+  keyboard.update();
+  if (keyboard.down("space")) {
+    shootBall = true;
+  }
 }
+
+function render() {
+  if (shootBall) {
+    shoot();
+    shootBall = false;
+  }
+
+  updateBalls();
+  handleKeyboardInput();
+
+  requestAnimationFrame(render);
+  renderer.render(scene, camera);
+}
+
+initScene();
+render();
