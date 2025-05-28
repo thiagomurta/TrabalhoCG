@@ -46,11 +46,11 @@ function initScene() {
   );
   const gunMaterial = setDefaultMaterial(GUN_COLOR);
   gunMaterial.depthTest = false;
-  gunMaterial.renderOrder = 2;
+  gunMaterial.renderOrder = 5;
   
   const gun = new THREE.Mesh(cylinderGeometry, gunMaterial);
   gun.position.set(0.0, -30.0, -70);
-  gun.rotateZ(THREE.MathUtils.degToRad(60));
+  //gun.rotateZ(THREE.MathUtils.degToRad(0));
   gun.rotateX(THREE.MathUtils.degToRad(-90));
 
   const crosshair = document.createElement('div');
@@ -67,7 +67,7 @@ function initScene() {
   window.addEventListener('resize', () => onWindowResize(camera, renderer), false);
 }
 
-
+/*
 function shoot() {
   const sphereGeometry = new THREE.SphereGeometry(
     BALL_SIZE.radius,
@@ -77,28 +77,63 @@ function shoot() {
   const ballMaterial = setDefaultMaterial(BALL_COLOR);
   const sphere = new THREE.Mesh(sphereGeometry, ballMaterial);
 
+  // ** SPAWN POSITION FROM CAMERA
   const spawnPosition = new THREE.Vector3();
   camera.getWorldPosition(spawnPosition);
   sphere.position.copy(spawnPosition);
+  console.log("POS sphere {" + sphere.position.x.toFixed(1) + ", " + sphere.position.y.toFixed(1) + ", " + sphere.position.z.toFixed(1) + "} ")
+
+  // ** SPAWN POSITION FROM MUZZLE
+  const muzzlePosition = new THREE.Vector3();
+  const gun = camera.children[0];
+  gun.localToWorld(muzzlePosition);
+  sphere.position.copy(muzzlePosition);
+
 
   const direction = new THREE.Vector3();
   camera.getWorldDirection(direction);
+  console.log("POS direction {" + direction.x.toFixed(1) + ", " + direction.y.toFixed(1) + ", " + direction.z.toFixed(1) + "} ")
   sphere.userData.velocity = direction.multiplyScalar(BALL_SPEED);
 
   scene.add(sphere);
+  console.log("POS sphere {" + sphere.position.x.toFixed(1) + ", " + sphere.position.y.toFixed(1) + ", " + sphere.position.z.toFixed(1) + "} ")
   ballArray.push(sphere);
-}
+} */
 
+  function shoot() {
+    const sphereGeometry = new THREE.SphereGeometry(
+      BALL_SIZE.radius,
+      BALL_SIZE.widthSegments,
+      BALL_SIZE.heightSegments
+    );
+    const ballMaterial = setDefaultMaterial(BALL_COLOR);
+    const sphere = new THREE.Mesh(sphereGeometry, ballMaterial);
+  
+    // 1. Get camera's world position (original spawn)
+    const spawnPosition = new THREE.Vector3();
+    camera.getWorldPosition(spawnPosition);
+  
+    // 2. Move spawn down (relative to camera orientation)
+    const downwardOffset = new THREE.Vector3(0, -1.5, -12); // Adjust Y to move down
+    downwardOffset.applyQuaternion(camera.quaternion); // Align with camera rotation
+    spawnPosition.add(downwardOffset); // Apply offset in world space
+  
+    // 3. Set sphere position
+    sphere.position.copy(spawnPosition);
+  
+    // 4. Get camera's forward direction for velocity
+    const direction = new THREE.Vector3();
+    camera.getWorldDirection(direction);
+    sphere.userData.velocity = direction.multiplyScalar(BALL_SPEED);
+  
+    scene.add(sphere);
+    console.log("POS sphere (adjusted)", sphere.position);
+    ballArray.push(sphere);
+  }
 function updateBalls() {
   for (let i = ballArray.length - 1; i >= 0; i--) {
     const sphere = ballArray[i];
     sphere.position.add(sphere.userData.velocity);
-
-    // Optional: Remove balls that are too far away
-    // if (sphere.position.length() > 100) {
-    //   scene.remove(sphere);
-    //   ballArray.splice(i, 1);
-    // }
   }
 }
 
