@@ -17,7 +17,7 @@ const GUN_COLOR = 'rgb(100,255,100)';
 const BALL_COLOR = 'rgb(100,255,100)';
 const GUN_SIZE = { radius: 15, height: 75, segments: 25 };
 const BALL_SIZE = { radius: 1, widthSegments: 20, heightSegments: 20 };
-const BALL_SPEED = 1.0;
+const BALL_SPEED = 0.5;
 const GROUND_SIZE = { width: 20, height: 20 };
 
 const scene = new THREE.Scene();
@@ -49,9 +49,12 @@ function initScene() {
   gunMaterial.renderOrder = 5;
   
   const gun = new THREE.Mesh(cylinderGeometry, gunMaterial);
+  /*
   gun.position.set(0.0, -30.0, -70);
-  //gun.rotateZ(THREE.MathUtils.degToRad(0));
-  gun.rotateX(THREE.MathUtils.degToRad(-90));
+  gun.rotateX(THREE.MathUtils.degToRad(-90));*/
+
+  gun.position.set(0.0, -30.0, -50);
+  gun.rotateX(THREE.MathUtils.degToRad(-85))
 
   const crosshair = document.createElement('div');
   crosshair.className = 'crosshair';
@@ -67,7 +70,7 @@ function initScene() {
   window.addEventListener('resize', () => onWindowResize(camera, renderer), false);
 }
 
-/*
+
 function shoot() {
   const sphereGeometry = new THREE.SphereGeometry(
     BALL_SIZE.radius,
@@ -77,59 +80,28 @@ function shoot() {
   const ballMaterial = setDefaultMaterial(BALL_COLOR);
   const sphere = new THREE.Mesh(sphereGeometry, ballMaterial);
 
-  // ** SPAWN POSITION FROM CAMERA
+  // 1. Get camera's world position (original spawn)
   const spawnPosition = new THREE.Vector3();
   camera.getWorldPosition(spawnPosition);
+
+  // 2. Move spawn down (relative to camera orientation)
+  const downwardOffset = new THREE.Vector3(0, -1.5, -8); // Adjust Y to move down
+  downwardOffset.applyQuaternion(camera.quaternion); // Align with camera rotation
+  spawnPosition.add(downwardOffset); // Apply offset in world space
+
+  // 3. Set sphere position
   sphere.position.copy(spawnPosition);
-  console.log("POS sphere {" + sphere.position.x.toFixed(1) + ", " + sphere.position.y.toFixed(1) + ", " + sphere.position.z.toFixed(1) + "} ")
 
-  // ** SPAWN POSITION FROM MUZZLE
-  const muzzlePosition = new THREE.Vector3();
-  const gun = camera.children[0];
-  gun.localToWorld(muzzlePosition);
-  sphere.position.copy(muzzlePosition);
-
-
+  // 4. Get camera's forward direction for velocity
   const direction = new THREE.Vector3();
   camera.getWorldDirection(direction);
-  console.log("POS direction {" + direction.x.toFixed(1) + ", " + direction.y.toFixed(1) + ", " + direction.z.toFixed(1) + "} ")
   sphere.userData.velocity = direction.multiplyScalar(BALL_SPEED);
 
   scene.add(sphere);
-  console.log("POS sphere {" + sphere.position.x.toFixed(1) + ", " + sphere.position.y.toFixed(1) + ", " + sphere.position.z.toFixed(1) + "} ")
+  console.log("POS sphere (adjusted)", sphere.position);
   ballArray.push(sphere);
-} */
+} 
 
-  function shoot() {
-    const sphereGeometry = new THREE.SphereGeometry(
-      BALL_SIZE.radius,
-      BALL_SIZE.widthSegments,
-      BALL_SIZE.heightSegments
-    );
-    const ballMaterial = setDefaultMaterial(BALL_COLOR);
-    const sphere = new THREE.Mesh(sphereGeometry, ballMaterial);
-  
-    // 1. Get camera's world position (original spawn)
-    const spawnPosition = new THREE.Vector3();
-    camera.getWorldPosition(spawnPosition);
-  
-    // 2. Move spawn down (relative to camera orientation)
-    const downwardOffset = new THREE.Vector3(0, -1.5, -12); // Adjust Y to move down
-    downwardOffset.applyQuaternion(camera.quaternion); // Align with camera rotation
-    spawnPosition.add(downwardOffset); // Apply offset in world space
-  
-    // 3. Set sphere position
-    sphere.position.copy(spawnPosition);
-  
-    // 4. Get camera's forward direction for velocity
-    const direction = new THREE.Vector3();
-    camera.getWorldDirection(direction);
-    sphere.userData.velocity = direction.multiplyScalar(BALL_SPEED);
-  
-    scene.add(sphere);
-    console.log("POS sphere (adjusted)", sphere.position);
-    ballArray.push(sphere);
-  }
 function updateBalls() {
   for (let i = ballArray.length - 1; i >= 0; i--) {
     const sphere = ballArray[i];
