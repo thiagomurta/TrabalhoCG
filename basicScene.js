@@ -70,7 +70,7 @@ function initScene() {
   window.addEventListener('resize', () => onWindowResize(camera, renderer), false);
 }
 
-
+/*
 function shoot() {
   const sphereGeometry = new THREE.SphereGeometry(
     BALL_SIZE.radius,
@@ -100,7 +100,50 @@ function shoot() {
   scene.add(sphere);
   console.log("POS sphere (adjusted)", sphere.position);
   ballArray.push(sphere);
-} 
+} */
+
+  function shoot() {
+    const sphereGeometry = new THREE.SphereGeometry(
+      BALL_SIZE.radius,
+      BALL_SIZE.widthSegments,
+      BALL_SIZE.heightSegments
+    );
+    const ballMaterial = setDefaultMaterial(BALL_COLOR);
+    const sphere = new THREE.Mesh(sphereGeometry, ballMaterial);
+  
+    // Spawn slightly in front of the camera (to avoid clipping)
+    const spawnPosition = new THREE.Vector3();
+    camera.getWorldPosition(spawnPosition);
+    const forwardOffset = new THREE.Vector3(0, 0, -2); // Small forward offset
+    forwardOffset.applyQuaternion(camera.quaternion);
+    spawnPosition.add(forwardOffset);
+    sphere.position.copy(spawnPosition);
+  
+    // Raycast to find where the crosshair is pointing
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); // Center screen
+    const intersects = raycaster.intersectObjects(scene.children);
+  
+    // Default target: 100 units ahead if no intersection
+    let target = new THREE.Vector3();
+    camera.getWorldDirection(target);
+    target.multiplyScalar(100).add(spawnPosition); // Faraway point in view direction
+  
+    if (intersects.length > 0) {
+      // If the hit point is too close, use the faraway target instead
+      const minDistance = 10; // Minimum distance to consider a valid hit
+      if (intersects[0].distance > minDistance) {
+        target = intersects[0].point;
+      }
+    }
+  
+    // Calculate direction towards the target
+    const direction = target.clone().sub(sphere.position).normalize();
+    sphere.userData.velocity = direction.multiplyScalar(BALL_SPEED);
+  
+    scene.add(sphere);
+    ballArray.push(sphere);
+  }
 
 function updateBalls() {
   for (let i = ballArray.length - 1; i >= 0; i--) {
