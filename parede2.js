@@ -5,23 +5,26 @@ import {initRenderer,
         initDefaultBasicLight,
         setDefaultMaterial,
         InfoBox,
+        SecondaryBox,
         onWindowResize,
         createGroundPlaneXZ} from "../libs/util/util.js";
 
 let scene, renderer, material; // Initial variables
 scene = new THREE.Scene();    // Create main scene
 renderer = initRenderer();    // Init a basic renderer
+material = setDefaultMaterial(); // create a basic material
 var stats = new Stats();
 
 // ---------------------Câmera---------------------
+let camPos  = new THREE.Vector3(0.0, 0.5, 0.0);
+// let camUp   = new THREE.Vector3(0.0, 1.0, 0.0);
+let camLook = new THREE.Vector3(0.0, 0.5, -1.0);
+var message = new SecondaryBox("");
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0.0, 0.5, 0.0);
-camera.lookAt(new THREE.Vector3(0.0, 0.5, -1.0));
+camera.position.copy(camPos);
+camera.lookAt(camLook);
 
-material = setDefaultMaterial(); // create a basic material
-const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0).normalize(), 0, 2);
 initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
-
 
 
 // Show axes (parameter is size of each axis)
@@ -63,7 +66,6 @@ scene.add(wall3);
 scene.add(wall4);
 
 const controls = new PointerLockControls(camera, renderer.domElement);
-controls.isLocked = true;
 
 
 instructions.addEventListener('click', function () {
@@ -83,6 +85,12 @@ controls.addEventListener('unlock', function () {
 });
 
 scene.add(controls.getObject());
+
+function updateCamera(){
+    // DICA: Atualize a câmera aqui!
+    message.changeMessage("Pos: " + controls.getObject().position.x.toFixed(1) + ", " + controls.getObject().position.y.toFixed(1) + ", " + controls.getObject().position.z.toFixed(1));
+    // message.changeMessage("LookAt: ");
+}
 
 const velocidade = 5;
 let moveForward = false;
@@ -109,7 +117,7 @@ function movementControls(key, value) {
 }
 
 function moveAnimate(delta) {
-    raycaster.ray.origin.copy(controls.getObject().position);
+    // raycaster.ray.origin.copy(controls.getObject().position);
 
     if (moveForward) {
         controls.moveForward(velocidade * delta);
@@ -124,18 +132,20 @@ function moveAnimate(delta) {
     else if (moveLeft) {
         controls.moveRight(velocidade * -1 * delta);
     }
+    updateCamera();
 }
 
 // Use this to show information onscreen
 let controle = new InfoBox();
-  controle.add("Movimentação");
-  controle.addParagraph();
-  controle.add("Use mouse to interact:");
-  controle.add("* W or upda to walk forward");
-  controle.add("* A or  to walk left");
-  controle.add("* S or  to walk backward");
-  controle.add("* D or  to walk right");
-  controle.show();
+controle.add("Movimentação");
+controle.addParagraph();
+controle.add("Use mouse to interact:");
+controle.add("* W or upda to walk forward");
+controle.add("* A or  to walk left");
+controle.add("* S or  to walk backward");
+controle.add("* D or  to walk right");
+controle.show();
+updateCamera();
   
 // Listen window size changes
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
@@ -149,7 +159,6 @@ function render(){
     if (controls.isLocked) {
         moveAnimate(clock.getDelta());
     }
-
     renderer.render(scene, camera) // Render scene
     requestAnimationFrame(render);
 }
