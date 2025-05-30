@@ -16,9 +16,17 @@ import KeyboardState from '../libs/util/KeyboardState.js';
 const GUN_COLOR = 'rgb(100,255,100)';
 const BALL_COLOR = 'rgb(100,255,100)';
 const GUN_SIZE = { radius: 15, height: 75, segments: 25 };
-const BALL_SIZE = { radius: 1, widthSegments: 20, heightSegments: 20 };
+const BALL_SIZE = { radius: 20, widthSegments: 20, heightSegments: 20 };
 const BALL_SPEED = 0.5;
 const GROUND_SIZE = { width: 20, height: 20 };
+
+//constants to help w testing the ball attaching to the gun and then detaching
+const sphereGeometry = new THREE.SphereGeometry(
+  BALL_SIZE.radius,
+  BALL_SIZE.widthSegments,
+  BALL_SIZE.heightSegments
+);
+const ballMaterial = setDefaultMaterial(BALL_COLOR);
 
 const scene = new THREE.Scene();
 const renderer = initRenderer();
@@ -44,17 +52,22 @@ function initScene() {
     GUN_SIZE.height,
     GUN_SIZE.segments
   );
+
   const gunMaterial = setDefaultMaterial(GUN_COLOR);
-  gunMaterial.depthTest = false;
-  gunMaterial.renderOrder = 5;
+  //gunMaterial.depthTest = false;
+  //gunMaterial.renderOrder = 5;
+
+  
   
   const gun = new THREE.Mesh(cylinderGeometry, gunMaterial);
   /*
   gun.position.set(0.0, -30.0, -70);
   gun.rotateX(THREE.MathUtils.degToRad(-90));*/
 
-  gun.position.set(0.0, -30.0, -50);
-  gun.rotateX(THREE.MathUtils.degToRad(-85))
+  //gun.position.set(0.0, -30.0, -50);
+  //gun.rotateX(THREE.MathUtils.degToRad(-85))
+
+  gun.position.set(0.0, 0.0, -5.0);
 
   const crosshair = document.createElement('div');
   crosshair.className = 'crosshair';
@@ -63,6 +76,18 @@ function initScene() {
   scene.add(camera);
   camera.add(gun);
 
+  //ballMaterial.depthTest = false;
+  //ballMaterial.renderOrder = 7;
+  const testSphere = new THREE.Mesh(sphereGeometry, gunMaterial);
+  //
+
+  camera.add(testSphere);
+  //testSphere.position.set(0.0, -30.0, -60);
+  testSphere.position.set(0.0, 0.0, -160);
+  ballArray.push(testSphere);
+  
+
+
   const testBox = GB.genBox(4.0, 6.0, 1.0, 2.0, 4.0, material);
   testBox.translateY(testBox.height / 2);
   scene.add(testBox);
@@ -70,85 +95,55 @@ function initScene() {
   window.addEventListener('resize', () => onWindowResize(camera, renderer), false);
 }
 
-/*
 function shoot() {
-  const sphereGeometry = new THREE.SphereGeometry(
-    BALL_SIZE.radius,
-    BALL_SIZE.widthSegments,
-    BALL_SIZE.heightSegments
-  );
-  const ballMaterial = setDefaultMaterial(BALL_COLOR);
+
   const sphere = new THREE.Mesh(sphereGeometry, ballMaterial);
 
-  // 1. Get camera's world position (original spawn)
   const spawnPosition = new THREE.Vector3();
   camera.getWorldPosition(spawnPosition);
-
-  // 2. Move spawn down (relative to camera orientation)
-  const downwardOffset = new THREE.Vector3(0, -1.5, -8); // Adjust Y to move down
-  downwardOffset.applyQuaternion(camera.quaternion); // Align with camera rotation
-  spawnPosition.add(downwardOffset); // Apply offset in world space
-
-  // 3. Set sphere position
+  const forwardOffset = new THREE.Vector3(0, 0, -2); // um offset piquitito
+  forwardOffset.applyQuaternion(camera.quaternion);
+  spawnPosition.add(forwardOffset);
   sphere.position.copy(spawnPosition);
 
-  // 4. Get camera's forward direction for velocity
-  const direction = new THREE.Vector3();
-  camera.getWorldDirection(direction);
+  // raycast para achar a mira
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); // Center screen
+  const intersects = raycaster.intersectObjects(scene.children);
+
+  let target = new THREE.Vector3();
+  camera.getWorldDirection(target);
+  target.multiplyScalar(100).add(spawnPosition);
+
+  if (intersects.length > 0) {
+    const minDistance = 10; // Minimum distance to consider a valid hit
+    if (intersects[0].distance > minDistance) {
+      target = intersects[0].point;
+    }
+  }
+
+  // direcao até o target
+  const direction = target.clone().sub(sphere.position).normalize();
   sphere.userData.velocity = direction.multiplyScalar(BALL_SPEED);
 
   scene.add(sphere);
-  console.log("POS sphere (adjusted)", sphere.position);
   ballArray.push(sphere);
-} */
-
-  function shoot() {
-    const sphereGeometry = new THREE.SphereGeometry(
-      BALL_SIZE.radius,
-      BALL_SIZE.widthSegments,
-      BALL_SIZE.heightSegments
-    );
-    const ballMaterial = setDefaultMaterial(BALL_COLOR);
-    const sphere = new THREE.Mesh(sphereGeometry, ballMaterial);
-  
-    // Spawn slightly in front of the camera (to avoid clipping)
-    const spawnPosition = new THREE.Vector3();
-    camera.getWorldPosition(spawnPosition);
-    const forwardOffset = new THREE.Vector3(0, 0, -2); // Small forward offset
-    forwardOffset.applyQuaternion(camera.quaternion);
-    spawnPosition.add(forwardOffset);
-    sphere.position.copy(spawnPosition);
-  
-    // Raycast to find where the crosshair is pointing
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); // Center screen
-    const intersects = raycaster.intersectObjects(scene.children);
-  
-    // Default target: 100 units ahead if no intersection
-    let target = new THREE.Vector3();
-    camera.getWorldDirection(target);
-    target.multiplyScalar(100).add(spawnPosition); // Faraway point in view direction
-  
-    if (intersects.length > 0) {
-      // If the hit point is too close, use the faraway target instead
-      const minDistance = 10; // Minimum distance to consider a valid hit
-      if (intersects[0].distance > minDistance) {
-        target = intersects[0].point;
-      }
-    }
-  
-    // Calculate direction towards the target
-    const direction = target.clone().sub(sphere.position).normalize();
-    sphere.userData.velocity = direction.multiplyScalar(BALL_SPEED);
-  
-    scene.add(sphere);
-    ballArray.push(sphere);
-  }
+}
 
 function updateBalls() {
   for (let i = ballArray.length - 1; i >= 0; i--) {
     const sphere = ballArray[i];
-    sphere.position.add(sphere.userData.velocity);
+    if (sphere.userData.velocity) sphere.position.add(sphere.userData.velocity);
+    else {
+      scene.attach(sphere);
+      const spawnPosition = new THREE.Vector3();
+      let target = new THREE.Vector3();
+      camera.getWorldDirection(target);
+      sphere.position.copy(spawnPosition)
+      target.multiplyScalar(100).add(spawnPosition);
+      const direction = target.clone().sub(sphere.position).normalize();
+      sphere.userData.velocity = direction.multiplyScalar(BALL_SPEED);
+    }
   }
 }
 
