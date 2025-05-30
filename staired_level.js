@@ -11,10 +11,16 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
     center.add(vaultedBox);
     vaultedBox.translateY(-0.05);
 
+    //stair ceation
     let stair = GS.genStair(stair_w, height, stair_l, number_of_steps, material);
     center.add(stair);
     stair.translateZ(+(length/2 - stair_l));
     stair.translateY(-0.05);
+
+    //directional vectors
+    let lengthVec=new THREE.Vector3(0,0,length);
+    let widthVec=new THREE.Vector3(width,0,0);
+    let stairVec=new THREE.Vector3(0,height,stair_l);
     
     // Collision phantom box (invisible)
     let phantomBox = new THREE.Mesh(new THREE.BoxGeometry(width, height, length), material);
@@ -69,21 +75,98 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
     };
 
     // Reliable collision detection
-    center.isColliding = function(player) {
+    center.colision = function(player) {
         this.updateBB();
         player.updateMatrixWorld(true);
         
-        const playerBB = player.bb || new THREE.Box3().setFromObject(player);
+        const playerBB = new THREE.Box3().setFromObject(player);
         const isColliding = this.bb.intersectsBox(playerBB);
         
-        // DEBUG: Uncomment to see collision results
-        // console.log(`Collision: ${isColliding}`, {
-        //     thisBB: this.bb,
-        //     playerBB: playerBB
-        // });
+        if(isColliding)
+        {
+            this.projectMovement(player);
+        }
         
-        console.log( isColliding);  
+    
     };
+
+    center.projectMovement=function(player)
+    {
+        let vAux=player.lerp.destination.clone().projectOnVector(this.detectSurface(player));
+    }
+    center.detectSurface=function(player)
+    {
+        
+        let cornerUnL=new THREE.Vector3(this.position.x-width/2,
+                                        player.position.y,
+                                        this.position.z-length/2);
+        let cornerUnR=new THREE.Vector3(this.position.x+width/2,
+                                        player.position.y,
+                                        this.position.z-length/2);
+        let cornerDnL=new THREE.Vector3(this.position.x-width/2,
+                                        player.position.y,
+                                        this.position.z+length/2);
+        let cornerDnR=new THREE.Vector3(this.position.x+width/2,
+                                        player.position.y,
+                                        this.position.z+length/2);
+        let stairDLeft=new THREE.Vector3(this.position.x-stair_w/2,
+                                        0,
+                                        this.position.z+length/2);
+        let stairDRight=new THREE.Vector3(this.position.x+stair_w/2,
+                                        0,
+                                        this.position.z+length/2);
+        let stairULeft=new THREE.Vector3(this.position.x-stair_w/2,
+                                        height,
+                                        this.position.z+length/2- stair_l);
+        let stairURight=new THREE.Vector3(this.position.x+stair_w/2,
+                                        height,
+                                        this.position.z+length/2- stair_l);
+        
+        if(player.position.x < cornerUnL.x && player.position.x>cornerUnL.x-0.15 && player.position.z > cornerUnL.z && player.position.z < cornerDnL.z)
+        {
+            //left wall
+            if(player.lerp.destination.z <0)
+            {
+                return new THREE.Vector3(0,0,-1); //going z-
+            }else if(player.lerp.destination.z >=0)
+                return new THREE.Vector3(0,0,1); //going z+
+        }
+        if(player.position.x > cornerUnR.x && player.position.x<cornerUnR.x+0.15 && player.position.z > cornerUnR.z && player.position.z < cornerDnR.z)
+        {
+            //right wall
+            if(player.lerp.destination.z <0)
+            {
+                return new THREE.Vector3(0,0,-1); //going z-
+            }else if(player.lerp.destination.z >=0)
+                return new THREE.Vector3(0,0,1); //going z+
+        }
+        if(player.position.z < cornerUnL.z && player.position.z>cornerUnL.z-0.15 && player.position.x > cornerUnL.x && player.position.x < cornerUnR.x)
+        {
+            //upper wall
+            if(player.lerp.destination.x <0)
+            {
+                return new THREE.Vector3(-1,0,0); //going x-
+            }else if(player.lerp.destination.x >=0)
+                return new THREE.Vector3(1,0,0); //going x+
+        }
+        if( player.position.x > cornerDnL.x && player.position.x < cornerDnR.x)
+        {
+            //down wall - needs to consider stairs
+            if(((player.position.x<=stairDLeft.x )||(player.position.x>=stairDRight.x ))&&(player.position.z>=cornerDnL.z &&player.position.z<cornerDnL.z+0.15))
+            {
+                if(player.lerp.destination.x <0)
+                {
+                    return new THREE.Vector3(-1,0,0); //going x-
+                }else if(player.lerp.destination.x >=0)
+                    return new THREE.Vector3(1,0,0); //going x+
+            }else if(player.position.x>stairDLeft.x && player.position.x<stairDRight.x && player.position.z <= stairDLeft.z && player.position.z >stairULeft.z)
+                    {
+                        //stair surface
+                        
+                    }
+        }
+                
+    }
 
     return center;
 }
