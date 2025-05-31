@@ -8,6 +8,7 @@ import {initRenderer,
         SecondaryBox,
         onWindowResize,
         createGroundPlaneXZ} from "../libs/util/util.js";
+import {initGun, moveBullet, toggleShootBall, isShootBall} from "./arma.js";
 
 let scene, renderer, material; // Initial variables
 scene = new THREE.Scene();    // Create main scene
@@ -20,7 +21,7 @@ let camPos  = new THREE.Vector3(0.0, 0.5, 0.0);
 // let camUp   = new THREE.Vector3(0.0, 1.0, 0.0);
 let camLook = new THREE.Vector3(0.0, 0.5, -1.0);
 var message = new SecondaryBox("");
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 1000);
 camera.position.copy(camPos);
 camera.lookAt(camLook);
 
@@ -69,7 +70,7 @@ const controls = new PointerLockControls(camera, renderer.domElement);
 
 
 instructions.addEventListener('click', function () {
-
+    if (blocker.style.display == 'none') toggleShootBall();
     controls.lock();
 
 }, false);
@@ -101,18 +102,32 @@ let moveLeft = false;
 window.addEventListener('keydown', (event) => movementControls(event.keyCode, true))
 window.addEventListener('keyup', (event) => movementControls(event.keyCode, false))
 
+const KEY_S = 83;
+const KEY_W = 87;
+const KEY_A = 65;
+const KEY_D = 68;
+const KEY_ARROW_LEFT = 37;
+const KEY_ARROW_UP = 38;
+const KEY_ARROW_RIGHT = 39;
+const KEY_ARROW_DOWN = 40;
+const KEY_SPACE = 32;
+
 function movementControls(key, value) {
-    if (key === 87 || key === 38){
+    if (key === KEY_W || key === KEY_ARROW_UP){
         moveForward = value;
     }
-    else if (key === 83 || key === 40){
+    else if (key === KEY_S || key === KEY_ARROW_DOWN){
         moveBackward = value;
     }
-    else if (key === 65 || key === 37){
+    else if (key === KEY_A || key === KEY_ARROW_LEFT){
         moveLeft = value;
     }
-    else if (key === 68 || key === 39){
+    else if (key === KEY_D || key === KEY_ARROW_RIGHT){
         moveRight = value;
+    }
+    else if (key === KEY_SPACE) {
+        toggleShootBall();
+        console.log("Shooting state toggled:", isShootBall());
     }
 }
 
@@ -135,6 +150,11 @@ function moveAnimate(delta) {
     updateCamera();
 }
 
+
+
+initGun(scene, camera);
+
+
 // Use this to show information onscreen
 let controle = new InfoBox();
 controle.add("Movimentação");
@@ -155,6 +175,8 @@ const clock = new THREE.Clock();
 render();
 function render(){
     stats.update();
+
+    if (isShootBall()) moveBullet(); // Move bullet if shooting is enabled
     
     if (controls.isLocked) {
         moveAnimate(clock.getDelta());

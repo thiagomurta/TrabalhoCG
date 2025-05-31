@@ -14,6 +14,7 @@ material = setDefaultMaterial(); // create a basic material
 
 // ---------------------Câmera---------------------
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+scene.add(camera);
 camera.position.set(0.0, 0.5, 0.0);
 camera.lookAt(new THREE.Vector3(0.0, 0.5, -1.0));
 
@@ -24,7 +25,10 @@ initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 const controls = new PointerLockControls(camera, renderer.domElement);
 controls.isLocked = true;
 
+const crosshair = document.getElementsByClassName("crosshair")[0];
 
+
+// ---------------------Controles do mouse---------------------
 instructions.addEventListener('click', function () {
 
     controls.lock();
@@ -32,17 +36,21 @@ instructions.addEventListener('click', function () {
 }, false);
 
 controls.addEventListener('lock', function () {
+    crosshair.style.display = 'auto'
     instructions.style.display = 'none';
     blocker.style.display = 'none';
 });
 
 controls.addEventListener('unlock', function () {
+    crosshair.style.display = 'auto';
     blocker.style.display = 'block';
     instructions.style.display = '';
 });
 
+
 scene.add(controls.getObject());
 
+// ---------------------Controles da movimentação---------------------
 const velocidade = 5;
 let moveForward = false;
 let moveBackward = false;
@@ -52,17 +60,26 @@ let moveLeft = false;
 window.addEventListener('keydown', (event) => movementControls(event.keyCode, true))
 window.addEventListener('keyup', (event) => movementControls(event.keyCode, false))
 
+const KEY_S = 83;
+const KEY_W = 87;
+const KEY_A = 65;
+const KEY_D = 68;
+const KEY_ARROW_LEFT = 37;
+const KEY_ARROW_UP = 38;
+const KEY_ARROW_RIGHT = 39;
+const KEY_ARROW_DOWN = 40;
+
 function movementControls(key, value) {
-    if (key === 87 || key === 38){
+    if (key === KEY_W || key === KEY_ARROW_UP){
         moveForward = value;
     }
-    else if (key === 83 || key === 40){
+    else if (key === KEY_S || key === KEY_ARROW_DOWN){
         moveBackward = value;
     }
-    else if (key === 65 || key === 37){
+    else if (key === KEY_A || key === KEY_ARROW_LEFT){
         moveLeft = value;
     }
-    else if (key === 68 || key === 39){
+    else if (key === KEY_D || key === KEY_ARROW_RIGHT){
         moveRight = value;
     }
 }
@@ -90,6 +107,8 @@ window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)},
 
 const clock = new THREE.Clock();
 
+
+initGun();
 render();
 
 function updateCamera(){
