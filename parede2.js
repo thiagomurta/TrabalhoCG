@@ -8,7 +8,7 @@ import {initRenderer,
         SecondaryBox,
         onWindowResize,
         createGroundPlaneXZ} from "../libs/util/util.js";
-import {initGun, moveBullet, toggleShootBall, isShootBall} from "./arma.js";
+import {initGun, moveBullet, shootBall} from "./arma.js";
 
 let scene, renderer, material; // Initial variables
 scene = new THREE.Scene();    // Create main scene
@@ -125,9 +125,8 @@ function movementControls(key, value) {
     else if (key === KEY_D || key === KEY_ARROW_RIGHT){
         moveRight = value;
     }
-    else if (key === KEY_SPACE) {
-        toggleShootBall(scene, camera);
-        console.log("Shooting state toggled:", isShootBall());
+    else if (key === KEY_SPACE && value) { // only on key down
+        shootBall(scene, camera);
     }
 }
 
@@ -176,7 +175,7 @@ render();
 function render(){
     stats.update();
 
-    if (isShootBall()) moveBullet(); // Move bullet if shooting is enabled
+    moveBullet(); // Move bullet if shooting is enabled
     
     if (controls.isLocked) {
         moveAnimate(clock.getDelta());
