@@ -4,8 +4,9 @@ import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js'
 import {initRenderer,
         initDefaultBasicLight,
         setDefaultMaterial, 
-        onWindowResize} from "../libs/util/util.js";
-
+        onWindowResize,
+        createGroundPlaneXZ                } from "../libs/util/util.js";
+import * as S0 from "./scene0.js";
 // ---------------------Configuração inicial---------------------
 let scene, renderer, material;
 scene = new THREE.Scene();    // Create main scene
@@ -43,7 +44,12 @@ controls.addEventListener('unlock', function () {
     instructions.style.display = '';
 });
 
+let plane = createGroundPlaneXZ(500, 500);
+ scene.add(plane);
+   // center.plane.translateY(+0.15);
+
 scene.add(controls.getObject());
+
 
 const velocidade = 5;
 let moveForward = false;
@@ -89,6 +95,9 @@ function moveAnimate(delta) {
 
 // Listen window size changes
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
+let scenario=S0.Scene0();
+scene.add(scenario); // Add the scenario to the scene
+scenario.translateY(-0.15); 
 
 const clock = new THREE.Clock();
 
