@@ -86,12 +86,6 @@ controls.addEventListener('unlock', function () {
 
 scene.add(controls.getObject());
 
-function updateCamera(){
-    // DICA: Atualize a câmera aqui!
-    message.changeMessage("Pos: " + controls.getObject().position.x.toFixed(1) + ", " + controls.getObject().position.y.toFixed(1) + ", " + controls.getObject().position.z.toFixed(1));
-    // message.changeMessage("LookAt: ");
-}
-
 const velocidade = 5;
 let moveForward = false;
 let moveBackward = false;
@@ -145,8 +139,7 @@ controle.add("* A or  to walk left");
 controle.add("* S or  to walk backward");
 controle.add("* D or  to walk right");
 controle.show();
-updateCamera();
-  
+
 // Listen window size changes
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
 
@@ -161,4 +154,12 @@ function render(){
     }
     renderer.render(scene, camera) // Render scene
     requestAnimationFrame(render);
+}
+
+function updateCamera(){
+    // DICA: Atualize a câmera aqui!
+    message.changeMessage("Pos: " + controls.getObject().position.x.toFixed(1) + ", "
+    + controls.getObject().position.y.toFixed(1) + ", "
+    + controls.getObject().position.z.toFixed(1));
+    // message.changeMessage("LookAt: ");
 }

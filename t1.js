@@ -1,7 +1,9 @@
 import * as THREE from  'three';
 import Stats from '../build/jsm/libs/stats.module.js';
+import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
 import {initRenderer,
-        initDefaultBasicLight, 
+        initDefaultBasicLight,
+        setDefaultMaterial, 
         onWindowResize} from "../libs/util/util.js";
 
 // ---------------------Configuração inicial---------------------
@@ -22,7 +24,7 @@ const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, 
 initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 
 const controls = new PointerLockControls(camera, renderer.domElement);
-controls.isLocked = true;
+// controls.isLocked = true;
 
 
 instructions.addEventListener('click', function () {
@@ -101,7 +103,7 @@ function updateCamera(){
 
 function keyboardUpdate() {
 
-   keyboard.update();
+//    keyboard.update();
    
    // DICA: Insira aqui seu código para mover a câmera
    // let angle = THREE.MathUtils.degToRad(1);
@@ -126,7 +128,7 @@ function render() {
       moveAnimate(clock.getDelta());
    }
 
-   keyboardUpdate();
+//    keyboardUpdate();
    renderer.render(scene, camera) // Render scene
    requestAnimationFrame(render);
 }
