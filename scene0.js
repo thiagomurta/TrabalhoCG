@@ -66,7 +66,8 @@ export function Scene0()
     wallR.translateX(+250.05);
     wallR.translateY(20);
 
-    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL];
+    center.objects=[bu0,bu1,bu2,bd0/*,wallU,wallR,wallD,wallL*/];
+    
     
     
     
