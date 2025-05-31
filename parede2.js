@@ -126,7 +126,7 @@ function movementControls(key, value) {
         moveRight = value;
     }
     else if (key === KEY_SPACE) {
-        toggleShootBall();
+        toggleShootBall(scene, camera);
         console.log("Shooting state toggled:", isShootBall());
     }
 }
