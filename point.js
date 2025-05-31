@@ -110,6 +110,52 @@ class PointerLockControls extends EventDispatcher {
 
     }
 
+    lookForward() {
+        const frente = new Vector3();
+
+        frente.setFromMatrixColumn(this.camera.matrix, 2);
+        frente.negate();
+
+        frente.y = 0;
+        frente.normalize();
+
+        return frente;
+    }
+
+    lookBackward() {
+        const tras = new Vector3();
+
+        tras.setFromMatrixColumn(this.camera.matrix, 2);
+
+        tras.y = 0;
+        tras.normalize();
+
+        return tras;
+    }
+
+    lookLeft() {
+        const esq = new Vector3();
+
+        esq.setFromMatrixColumn(this.camera.matrix, 0);
+        esq.negate();
+
+        esq.y = 0;
+        esq.normalize();
+
+        return esq;
+    }
+
+    lookRight() {
+        let dir = new THREE.Vector3();
+
+        dir.setFromMatrixColumn(camera.matrix, 0);
+
+        dir.y = 0;
+        dir.normalize();
+
+        return dir;
+    }
+
 }
 
 // event listeners
