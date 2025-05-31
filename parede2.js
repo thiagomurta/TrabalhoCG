@@ -8,7 +8,7 @@ import {initRenderer,
         SecondaryBox,
         onWindowResize,
         createGroundPlaneXZ} from "../libs/util/util.js";
-import {initGun, moveBullet, shootBall} from "./arma.js";
+import {initGun, moveBullet, initShootBall} from "./arma.js";
 
 let scene, renderer, material; // Initial variables
 scene = new THREE.Scene();    // Create main scene
@@ -126,7 +126,7 @@ function movementControls(key, value) {
         moveRight = value;
     }
     else if (key === KEY_SPACE && value) { // only on key down
-        shootBall(scene, camera);
+        initShootBall(scene, camera);
     }
 }
 
