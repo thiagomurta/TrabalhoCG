@@ -119,7 +119,7 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
     };
 
     // Collision detection
-    center.colision = function(player) {
+    center.collision = function(player) {
         this.updateBB();
         player.updateMatrixWorld(true);
         
