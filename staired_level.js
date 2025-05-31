@@ -133,6 +133,7 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
 
     center.projectMovement = function(player) {
         let vAux = player.lerp.destination.clone().projectOnVector(this.detectSurface(player));
+        player.lerp.destination.copy(vAux);
     };
 
     center.detectSurface = function(player) {
@@ -160,40 +161,43 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
         if(player.position.x < cornerUnL.x && player.position.x > cornerUnL.x-0.15 && 
            player.position.z > cornerUnL.z && player.position.z < cornerDnL.z) {
             // Left wall
-            return player.lerp.destination.z < 0 ? new THREE.Vector3(0,0,-1) : new THREE.Vector3(0,0,1);
+            return  new THREE.Vector3(0,0,1);
         }
         if(player.position.x > cornerUnR.x && player.position.x < cornerUnR.x+0.15 && 
            player.position.z > cornerUnR.z && player.position.z < cornerDnR.z) {
             // Right wall
-            return player.lerp.destination.z < 0 ? new THREE.Vector3(0,0,-1) : new THREE.Vector3(0,0,1);
+            return  new THREE.Vector3(0,0,1);
         }
         if(player.position.z < cornerUnL.z && player.position.z > cornerUnL.z-0.15 && 
            player.position.x > cornerUnL.x && player.position.x < cornerUnR.x) {
             // Upper wall
-            return player.lerp.destination.x < 0 ? new THREE.Vector3(-1,0,0) : new THREE.Vector3(1,0,0);
+            return  new THREE.Vector3(1,0,0);
         }
         if(player.position.x > cornerDnL.x && player.position.x < cornerDnR.x) {
             // Down wall - needs to consider stairs
-            if(((player.position.x <= stairDLeft.x) || (player.position.x >= stairDRight.x)) && 
-               (player.position.z >= cornerDnL.z && player.position.z < cornerDnL.z+0.15)) {
-                return player.lerp.destination.x < 0 ? new THREE.Vector3(-1,0,0) : new THREE.Vector3(1,0,0);
+            if(((player.position.x < stairDLeft.x) || (player.position.x > stairDRight.x)) && 
+               (player.position.z > cornerDnL.z && player.position.z < cornerDnL.z+0.15)) {
+                //down wall - not stairs
+                return new THREE.Vector3(1,0,0);
             }
             else if(player.position.x > stairDLeft.x && player.position.x < stairDRight.x && 
                    player.position.z <= stairDLeft.z && player.position.z > stairULeft.z) {
                 // Stair surface
                 if (this.stairBB.containsPoint(player.position)) {
-                    //start to addapt from here
-                    const distance = this.stairNormal.dot(
-                        player.position.clone().sub(stairCollider.position)
-                    );
-                    if (Math.abs(distance) < 0.5) {
-                        return this.stairNormal.clone();
-                    }
+                    //not redundant 'cause we could fall on the stair from over the top level. As such, being inside the "stair prism" is not enough. This verification garantees that you'll only obey stair logic when on the stair surface.
+                    return new THREE.Vector3.subVectors(
+                        stairDLeft, stairULeft
+                    ).normalize();
                 }
                 return new THREE.Vector3(0,1,0); // Default up vector
             }
         }
-        return new THREE.Vector3(0,1,0); // Default up vector
+        if((player.position.x<cornerUnL.x || player.position.z<cornerUnL.z || player.position.x>cornerDnR.x || player.position.z>cornerDnR.z)||(player.position.y>=height&&player.position.x>stairDLeft.x && 
+            player.position.x<stairDRight.x && player.position.z<stairDLeft.z && player.position.z>stairULeft.z)) {
+            // The right side of 'or' could shite the functioning of falling when on the stair prism and over the stair level on the given x,y.
+            // if's logic : if out of staired level box on great heights or inside the stair prism higher than the stair plane , enter fall . 
+            return new THREE.Vector3(0,1,0);
+        }
     };
 
     return center;
