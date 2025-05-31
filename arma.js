@@ -11,7 +11,6 @@ const GUN_MUZZLE_POSITION = {x: 0.0, y: -0.35, z: -1.3};
 
 let ballArray = [];
 let currentBulletIndex = 0;
-let thisGun;
 
 // ADICIONA A BALA PRESA NA ARMA NA CENA E HABILITA SUA MOVIMENTAÇÃO
 // DEPOIS INICIALIZA A PRÓXIMA BALA PARA SER ATIRADA
@@ -23,7 +22,7 @@ export function shootBall(scene, camera) {
   console.log("Bullet attached to scene:", currentBulletIndex);
 
   //Adding another ball to be shot the next toggle
-  initBullet(camera, thisGun);
+  initBullet(camera);
   currentBulletIndex++;
 }
 
@@ -38,7 +37,7 @@ export function moveBullet() {
 
 // CRIA GEOMETRIA DA BALA, ADICIONA NA POSIÇÃO NA FRENTE DA ARMA
 // ADICIONA NO ARRAY UM OBJETO COM A BALA E UM BOOLEAN PARA SUA MOVIMENTAÇÃO E ADICIONA A BALA NA CAMERA PARA PODER POSICIONA-LA RELATIVA A CAMERA PRIMEIRO
-function initBullet(camera, gun) {
+function initBullet(camera) {
   const sphereGeometry = new THREE.SphereGeometry(
     BALL_SIZE.radius,
     BALL_SIZE.widthSegments,
@@ -66,12 +65,12 @@ export function initGun(scene, camera) {
   );
   const gunMaterial = setDefaultMaterial(GUN_COLOR);
 
-  thisGun = new THREE.Mesh(cylinderGeometry, gunMaterial);
+  const gun = new THREE.Mesh(cylinderGeometry, gunMaterial);
 
-  thisGun.position.set(0.0, -0.3, -0.0);
-  thisGun.rotateX(THREE.MathUtils.degToRad(-90));
+  gun.position.set(0.0, -0.3, -0.0);
+  gun.rotateX(THREE.MathUtils.degToRad(-90));
 
   scene.add(camera);
-  camera.add(thisGun);
-  initBullet(camera, thisGun);
+  camera.add(gun);
+  initBullet(camera);
 }
