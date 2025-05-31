@@ -2,7 +2,7 @@ import * as THREE from  'three';
 import {setDefaultMaterial} from "../libs/util/util.js";
 
 
-export function instancePlayer(camera,scenario)
+export function instancePlayer(controls,scenario)
 {
     let body= new THREE.Mesh(new THREE.BoxGeometry(1,2,1),setDefaultMaterial());
     const lerpConfig = {
@@ -14,32 +14,32 @@ export function instancePlayer(camera,scenario)
     player.body=body;
     player.lerp=lerp;
     player.proportions={width:1,height:2,length:1};
-    player.camera=camera;
-    player.camera.set(0,1.8,0);
+    player.controls=controls;
+    player.controls.set(0,1.8,0);
     player.scenario=scenario;
 
     player.moveFoward = function()
     {
-        let vaux=camera.lookFoward();
+        let vaux=controls.lookFoward();
         this.lerp.destination=vaux;
         this.collide();
 
     }
     player.moveRight = function()
     {
-        let vaux=camera.lookRight();
+        let vaux=controls.lookRight();
         this.lerp.destination=vaux;
         this.collide();
     }
     player.moveLeft = function()
     {
-        let vaux=camera.lookLeft();
+        let vaux=controls.lookLeft();
         this.lerp.destination=vaux;
         this.collide();
     }
     player.moveBack = function()
     {
-        let vaux=camera.lookBack();
+        let vaux=controls.lookBack();
         this.lerp.destination=vaux;
         this.collide();
     }
