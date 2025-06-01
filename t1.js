@@ -18,10 +18,8 @@ material = setDefaultMaterial(); // create a basic material
 
 // ---------------------Câmera---------------------
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(-0.0, 0.5, 0.0);
+camera.position.set(0.0, 0.5, 0.0);
 camera.lookAt(new THREE.Vector3(0.0, 0.5, -1.0));
-
-
 
 initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 
@@ -31,7 +29,7 @@ initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 const crosshair = document.getElementsByClassName("crosshair")[0];
 
 
-// ---------------------Controles do mouse---------------------
+
 let plane = createGroundPlaneXZ(500, 500);
  scene.add(plane);
    // center.plane.translateY(+0.15);
@@ -44,6 +42,7 @@ let player = PL.instancePlayer(camera,scenario,renderer);
 scene.add(player);
 player.translateY(10);
 
+// ---------------------Controles do mouse---------------------
 instructions.addEventListener('click', function () {
 
     player.controls.lock();
