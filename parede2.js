@@ -8,6 +8,7 @@ import {initRenderer,
         SecondaryBox,
         onWindowResize,
         createGroundPlaneXZ} from "../libs/util/util.js";
+import {initGun, moveBullet, initShootBall} from "./arma.js";
 
 let scene, renderer, material; // Initial variables
 scene = new THREE.Scene();    // Create main scene
@@ -20,7 +21,7 @@ let camPos  = new THREE.Vector3(0.0, 0.5, 0.0);
 // let camUp   = new THREE.Vector3(0.0, 1.0, 0.0);
 let camLook = new THREE.Vector3(0.0, 0.5, -1.0);
 var message = new SecondaryBox("");
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 1000);
 camera.position.copy(camPos);
 camera.lookAt(camLook);
 
@@ -68,20 +69,22 @@ scene.add(wall4);
 const controls = new PointerLockControls(camera, renderer.domElement);
 
 
+const crosshair = document.querySelector('.crosshair'); // Select the crosshair element
+
 instructions.addEventListener('click', function () {
-
     controls.lock();
-
 }, false);
 
 controls.addEventListener('lock', function () {
     instructions.style.display = 'none';
     blocker.style.display = 'none';
+    crosshair.style.display = 'block'; // Show the crosshair when locked
 });
 
 controls.addEventListener('unlock', function () {
     blocker.style.display = 'block';
     instructions.style.display = '';
+    crosshair.style.display = 'none'; // Hide the crosshair when unlocked
 });
 
 scene.add(controls.getObject());
@@ -95,17 +98,34 @@ let moveLeft = false;
 window.addEventListener('keydown', (event) => movementControls(event.keyCode, true))
 window.addEventListener('keyup', (event) => movementControls(event.keyCode, false))
 
+const KEY_S = 83;
+const KEY_W = 87;
+const KEY_A = 65;
+const KEY_D = 68;
+const KEY_ARROW_LEFT = 37;
+const KEY_ARROW_UP = 38;
+const KEY_ARROW_RIGHT = 39;
+const KEY_ARROW_DOWN = 40;
+const KEY_SPACE = 32;
+
 function movementControls(key, value) {
-    if (key === 87 || key === 38){
+    if (key === KEY_SPACE && value) { // only on key down
+        initShootBall(scene, camera);
+    }
+
+    // depende da ordem
+    // atirar -> andar, para de atirar
+    // andar -> atirar, funfa
+    if (key === KEY_W || key === KEY_ARROW_UP){
         moveForward = value;
     }
-    else if (key === 83 || key === 40){
+    if (key === KEY_S || key === KEY_ARROW_DOWN){
         moveBackward = value;
     }
-    else if (key === 65 || key === 37){
+    if (key === KEY_A || key === KEY_ARROW_LEFT){
         moveLeft = value;
     }
-    else if (key === 68 || key === 39){
+    if (key === KEY_D || key === KEY_ARROW_RIGHT){
         moveRight = value;
     }
 }
@@ -129,6 +149,11 @@ function moveAnimate(delta) {
     updateCamera();
 }
 
+
+
+initGun(scene, camera);
+
+
 // Use this to show information onscreen
 let controle = new InfoBox();
 controle.add("Movimentação");
@@ -148,6 +173,8 @@ const clock = new THREE.Clock();
 render();
 function render(){
     stats.update();
+
+    moveBullet(); // Move bullet if shooting is enabled
     
     if (controls.isLocked) {
         moveAnimate(clock.getDelta());
