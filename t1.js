@@ -1,6 +1,5 @@
 import * as THREE from  'three';
 import Stats from '../build/jsm/libs/stats.module.js';
-import {PointerLockControls} from './point.js';
 import {initRenderer,
         initDefaultBasicLight,
         setDefaultMaterial, 
@@ -8,6 +7,8 @@ import {initRenderer,
         createGroundPlaneXZ                } from "../libs/util/util.js";
 import * as S0 from "./scene0.js";
 import * as PL from "./player.js";
+import {initGun, moveBullet, initShootBall} from "./arma.js";
+
 // ---------------------Configuração inicial---------------------
 let scene, renderer, material;
 scene = new THREE.Scene();    // Create main scene
@@ -26,9 +27,9 @@ initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 //const controls = new PointerLockControls(camera, renderer.domElement);
 // controls.isLocked = true;
 
-const crosshair = document.getElementsByClassName("crosshair")[0];
+const crosshair = document.querySelector('.crosshair');
 
-
+// ---------------------Ambiente---------------------
 
 let plane = createGroundPlaneXZ(500, 500);
  scene.add(plane);
@@ -50,16 +51,18 @@ instructions.addEventListener('click', function () {
 }, false);
   
 player. controls.addEventListener('lock', function () {
-    crosshair.style.display = 'auto'
+    crosshair.style.display = 'block'
     instructions.style.display = 'none';
     blocker.style.display = 'none';
 });
 
 player.controls.addEventListener('unlock', function () {
-    crosshair.style.display = 'auto';
+    crosshair.style.display = 'none';
     blocker.style.display = 'block';
     instructions.style.display = '';
 });
+
+// ---------------------Controles de teclado---------------------
 
 window.addEventListener('keydown', (event) => movementControls(event.keyCode))
 window.addEventListener('keyup', (event) => movementControls(event.keyCode))
@@ -72,8 +75,12 @@ const KEY_ARROW_LEFT = 37;
 const KEY_ARROW_UP = 38;
 const KEY_ARROW_RIGHT = 39;
 const KEY_ARROW_DOWN = 40;
+const KEY_SPACE = 32;
 
 function movementControls(key) { // if xabu , go back here
+    if (key === KEY_SPACE) {
+        initShootBall(scene, camera);
+    }
     if (key === KEY_W || key === KEY_ARROW_UP){
         player.moveFoward();
     }
@@ -97,7 +104,7 @@ window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)},
 const clock = new THREE.Clock();
 
 
-initGun();
+initGun(scene, camera);
 render();
 
 // function updateCamera(){
@@ -129,6 +136,8 @@ render();
 
 function render() {
    stats.update();
+
+   moveBullet(); // will move bullet if its isShooting attribute is truthy
 
 //    if(controls.isLocked){
 //       moveAnimate(clock.getDelta());
