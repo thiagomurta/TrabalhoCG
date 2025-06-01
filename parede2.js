@@ -69,20 +69,22 @@ scene.add(wall4);
 const controls = new PointerLockControls(camera, renderer.domElement);
 
 
-instructions.addEventListener('click', function () {
-    if (blocker.style.display == 'none') toggleShootBall();
-    controls.lock();
+const crosshair = document.querySelector('.crosshair'); // Select the crosshair element
 
+instructions.addEventListener('click', function () {
+    controls.lock();
 }, false);
 
 controls.addEventListener('lock', function () {
     instructions.style.display = 'none';
     blocker.style.display = 'none';
+    crosshair.style.display = 'block'; // Show the crosshair when locked
 });
 
 controls.addEventListener('unlock', function () {
     blocker.style.display = 'block';
     instructions.style.display = '';
+    crosshair.style.display = 'none'; // Hide the crosshair when unlocked
 });
 
 scene.add(controls.getObject());
@@ -113,20 +115,24 @@ const KEY_ARROW_DOWN = 40;
 const KEY_SPACE = 32;
 
 function movementControls(key, value) {
+    if (key === KEY_SPACE && value) { // only on key down
+        initShootBall(scene, camera);
+    }
+
+    // depende da ordem
+    // atirar -> andar, para de atirar
+    // andar -> atirar, funfa
     if (key === KEY_W || key === KEY_ARROW_UP){
         moveForward = value;
     }
-    else if (key === KEY_S || key === KEY_ARROW_DOWN){
+    if (key === KEY_S || key === KEY_ARROW_DOWN){
         moveBackward = value;
     }
-    else if (key === KEY_A || key === KEY_ARROW_LEFT){
+    if (key === KEY_A || key === KEY_ARROW_LEFT){
         moveLeft = value;
     }
-    else if (key === KEY_D || key === KEY_ARROW_RIGHT){
+    if (key === KEY_D || key === KEY_ARROW_RIGHT){
         moveRight = value;
-    }
-    else if (key === KEY_SPACE && value) { // only on key down
-        initShootBall(scene, camera);
     }
 }
 

@@ -11,11 +11,12 @@ const GUN_MUZZLE_POSITION = {x: 0.0, y: -0.35, z: -1.3};
 
 let ballArray = [];
 let currentBulletIndex = 0;
-let lastShotTime = 0; // to track the last time a shot was fired
-const SHOOT_COOLDOWN = 0.5; // cooldown (seconds)
+let lastShotTime = 0;
+const SHOOT_COOLDOWN = 0.5; // (seconds)
 
 // RASTREAR A CADÊNCIA DE TIROS PARA ATIRAR
 export function initShootBall(scene, camera) {
+  
   const currentTime = performance.now() / 1000; // Get current time in seconds
   if (currentTime - lastShotTime >= SHOOT_COOLDOWN) {
       shootBall(scene, camera);
