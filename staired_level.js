@@ -1,6 +1,11 @@
 import * as THREE from 'three';
 import * as GB from './generic_box.js';
 import * as GS from './generic_stair.js';
+import {initRenderer,
+        initDefaultBasicLight,
+        setDefaultMaterial, 
+        onWindowResize,
+        createGroundPlaneXZ                } from "../libs/util/util.js";
 
 export function genStairedLevel(width, height, length, stair_w, stair_l, number_of_steps, material) {
     // Main container
@@ -119,30 +124,34 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
     };
 
     // Collision detection
-    center.collision = function(player) {
+    center.collision = function(player,vaux2) {
         this.updateBB();
         player.updateMatrixWorld(true);
-        
-        const playerBB = new THREE.Box3().setFromObject(player);
+        let gigaBox=new THREE.Mesh(new THREE.BoxGeometry(5,2,5),setDefaultMaterial());
+        gigaBox.position.copy(player.position);
+        gigaBox.updateMatrixWorld(true);
+        gigaBox.visible = false;
+        const playerBB = new THREE.Box3().setFromObject(gigaBox);
         const isColliding = this.bb.intersectsBox(playerBB);
         
         if(isColliding) {
-            this.projectMovement(player);
+            this.projectMovement(player,vaux2);
         }
     };
 
-    center.projectMovement = function(player) {
-        let vaux=this.detectSurface(player);
-        console.log("vaux",vaux);
+    center.projectMovement = function(player,vaux2) {
+        let vaux=this.detectSurface(player,vaux2);
         
-        //if(vaux.x!=0 || vaux.y!=0 || vaux.z!=0)
-        //{
-            let vAux = player.lerp.destination.clone().projectOnVector(vaux).normalize().multiplyScalar(player.velocity);
+        
+        if(vaux.x!=0 || vaux.y!=0 || vaux.z!=0)
+        {
+            let vAux = vaux2.clone().dot(vaux);
             player.lerp.destination= player.position.clone().add(vAux);
-        //}
+            
+        }
     };
 
-    center.detectSurface = function(player) {
+    center.detectSurface = function(player,vaux2) {
         let cornerUnL = new THREE.Vector3(
             this.position.x - width/2,
             player.position.y,
@@ -163,65 +172,71 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
             player.position.y,
             this.position.z + length/2
         );
-        console.log("pl",player.position);
-        console.log("cornerUnL",cornerUnL);
-        console.log("cornerUnR",cornerUnR);
-        console.log("cornerDnL",cornerDnL);
-        console.log("cornerDnR",cornerDnR);
-        console.log("player_foward",player.controls.lookFoward());
+       
         
         if(player.position.x < cornerUnL.x && player.position.x > cornerUnL.x-this.offset && 
            player.position.z > cornerUnL.z && player.position.z < cornerDnL.z) {
             // Left wall
-            console.log("catchau","1");
-            return  tAux=new THREE.Vector3(0,0,1);
+           if(vaux2.x>0)
+            return (vaux2.z<0)?new THREE.Vector3(0,0,-1):new THREE.Vector3(0,0,1);
+              else
+            return  (vaux2.z<0)?new THREE.Vector3(1,0,-1):new THREE.Vector3(1,0,1);
         }
         if(player.position.x > cornerUnR.x && player.position.x < cornerUnR.x+this.offset && 
            player.position.z > cornerUnR.z && player.position.z < cornerDnR.z) {
             // Right wall
-             console.log("catchau","2");
-            return  new THREE.Vector3(0,0,1);
+            if(vaux2.x<0)
+                return (vaux2.z<0)?new THREE.Vector3(0,0,-1):new THREE.Vector3(0,0,1);
+              else
+            return  (vaux2.z<0)?new THREE.Vector3(1,0,-1):new THREE.Vector3(1,0,1);
+           
         }
         if(player.position.z < cornerUnL.z && player.position.z > cornerUnL.z-this.offset && 
            player.position.x > cornerUnL.x && player.position.x < cornerUnR.x) {
             // Upper wall
-             console.log("catchau","3");
-            return  new THREE.Vector3(1,0,0);
+            if(vaux2.z>0)
+                return  (vaux2.x<0)?new THREE.Vector3(-1,0,0):new THREE.Vector3(1,0,0);
+            else
+                return  (vaux2.x<0)?new THREE.Vector3(-1,0,1):new THREE.Vector3(1,0,1);
+            
         }
         if(player.position.x > cornerDnL.x && player.position.x < cornerDnR.x) {
             // Down wall - needs to consider stairs
-            if(((player.position.x < stairDLeft.x) || (player.position.x > stairDRight.x)) && 
-               (player.position.z > cornerDnL.z && player.position.z < cornerDnL.z+this.offset)) {
-                //down wall - not stairs
-                 console.log("catchau","4");
-                return new THREE.Vector3(1,0,0);
+            if(vaux2.z<0)
+                return  (vaux2.x<0)?new THREE.Vector3(-1,0,0):new THREE.Vector3(1,0,0);
+            else
+                return  (vaux2.x<0)?new THREE.Vector3(-1,0,1):new THREE.Vector3(1,0,1);
+            
+                
             }
             else if(player.position.x > stairDLeft.x && player.position.x < stairDRight.x && 
                    player.position.z <= stairDLeft.z && player.position.z > stairULeft.z) {
                 // Stair surface
                 if (this.stairBB.containsPoint(player.position)) {
                     //not redundant 'cause we could fall on the stair from over the top level. As such, being inside the "stair prism" is not enough. This verification garantees that you'll only obey stair logic when on the stair surface.
-                     console.log("catchau","5");
+                    
                     return new THREE.Vector3.subVectors(
                         stairDLeft, stairULeft
                     ).normalize();
                 }
-                 console.log("catchau","6");
+                 
                 return new THREE.Vector3(0,1,0); // Default up vector
             }
-        }
+        
         if(((player.position.x<cornerUnL.x || player.position.z<cornerUnL.z || player.position.x>cornerDnR.x || player.position.z>cornerDnR.z)&& player.position.y>=height)||
             (player.position.y>=height&&player.position.x>stairDLeft.x && 
             player.position.x<stairDRight.x && player.position.z<stairDLeft.z && player.position.z>stairULeft.z)) {
             // The right side of 'or' could shite the functioning of falling when on the stair prism and over the stair level on the given x,y.
             // if's logic : if out of staired level box on great heights or inside the stair prism higher than the stair plane , enter fall . 
-             console.log("catchau","7");
+             
 
-            return new THREE.Vector3(0,1,0);
+            return new THREE.Vector3(0,-1,0);
             
         }
-        console.log("catchau","8");
-       // return new THREE.Vector3(0,0 , 0);
+        
+        
+        return new THREE.Vector3(0, 0, 0); // Default case, no surface detected
+        
     };
 
     return center;
