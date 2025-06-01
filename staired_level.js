@@ -191,9 +191,9 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
            player.position.z > cornerUnR.z && player.position.z < cornerDnR.z) {
             // Right wall
             if(vaux2.x<0)
-                return (vaux2.z<0)?new THREE.Vector3(0,0,1):new THREE.Vector3(0,0,-1);
+                return new THREE.Vector3(0,0,1);
               else
-            return  (vaux2.z<0)?new THREE.Vector3(1,0,1):new THREE.Vector3(1,0,-1);
+            return  new THREE.Vector3(1,0,1);
            
         }
         if(player.position.z < cornerUnL.z && player.position.z > cornerUnL.z-this.offset && 
