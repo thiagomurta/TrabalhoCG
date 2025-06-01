@@ -124,7 +124,6 @@ export function initGun(scene, camera) {
   gun.position.set(0.0, GUN_Y_OFFSET, 0.0);
   gun.rotateX(GUN_AIMS_FORWARD);
 
-  scene.add(camera);
   camera.add(gun);
   initBullet(camera);
 }

@@ -24,9 +24,6 @@ camera.lookAt(new THREE.Vector3(0.0, 0.5, -1.0));
 
 initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 
-//const controls = new PointerLockControls(camera, renderer.domElement);
-// controls.isLocked = true;
-
 const crosshair = document.querySelector('.crosshair');
 
 // ---------------------Ambiente---------------------
@@ -39,6 +36,7 @@ let scenario=S0.Scene0();
 scene.add(scenario); // Add the scenario to the scene
 scenario.translateY(-0.15);
 
+initGun(scene, camera);
 let player = PL.instancePlayer(camera,scenario,renderer);
 scene.add(player);
 player.translateY(1);
@@ -94,56 +92,19 @@ function movementControls(key) { // if xabu , go back here
         player.moveRight();
     }
     player.position.lerp(player.lerp.destination, player.lerp.alpha);
-    //console.log(player.lerp.move);
 }
 
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
 
- 
 
-const clock = new THREE.Clock();
-
-
-initGun(scene, camera);
 render();
-
-// function updateCamera(){
-//    // DICA: Atualize a câmera aqui!
-
-//    message.changeMessage("Pos: {" + camPos.x + ", " + camPos.y + ", " + camPos.z + "} " + 
-//                          "/ LookAt: {" + camLook.x + ", " + camLook.y + ", " + camLook.z + "}");
-// }
-
-// function keyboardUpdate() {
-
-// //    keyboard.update();
-   
-//    // DICA: Insira aqui seu código para mover a câmera
-//    // let angle = THREE.MathUtils.degToRad(1);
-//    // if ( keyboard.pressed("W") )     cameraHolder.translateZ( -0.1 );
-//    // if ( keyboard.pressed("S") )     cameraHolder.translateZ( 0.1 );
-//    // if ( keyboard.pressed("A") )     cameraHolder.translateX( -0.1 );
-//    // if ( keyboard.pressed("D") )     cameraHolder.translateX(  0.1 );
-//    // if ( keyboard.pressed("left") )  cameraHolder.rotateY( angle );
-//    // if ( keyboard.pressed("right") ) cameraHolder.rotateY( -angle );
-//    // if ( keyboard.pressed("up") )    cameraHolder.rotateX( angle );
-//    // if ( keyboard.pressed("down") )  cameraHolder.rotateX( -angle );
-//    // if ( keyboard.pressed("Q") )     cameraHolder.rotateZ( angle );
-//    // if ( keyboard.pressed("E") )     cameraHolder.rotateZ( -angle );
-   
-//    updateCamera();
-// }
 
 function render() {
    stats.update();
 
    moveBullet(); // will move bullet if its isShooting attribute is truthy
 
-//    if(controls.isLocked){
-//       moveAnimate(clock.getDelta());
-//    }
 
-//    keyboardUpdate();
    renderer.render(scene, camera) // Render scene
    requestAnimationFrame(render);
 }
