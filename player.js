@@ -12,6 +12,7 @@ export function instancePlayer(camera,scenario,renderer)
     player.renderer=renderer;
     player.camera=camera;
     player.add(camera);
+    player.camera.position.set(0,1.8,0);
     player.velocity=0.5;
     //player.position.set(-50,0,-90);
     const lerpConfig = {
@@ -44,7 +45,10 @@ export function instancePlayer(camera,scenario,renderer)
         this.lerp.move=false;
         let vaux=this.controls.lookRight();
         let vaux2=vaux.clone();
+        vaux.add(this.position);
+        
         this.updateLerp(vaux);
+        
         this.collide(vaux2);
         this.lerp.move=true;
     }
@@ -53,7 +57,10 @@ export function instancePlayer(camera,scenario,renderer)
         this.lerp.move=false;
         let vaux=this.controls.lookLeft();
         let vaux2=vaux.clone();
+        vaux.add(this.position);
+        
         this.updateLerp(vaux);
+        
         this.collide(vaux2);
         this.lerp.move=true;
     }
@@ -62,7 +69,10 @@ export function instancePlayer(camera,scenario,renderer)
         this.lerp.move=false;
         let vaux=this.controls.lookBackward();
         let vaux2=vaux.clone();
+        vaux.add(this.position);
+        
         this.updateLerp(vaux);
+        
         this.collide(vaux2);
         this.lerp.move=true;
     }

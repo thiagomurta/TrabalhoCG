@@ -40,7 +40,7 @@ scenario.translateY(-0.15);
 
 let player = PL.instancePlayer(camera,scenario,renderer);
 scene.add(player);
-player.translateY(10);
+player.translateY(1);
 
 instructions.addEventListener('click', function () {
 

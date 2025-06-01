@@ -74,30 +74,30 @@ class PointerLockControls extends EventDispatcher {
 
     }
 
-    moveForward( distance ) {
+    // moveForward( distance ) {
 
-        // move forward parallel to the xz-plane
-        // assumes camera.up is y-up
+    //     // move forward parallel to the xz-plane
+    //     // assumes camera.up is y-up
 
-        const camera = this.camera;
+    //     const camera = this.camera;
 
-        _vector.setFromMatrixColumn( camera.matrix, 0 );
+    //     _vector.setFromMatrixColumn( camera.matrix, 0 );
 
-        _vector.crossVectors( camera.up, _vector );
+    //     _vector.crossVectors( camera.up, _vector );
 
-        camera.position.addScaledVector( _vector, distance );
+    //     camera.position.addScaledVector( _vector, distance );
 
-    }
+    // }
 
-    moveRight( distance ) {
+    // moveRight( distance ) {
 
-        const camera = this.camera;
+    //     const camera = this.camera;
 
-        _vector.setFromMatrixColumn( camera.matrix, 0 );
+    //     _vector.setFromMatrixColumn( camera.matrix, 0 );
 
-        camera.position.addScaledVector( _vector, distance );
+    //     camera.position.addScaledVector( _vector, distance );
 
-    }
+    // }
 
     lock() {
 
