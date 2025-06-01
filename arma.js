@@ -9,6 +9,8 @@ const BALL_SIZE = { radius: 0.05, widthSegments: 20, heightSegments: 20 };
 const BALL_SPEED = 0.5;
 const GUN_MUZZLE_POSITION = {x: 0.0, y: -0.35, z: -1.3};
 
+const BALL_BOX_SIZE = 0.1;
+
 let ballArray = [];
 let currentBulletIndex = 0;
 let lastShotTime = 0;
@@ -28,9 +30,12 @@ export function initShootBall(scene, camera) {
 // DEPOIS INICIALIZA A PRÓXIMA BALA PARA SER ATIRADA
 export function shootBall(scene, camera) {
 
-  scene.attach(ballArray[currentBulletIndex].ball); // Attach the current bullet to the scene
+  const bulletObj = ballArray[currentBulletIndex];
 
-  ballArray[currentBulletIndex].isShooting = true; // make it able to move
+  scene.attach(bulletObj.ball); // Attach the current bullet to the scene
+  bulletObj.isShooting = true; // make it able to move
+
+  bulletObj.boundingBox = new THREE.Box3().setFromObject(bulletObj.ball); // create a bounding box
 
   initBullet(camera);   //Adding another ball to be shot the next toggle
   currentBulletIndex++;
@@ -39,8 +44,24 @@ export function shootBall(scene, camera) {
 // PARA CADA BALA NA CENA, TRANSLADA O Z SE MOVIMENTAÇÃO HABILITADA
 export function moveBullet() {
   for (let i = 0; i < ballArray.length; i++) {
-    const ball = ballArray[i].ball; 
-    if (ballArray[i].isShooting) ball.translateZ(-BALL_SPEED);
+    const bullet = ballArray[i];
+    const ball = bullet.ball; 
+    if (bullet.isShooting) {
+
+      ball.translateZ(-BALL_SPEED);
+      if (bullet.boundingBox) {
+        
+        const worldPosition = new THREE.Vector3();
+        bullet.ball.getWorldPosition(worldPosition);
+        
+        
+        bullet.boundingBox.setFromCenterAndSize(
+          worldPosition,
+          new THREE.Vector3(BALL_BOX_SIZE, BALL_BOX_SIZE, BALL_BOX_SIZE)
+        );
+      }
+
+    }
   }
 
 }
@@ -58,7 +79,10 @@ function initBullet(camera) {
   const ball = new THREE.Mesh(sphereGeometry, ballMaterial);
   ball.position.set(GUN_MUZZLE_POSITION.x, GUN_MUZZLE_POSITION.y, GUN_MUZZLE_POSITION.z);
 
-  ballArray.push({ball: ball, isShooting: false});
+  ballArray.push({
+    ball: ball, 
+    isShooting: false,
+    boundingBox: null}); //set when shot
 
   camera.add(ball);
 }
