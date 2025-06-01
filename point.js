@@ -3,6 +3,7 @@ import {
     EventDispatcher,
     Vector3
 } from 'three';
+import * as THREE from 'three';
 
 const _euler = new Euler( 0, 0, 0, 'YXZ' );
 const _vector = new Vector3();
@@ -110,14 +111,14 @@ class PointerLockControls extends EventDispatcher {
 
     }
 
-    lookForward() {
-        const frente = new Vector3();
+    lookFoward() {
+        const frente = new THREE.Vector3();
 
         frente.setFromMatrixColumn(this.camera.matrix, 2);
         frente.negate();
 
         frente.y = 0;
-        frente.normalize();
+        //frente.normalize();
 
         return frente;
     }
@@ -128,7 +129,7 @@ class PointerLockControls extends EventDispatcher {
         tras.setFromMatrixColumn(this.camera.matrix, 2);
 
         tras.y = 0;
-        tras.normalize();
+        //tras.normalize();
 
         return tras;
     }
@@ -140,7 +141,7 @@ class PointerLockControls extends EventDispatcher {
         esq.negate();
 
         esq.y = 0;
-        esq.normalize();
+       // esq.normalize();
 
         return esq;
     }
@@ -148,10 +149,10 @@ class PointerLockControls extends EventDispatcher {
     lookRight() {
         let dir = new THREE.Vector3();
 
-        dir.setFromMatrixColumn(camera.matrix, 0);
+        dir.setFromMatrixColumn(this.camera.matrix, 0);
 
         dir.y = 0;
-        dir.normalize();
+       // dir.normalize();
 
         return dir;
     }
