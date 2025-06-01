@@ -13,7 +13,7 @@ export function instancePlayer(camera,scenario,renderer)
     player.camera=camera;
     player.add(camera);
     player.velocity=0.5;
-    player.position.set(-50,0,-90);
+    //player.position.set(-50,0,-90);
     const lerpConfig = {
       destination: new THREE.Vector3(body.position.x,body.position.y,body.position.z),
       alpha: 1.0,
