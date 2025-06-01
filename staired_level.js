@@ -127,7 +127,7 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
     center.collision = function(player,vaux2) {
         this.updateBB();
         player.updateMatrixWorld(true);
-        let gigaBox=new THREE.Mesh(new THREE.BoxGeometry(5,2,5),setDefaultMaterial());
+        let gigaBox=new THREE.Mesh(new THREE.BoxGeometry(2,2,2),setDefaultMaterial());
         gigaBox.position.copy(player.position);
         gigaBox.updateMatrixWorld(true);
         gigaBox.visible = false;
@@ -145,7 +145,12 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
         
         if(vaux.x!=0 || vaux.y!=0 || vaux.z!=0)
         {
-            let vAux = vaux2.clone().dot(vaux);
+            let vAux = vaux2.clone();
+            vAux.x*=vaux.x;
+            vAux.y*=vaux.y;
+            vAux.z*=vaux.z;
+
+            vAux.normalize().multiplyScalar(player.velocity);
             player.lerp.destination= player.position.clone().add(vAux);
             
         }
@@ -178,34 +183,34 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
            player.position.z > cornerUnL.z && player.position.z < cornerDnL.z) {
             // Left wall
            if(vaux2.x>0)
-            return (vaux2.z<0)?new THREE.Vector3(0,0,-1):new THREE.Vector3(0,0,1);
+            return new THREE.Vector3(0,0,1);
               else
-            return  (vaux2.z<0)?new THREE.Vector3(1,0,-1):new THREE.Vector3(1,0,1);
+            return  new THREE.Vector3(1,0,1);
         }
         if(player.position.x > cornerUnR.x && player.position.x < cornerUnR.x+this.offset && 
            player.position.z > cornerUnR.z && player.position.z < cornerDnR.z) {
             // Right wall
             if(vaux2.x<0)
-                return (vaux2.z<0)?new THREE.Vector3(0,0,-1):new THREE.Vector3(0,0,1);
+                return (vaux2.z<0)?new THREE.Vector3(0,0,1):new THREE.Vector3(0,0,-1);
               else
-            return  (vaux2.z<0)?new THREE.Vector3(1,0,-1):new THREE.Vector3(1,0,1);
+            return  (vaux2.z<0)?new THREE.Vector3(1,0,1):new THREE.Vector3(1,0,-1);
            
         }
         if(player.position.z < cornerUnL.z && player.position.z > cornerUnL.z-this.offset && 
            player.position.x > cornerUnL.x && player.position.x < cornerUnR.x) {
             // Upper wall
             if(vaux2.z>0)
-                return  (vaux2.x<0)?new THREE.Vector3(-1,0,0):new THREE.Vector3(1,0,0);
+                return  new THREE.Vector3(1,0,0);
             else
-                return  (vaux2.x<0)?new THREE.Vector3(-1,0,1):new THREE.Vector3(1,0,1);
+                return  new THREE.Vector3(1,0,1);
             
         }
         if(player.position.x > cornerDnL.x && player.position.x < cornerDnR.x) {
             // Down wall - needs to consider stairs
             if(vaux2.z<0)
-                return  (vaux2.x<0)?new THREE.Vector3(-1,0,0):new THREE.Vector3(1,0,0);
+                return  new THREE.Vector3(1,0,0);
             else
-                return  (vaux2.x<0)?new THREE.Vector3(-1,0,1):new THREE.Vector3(1,0,1);
+                return  new THREE.Vector3(1,0,1);
             
                 
             }
