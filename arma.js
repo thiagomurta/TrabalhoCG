@@ -27,13 +27,29 @@ export function initShootBall(scene, camera) {
 }
 
 // ADICIONA A BALA PRESA NA ARMA NA CENA E HABILITA SUA MOVIMENTAÇÃO
+// CRIA SUA BOUNDING BOX
+// CONSERTA O OFFSET DE Y POR UM RAYCASTER
 // DEPOIS INICIALIZA A PRÓXIMA BALA PARA SER ATIRADA
 export function shootBall(scene, camera) {
 
   const bulletObj = ballArray[currentBulletIndex];
-
   scene.attach(bulletObj.ball); // Attach the current bullet to the scene
   bulletObj.isShooting = true; // make it able to move
+
+  // the following lines fix the y offset and make the bullet move towards the crosshair
+
+  const muzzleWorld = new THREE.Vector3();
+  bulletObj.ball.getWorldPosition(muzzleWorld);
+
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(new THREE.Vector2(), camera); // (0,0) = screen center
+  const intersects = raycaster.intersectObjects(scene.children, true);
+
+  const crosshairPoint = intersects[0]?.point || 
+    raycaster.ray.direction.multiplyScalar(1000).add(camera.position);
+  
+  bulletObj.velocity.copy(crosshairPoint).sub(muzzleWorld).normalize()
+    .multiplyScalar(BALL_SPEED);
 
   bulletObj.boundingBox = new THREE.Box3().setFromObject(bulletObj.ball); // create a bounding box
 
@@ -48,7 +64,7 @@ export function moveBullet() {
     const ball = bullet.ball; 
     if (bullet.isShooting) {
 
-      ball.translateZ(-BALL_SPEED);
+      bullet.ball.position.add(bullet.velocity);
       if (bullet.boundingBox) {
         
         const worldPosition = new THREE.Vector3();
@@ -82,7 +98,9 @@ function initBullet(camera) {
   ballArray.push({
     ball: ball, 
     isShooting: false,
-    boundingBox: null}); //set when shot
+    boundingBox: null,
+    velocity: new THREE.Vector3()
+  }); //set when shot
 
   camera.add(ball);
 }
