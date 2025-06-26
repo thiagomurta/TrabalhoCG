@@ -43,11 +43,14 @@ player.translateY(1);
 
 // ---------------------Controles do mouse---------------------
 instructions.addEventListener('click', function () {
-
     player.controls.lock();
 
 }, false);
-  
+
+//add a right click 
+instructions.addEventListener('contextmenu', function (event) {
+    initShootBall(scene, camera);
+}, false);
 player. controls.addEventListener('lock', function () {
     crosshair.style.display = 'block'
     instructions.style.display = 'none';

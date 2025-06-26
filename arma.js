@@ -58,7 +58,7 @@ export function shootBall(scene, camera) {
 }
 
 // PARA CADA BALA NA CENA, TRANSLADA O Z SE MOVIMENTAÇÃO HABILITADA
-export function moveBullet() {
+export function moveBullet(scene) {
   for (let i = 0; i < ballArray.length; i++) {
     const bullet = ballArray[i];
     const ball = bullet.ball; 
