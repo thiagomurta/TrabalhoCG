@@ -47,12 +47,25 @@ instructions.addEventListener('click', function () {
 
 }, false);
 
-//add a right click 
+let isMouseDown = false; // Track whether the mouse button is held down
+
 renderer.domElement.addEventListener('mousedown', function (event) {
-    if (event.button === 2 || (event.button === 0 && crosshair.style.display == 'block')) { // Right mouse button or left mouse button when instructions not on screen
-        initShootBall(scene, camera);
+    if (event.button === 2 || (event.button === 0 && crosshair.style.display === 'block')) { // Right mouse button or left mouse button when crosshair is visible
+        isMouseDown = true; 
     }
 }, false);
+
+renderer.domElement.addEventListener('mouseup', function (event) {
+    if (event.button === 2 || event.button === 0) { // Right or left mouse button
+        isMouseDown = false; // Set the flag to false
+    }
+}, false);
+
+function shootWhileHolding(scene, camera) {
+    if (isMouseDown) {
+        initShootBall(scene, camera); // Call the shooting function
+    }
+}
 
 player. controls.addEventListener('lock', function () {
     crosshair.style.display = 'block'
@@ -103,6 +116,8 @@ render();
 
 function render() {
    stats.update();
+
+   shootWhileHolding(scene, camera); // will shoot if mouse is down
 
    moveBullet(); // will move bullet if its isShooting attribute is truthy
 
