@@ -7,7 +7,8 @@ const BALL_COLOR = 'rgb(100, 193, 255)';
 const GUN_SIZE = { radius: 0.1, height: 2, segments: 32};
 const BALL_SIZE = { radius: 0.05, widthSegments: 20, heightSegments: 20 };
 const BALL_SPEED = 0.5;
-const GUN_MUZZLE_POSITION = {x: 0.0, y: -0.35, z: -1.3};
+const BULLET_ORIGIN_POS = {x: 0.0, y: -0.0, z: 0.0};
+//{x: 0.0, y: -0.35, z: -1.3}; muzzle
 
 const BALL_BOX_SIZE = 0.1;
 
@@ -93,7 +94,7 @@ function initBullet(camera) {
 
   const ballMaterial = setDefaultMaterial(BALL_COLOR);
   const ball = new THREE.Mesh(sphereGeometry, ballMaterial);
-  ball.position.set(GUN_MUZZLE_POSITION.x, GUN_MUZZLE_POSITION.y, GUN_MUZZLE_POSITION.z);
+  ball.position.set(BULLET_ORIGIN_POS.x, BULLET_ORIGIN_POS.y, BULLET_ORIGIN_POS.z);
 
   ballArray.push({
     ball: ball, 
