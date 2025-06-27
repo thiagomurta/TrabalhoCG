@@ -48,9 +48,12 @@ instructions.addEventListener('click', function () {
 }, false);
 
 //add a right click 
-instructions.addEventListener('contextmenu', function (event) {
-    initShootBall(scene, camera);
+renderer.domElement.addEventListener('mousedown', function (event) {
+    if (event.button === 2 || (event.button === 0 && crosshair.style.display == 'block')) { // Right mouse button or left mouse button when instructions not on screen
+        initShootBall(scene, camera);
+    }
 }, false);
+
 player. controls.addEventListener('lock', function () {
     crosshair.style.display = 'block'
     instructions.style.display = 'none';
@@ -76,12 +79,8 @@ const KEY_ARROW_LEFT = 37;
 const KEY_ARROW_UP = 38;
 const KEY_ARROW_RIGHT = 39;
 const KEY_ARROW_DOWN = 40;
-const KEY_SPACE = 32;
 
 function movementControls(key) { // if xabu , go back here
-    if (key === KEY_SPACE) {
-        initShootBall(scene, camera);
-    }
     if (key === KEY_W || key === KEY_ARROW_UP){
         player.moveFoward();
     }
