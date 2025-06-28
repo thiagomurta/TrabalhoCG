@@ -53,11 +53,11 @@ const instructions = document.getElementById('instructions');
 // ---------------------Controles do mouse---------------------
 instructions.addEventListener('click', function () {
 
-    controls.lock();
+    player.controls.lock();
 
 }, false);
   
-controls.addEventListener('lock', function () {
+player. controls.addEventListener('lock', function () {
     crosshair.style.display = 'block'
     instructions.style.display = 'none';
     blocker.style.display = 'none';
