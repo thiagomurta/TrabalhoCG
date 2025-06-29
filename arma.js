@@ -18,11 +18,11 @@ let lastShotTime = 0;
 const SHOOT_COOLDOWN = 0.5; // (seconds)
 
 // RASTREAR A CADÊNCIA DE TIROS PARA ATIRAR
-export function initShootBall(scene, camera) {
+export function initShootBall(scenario, scene, camera) {
   
   const currentTime = performance.now() / 1000; // Get current time in seconds
   if (currentTime - lastShotTime >= SHOOT_COOLDOWN) {
-      shootBall(scene, camera);
+      shootBall(scenario, scene, camera);
       lastShotTime = currentTime; // Update the last shot time
   }
 }
@@ -31,7 +31,7 @@ export function initShootBall(scene, camera) {
 // CRIA SUA BOUNDING BOX
 // CONSERTA O OFFSET DE Y POR UM RAYCASTER
 // DEPOIS INICIALIZA A PRÓXIMA BALA PARA SER ATIRADA
-export function shootBall(scene, camera) {
+export function shootBall(scenario, scene, camera) {
 
   const bulletObj = ballArray[currentBulletIndex];
   scene.attach(bulletObj.ball); // Attach the current bullet to the scene
@@ -44,7 +44,7 @@ export function shootBall(scene, camera) {
 
   const raycaster = new THREE.Raycaster();
   raycaster.setFromCamera(new THREE.Vector2(), camera); // (0,0) = screen center
-  const intersects = raycaster.intersectObjects(scene.children, true);
+  const intersects = raycaster.intersectObjects(scenario.objects, true);
 
   const crosshairPoint = intersects[0]?.point || 
     raycaster.ray.direction.multiplyScalar(1000).add(camera.position);
@@ -71,7 +71,7 @@ export function moveBullet(scene) {
         const worldPosition = new THREE.Vector3();
         bullet.ball.getWorldPosition(worldPosition);
         
-        
+
         bullet.boundingBox.setFromCenterAndSize(
           worldPosition,
           new THREE.Vector3(BALL_BOX_SIZE, BALL_BOX_SIZE, BALL_BOX_SIZE)
@@ -108,7 +108,7 @@ function initBullet(camera) {
 
 // CRIA O CILINDRO (ARMA), ADICIONA A CAMERA NA CENA E A ARMA NA CAMERA
 // E INICIALIZA A PRIMEIRA BALA
-export function initGun(scene, camera) {
+export function initGun(camera) {
   const cylinderGeometry = new THREE.CylinderGeometry(
     GUN_SIZE.radius,
     GUN_SIZE.radius,

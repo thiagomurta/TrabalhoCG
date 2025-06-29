@@ -36,7 +36,7 @@ let scenario=S0.Scene0();
 scene.add(scenario); // Add the scenario to the scene
 scenario.translateY(-0.15);
 
-initGun(scene, camera);
+initGun(camera);
 let player = PL.instancePlayer(camera,scenario,renderer);
 scene.add(player);
 player.translateY(1);
@@ -63,7 +63,7 @@ renderer.domElement.addEventListener('mouseup', function (event) {
 
 function shootWhileHolding(scene, camera) {
     if (isMouseDown) {
-        initShootBall(scene, camera); // Call the shooting function
+        initShootBall(scenario, scene, camera); // Call the shooting function
     }
 }
 
