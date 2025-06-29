@@ -20,8 +20,8 @@ setDefaultMaterial(); // create a basic material
 
 // ---------------------Câmera---------------------
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0.0, 1.5, 0.0);
-camera.lookAt(new THREE.Vector3(0.0, 1.5, -1.0));
+camera.position.set(0.0, 2.0, 0.0);
+camera.lookAt(new THREE.Vector3(-1.5, 2.0, -100.0));
 
 initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 
@@ -44,8 +44,9 @@ initGun(scene, camera);
 let player = PL.instancePlayer(camera,scenario,renderer);
 scene.add(player);
 player.translateY(1);
+player.add(camera)
 
-const controls = new PointerLockControls(camera, renderer.domElement);
+const controls = new PointerLockControls(player, renderer.domElement);
 
 const blocker = document.getElementById('blocker');
 const instructions = document.getElementById('instructions');
@@ -53,11 +54,11 @@ const instructions = document.getElementById('instructions');
 // ---------------------Controles do mouse---------------------
 instructions.addEventListener('click', function () {
 
-    player.controls.lock();
+    controls.lock();
 
 }, false);
   
-player. controls.addEventListener('lock', function () {
+controls.addEventListener('lock', function () {
     crosshair.style.display = 'block'
     instructions.style.display = 'none';
     blocker.style.display = 'none';
@@ -115,8 +116,9 @@ function movementControls(key, value) { // if xabu , go back here
 
 function moveAnimate(delta) {
     raycaster.ray.origin.copy(controls.getObject().position);
-    const isIntersectingGround = raycaster.intersectObjects([plane, scenario.objects[0], scenario.objects[1], scenario.objects[2], scenario.objects[3], scenario.objects[4], scenario.objects[5], scenario.objects[6], scenario.objects[7]]).length > 0;
-    const isIntersectingRamp = raycaster.intersectObject([scenario.objects[0], scenario.objects[1], scenario.objects[2], scenario.objects[3]]).length > 0;
+    const isIntersectingGround = raycaster.intersectObjects([plane, scenario.objects[4], scenario.objects[5], scenario.objects[6], scenario.objects[7]]).length > 0;
+    const isIntersectingRamp = raycaster.intersectObjects([scenario.objects[0], scenario.objects[1], scenario.objects[2], scenario.objects[3]]).length > 0;
+    let newPosition = player.position.y
 
     if (moveForward) {
         controls.moveForward(speed * delta);
@@ -133,10 +135,15 @@ function moveAnimate(delta) {
     }
 
     if (isIntersectingRamp) {
-        camera.position.y += speed * delta;
+        player.position.y += speed * delta;
+        // newPosition = player.position.y
     }
-    if (!isIntersectingGround && camera.position.y > 1.5 && camera.position.y > 0) {
-        camera.position.y -= speed * delta;
+    if ((!isIntersectingRamp && !isIntersectingGround) && player.position.y !== newPosition/* && player.position.y === newPosition*/) {
+        player.position.y -= speed * delta;
+        newPosition = player.position.y
+    }
+    if (isIntersectingGround) {
+        player.position.y += speed * delta;
     }
 }
 
