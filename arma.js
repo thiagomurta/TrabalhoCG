@@ -44,10 +44,23 @@ export function shootBall(scenario, scene, camera) {
 
   const raycaster = new THREE.Raycaster();
   raycaster.setFromCamera(new THREE.Vector2(), camera); // (0,0) = screen center
-  const intersects = raycaster.intersectObjects(scenario.objects, true);
-
+  const LEFTMOST_BOX = scenario.objects[0];
+  const UPPER_MIDDLE_BOX = scenario.objects[1];
+  const RIGHTMOST_BOX = scenario.objects[2];
+  const LOWER_MIDDLE_BOX = scenario.objects[3];
+  const NORTH_WALL = scenario.objects[4];
+  const SOUTH_WALL = scenario.objects[5];
+  const LEFT_WALL = scenario.objects[6];
+  const RIGHT_WALL = scenario.objects[7];
+  const PLANE = scene.children[0];
+  const intersects = raycaster.intersectObjects([PLANE,
+    LEFTMOST_BOX, UPPER_MIDDLE_BOX, RIGHTMOST_BOX, LOWER_MIDDLE_BOX,
+    NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL]); // true for recursive intersection
+    console.log('intersects', intersects, 'point of intersection', intersects[0]?.point); 
   const crosshairPoint = intersects[0]?.point || 
     raycaster.ray.direction.multiplyScalar(1000).add(camera.position);
+  
+    bulletObj.targetPoint = crosshairPoint; 
   
   bulletObj.velocity.copy(crosshairPoint).sub(muzzleWorld).normalize()
     .multiplyScalar(BALL_SPEED);
@@ -59,11 +72,22 @@ export function shootBall(scenario, scene, camera) {
 }
 
 // PARA CADA BALA NA CENA, TRANSLADA O Z SE MOVIMENTAÇÃO HABILITADA
-export function moveBullet(scene) {
+export function moveBullet(scene, camera) {
   for (let i = 0; i < ballArray.length; i++) {
     const bullet = ballArray[i];
     const ball = bullet.ball; 
     if (bullet.isShooting) {
+      const distanceToTarget = ball.position.distanceTo(bullet.targetPoint);
+
+      if (distanceToTarget <= BALL_SPEED) {
+        bullet.isShooting = false; // Stop movement
+        //remove bullet from the scene
+        scene.remove(ball);
+        ballArray.splice(i, 1);
+        i--;
+        initBullet(camera);
+        continue; // Skip further processing for this bullet
+      }
 
       bullet.ball.position.add(bullet.velocity);
       if (bullet.boundingBox) {
@@ -100,7 +124,8 @@ function initBullet(camera) {
     ball: ball, 
     isShooting: false,
     boundingBox: null,
-    velocity: new THREE.Vector3()
+    velocity: new THREE.Vector3(),
+    targetPoint: new THREE.Vector3() 
   }); //set when shot
 
   camera.add(ball);

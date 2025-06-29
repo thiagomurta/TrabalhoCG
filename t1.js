@@ -176,7 +176,7 @@ function render() {
     if (controls.isLocked) {
         moveAnimate(clock.getDelta());
     }
-    moveBullet(); // will move bullet if its isShooting attribute is truthy
+    moveBullet(scene, camera); // will move bullet if its isShooting attribute is truthy
     renderer.render(scene, camera) // Render scene
     requestAnimationFrame(render);
 }
