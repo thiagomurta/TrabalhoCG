@@ -7,24 +7,26 @@ import {initRenderer,
         createGroundPlaneXZ                } from "../libs/util/util.js";
 import * as S0 from "./scene0.js";
 import * as PL from "./player.js";
+import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
 import {initGun, moveBullet, initShootBall} from "./arma.js";
 
 // ---------------------Configuração inicial---------------------
-let scene, renderer, material;
+let scene, renderer;
 scene = new THREE.Scene();    // Create main scene
 renderer = initRenderer();    // View function in util/utils
 initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 var stats = new Stats();
-material = setDefaultMaterial(); // create a basic material
+setDefaultMaterial(); // create a basic material
 
 // ---------------------Câmera---------------------
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0.0, 0.5, 0.0);
-camera.lookAt(new THREE.Vector3(0.0, 0.5, -1.0));
+camera.position.set(0.0, 2.0, 0.0);
+camera.lookAt(new THREE.Vector3(-1.5, 2.0, -100.0));
 
 initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 
 const crosshair = document.querySelector('.crosshair');
+const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0).normalize(), 0, 2);
 
 // ---------------------Ambiente---------------------
 
@@ -40,11 +42,16 @@ initGun(camera);
 let player = PL.instancePlayer(camera,scenario,renderer);
 scene.add(player);
 player.translateY(1);
+player.add(camera)
+
+const controls = new PointerLockControls(player, renderer.domElement);
+
+const blocker = document.getElementById('blocker');
+const instructions = document.getElementById('instructions');
 
 // ---------------------Controles do mouse---------------------
 instructions.addEventListener('click', function () {
-    player.controls.lock();
-
+    controls.lock();
 }, false);
 
 let isMouseDown = false; // Track whether the mouse button is held down
@@ -67,13 +74,13 @@ function shootWhileHolding(scene, camera) {
     }
 }
 
-player. controls.addEventListener('lock', function () {
+controls.addEventListener('lock', function () {
     crosshair.style.display = 'block'
     instructions.style.display = 'none';
     blocker.style.display = 'none';
 });
 
-player.controls.addEventListener('unlock', function () {
+controls.addEventListener('unlock', function () {
     crosshair.style.display = 'none';
     blocker.style.display = 'block';
     instructions.style.display = '';
@@ -81,9 +88,13 @@ player.controls.addEventListener('unlock', function () {
 
 // ---------------------Controles de teclado---------------------
 
-window.addEventListener('keydown', (event) => movementControls(event.keyCode))
-window.addEventListener('keyup', (event) => movementControls(event.keyCode))
+window.addEventListener('keydown', (event) => movementControls(event.keyCode, true));
+window.addEventListener('keyup', (event) => movementControls(event.keyCode, false));
 
+
+scene.add(controls.getObject());
+
+const speed = 20;
 const KEY_S = 83;
 const KEY_W = 87;
 const KEY_A = 65;
@@ -92,36 +103,80 @@ const KEY_ARROW_LEFT = 37;
 const KEY_ARROW_UP = 38;
 const KEY_ARROW_RIGHT = 39;
 const KEY_ARROW_DOWN = 40;
+// const SHOOT = ;
+let moveForward = false;
+let moveBackward = false;
+let moveLeft = false;
+let moveRight = false;
+// let shoot = false;
 
-function movementControls(key) { // if xabu , go back here
-    if (key === KEY_W || key === KEY_ARROW_UP){
-        player.moveFoward();
+function movementControls(key, value) { // if xabu , go back here
+    switch (key) {
+        case KEY_W || KEY_ARROW_UP: // W
+            moveForward = value;
+            break;
+        case KEY_S || KEY_ARROW_DOWN: // S
+            moveBackward = value;
+            break;
+        case KEY_A || KEY_ARROW_LEFT: // A
+            moveLeft = value;
+            break;
+        case KEY_D || KEY_ARROW_RIGHT: // D
+            moveRight = value;
+            break;
+        // case SHOOT:
+        //     shoot = value;
+        //     break;
     }
-    else if (key === KEY_S || key === KEY_ARROW_DOWN){
-        player.moveBack();
+}
+
+function moveAnimate(delta) {
+    raycaster.ray.origin.copy(controls.getObject().position);
+    const isIntersectingGround = raycaster.intersectObjects([plane, scenario.objects[4], scenario.objects[5], scenario.objects[6], scenario.objects[7]]).length > 0;
+    const isIntersectingRamp = raycaster.intersectObjects([scenario.objects[0], scenario.objects[1], scenario.objects[2], scenario.objects[3]]).length > 0;
+    let newPosition = player.position.y
+
+    if (moveForward) {
+        controls.moveForward(speed * delta);
+
     }
-    else if (key === KEY_A || key === KEY_ARROW_LEFT){
-        player.moveLeft();
+    else if (moveBackward) {
+        controls.moveForward(speed * -1 * delta);
     }
-    else if (key === KEY_D || key === KEY_ARROW_RIGHT){
-        player.moveRight();
+
+    if (moveRight) {
+        controls.moveRight(speed * delta);
     }
-    player.position.lerp(player.lerp.destination, player.lerp.alpha);
+    else if (moveLeft) {
+        controls.moveRight(speed * -1 * delta);
+    }
+
+    if (isIntersectingRamp) {
+        player.position.y += speed * delta;
+        // newPosition = player.position.y
+    }
+    if ((!isIntersectingRamp && !isIntersectingGround) && player.position.y !== newPosition/* && player.position.y === newPosition*/) {
+        player.position.y -= speed * delta;
+        newPosition = player.position.y
+    }
+    if (isIntersectingGround) {
+        player.position.y += speed * delta;
+    }
 }
 
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
 
 
+const clock = new THREE.Clock();
 render();
 
 function render() {
-   stats.update();
-
-   shootWhileHolding(scene, camera); // will shoot if mouse is down
-
-   moveBullet(); // will move bullet if its isShooting attribute is truthy
-
-
-   renderer.render(scene, camera) // Render scene
-   requestAnimationFrame(render);
+    stats.update();
+    shootWhileHolding(scene, camera); // will shoot if mouse is down
+    if (controls.isLocked) {
+        moveAnimate(clock.getDelta());
+    }
+    moveBullet(); // will move bullet if its isShooting attribute is truthy
+    renderer.render(scene, camera) // Render scene
+    requestAnimationFrame(render);
 }
