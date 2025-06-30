@@ -160,8 +160,10 @@ function moveAnimate(delta) {
     const LEFT_WALL = scenario.objects[6];
     const RIGHT_WALL = scenario.objects[7];
 
-    const isIntersectingGround = raycaster.intersectObjects([plane, NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL]).length > 0;
+    const isIntersectingGround = raycaster.intersectObjects([NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL]).length > 0;
+    const isIntersectingWall = raycaster.intersectObjects([NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL]).length > 0;
     const isIntersectingRamp = raycaster.intersectObjects([LEFTMOST_BOX, UPPER_MIDDLE_BOX, RIGHTMOST_BOX, LOWER_MIDDLE_BOX]).length > 0;
+    const isIntersectingPlane = raycaster.intersectObject(plane).length > 0;
     let newPosition = player.position.y
 
     if (moveForward) {
