@@ -8,7 +8,7 @@ import {initRenderer,
 import * as S0 from "./scene0.js";
 import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
 import {initGun, moveBullet, initShootBall} from "./arma.js";
-import { CSG } from '../libs/other/CSGMesh.js';
+import * as CHAVE from './chave.js';
 
 // ---------------------Configuração inicial---------------------
 let scene, renderer;
@@ -95,22 +95,9 @@ window.addEventListener('keyup', (event) => movementControls(event.keyCode, fals
 scene.add(controls.getObject());
 // ---------------------Criando a Mesh que vai ser usada---------------------
 
-let cubeMesh = new THREE.Mesh(new THREE.BoxGeometry(2,2,2));
-let cylinderMesh = new THREE.Mesh(new THREE.CylinderGeometry(1,1,1));
-// let csg = new CSG();
+let csgFinal = CHAVE.CHAVE();
 
-cubeMesh.position.set(0, 1, 0)
-cubeMesh.matrixAutoUpdate = false;
-cubeMesh.updateMatrix();
-
-let cubeCSG = CSG.fromMesh(cubeMesh);
-let cylinder = CSG.fromMesh(cylinderMesh);
-let csgObject = cubeCSG.subtract(cylinder);
-
-let csgFinal = CSG.toMesh(csgObject, new THREE.Matrix4());
-csgFinal.material = new THREE.MeshPhongMaterial({color: 'lightgreen'})
-
-scene.add(csgFinal)
+scene.add(csgFinal);
 
 
 const speed = 20;
