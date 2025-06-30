@@ -56,7 +56,7 @@ export function shootBall(scenario, scene, camera) {
   const intersects = raycaster.intersectObjects([PLANE,
     LEFTMOST_BOX, UPPER_MIDDLE_BOX, RIGHTMOST_BOX, LOWER_MIDDLE_BOX,
     NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL]); // true for recursive intersection
-    console.log('intersects', intersects, 'point of intersection', intersects[0]?.point); 
+
   const crosshairPoint = intersects[0]?.point || 
     raycaster.ray.direction.multiplyScalar(1000).add(camera.position);
   
