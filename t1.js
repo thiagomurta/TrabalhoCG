@@ -6,9 +6,9 @@ import {initRenderer,
         onWindowResize,
         createGroundPlaneXZ                } from "../libs/util/util.js";
 import * as S0 from "./scene0.js";
-import * as PL from "./player.js";
 import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
 import {initGun, moveBullet, initShootBall} from "./arma.js";
+import { CSG } from '../libs/other/CSGMesh.js';
 
 // ---------------------Configuração inicial---------------------
 let scene, renderer;
@@ -41,7 +41,7 @@ scene.add(scenario); // Add the scenario to the scene
 scenario.translateY(-0.15);
 
 initGun(scene, camera);
-let player = PL.instancePlayer(camera,scenario,renderer);
+let player = new THREE.Mesh(new THREE.BoxGeometry(1,2,1),setDefaultMaterial());
 scene.add(player);
 player.translateY(1);
 player.add(camera)
@@ -77,6 +77,25 @@ window.addEventListener('keyup', (event) => movementControls(event.keyCode, fals
 
 
 scene.add(controls.getObject());
+// ---------------------Criando a Mesh que vai ser usada---------------------
+
+let cubeMesh = new THREE.Mesh(new THREE.BoxGeometry(2,2,2));
+let cylinderMesh = new THREE.Mesh(new THREE.CylinderGeometry(1,1,1));
+// let csg = new CSG();
+
+cubeMesh.position.set(0, 1, 0)
+cubeMesh.matrixAutoUpdate = false;
+cubeMesh.updateMatrix();
+
+let cubeCSG = CSG.fromMesh(cubeMesh);
+let cylinder = CSG.fromMesh(cylinderMesh);
+let csgObject = cubeCSG.subtract(cylinder);
+
+let csgFinal = CSG.toMesh(csgObject, new THREE.Matrix4());
+csgFinal.material = new THREE.MeshPhongMaterial({color: 'lightgreen'})
+
+scene.add(csgFinal)
+
 
 const speed = 20;
 const KEY_S = 83;
@@ -116,9 +135,11 @@ function movementControls(key, value) { // if xabu , go back here
 
 function moveAnimate(delta) {
     raycaster.ray.origin.copy(controls.getObject().position);
-    const isIntersectingGround = raycaster.intersectObjects([plane, scenario.objects[4], scenario.objects[5], scenario.objects[6], scenario.objects[7]]).length > 0;
+    const isIntersectingGround = raycaster.intersectObjects([scenario.objects[0], scenario.objects[1], scenario.objects[2], scenario.objects[3]]).length > 0;
+    const isIntersectingWall = raycaster.intersectObjects([scenario.objects[4], scenario.objects[5], scenario.objects[6], scenario.objects[7]]).length > 0;
+    const isIntersectingPlane = raycaster.intersectObject(plane).length > 0;
     const isIntersectingRamp = raycaster.intersectObjects([scenario.objects[0], scenario.objects[1], scenario.objects[2], scenario.objects[3]]).length > 0;
-    let newPosition = player.position.y
+    // let newPosition = player.position.y
 
     if (moveForward) {
         controls.moveForward(speed * delta);
@@ -136,14 +157,15 @@ function moveAnimate(delta) {
 
     if (isIntersectingRamp) {
         player.position.y += speed * delta;
-        // newPosition = player.position.y
     }
-    if ((!isIntersectingRamp && !isIntersectingGround) && player.position.y !== newPosition/* && player.position.y === newPosition*/) {
+
+    if ((!isIntersectingRamp && !isIntersectingPlane && !isIntersectingGround)) {
         player.position.y -= speed * delta;
-        newPosition = player.position.y
+        console.log("aqui");
     }
-    if (isIntersectingGround) {
-        player.position.y += speed * delta;
+
+    if (isIntersectingWall) {
+        console.log("bateu na parede");
     }
 }
 
