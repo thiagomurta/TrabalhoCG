@@ -32,15 +32,13 @@ const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, 
 
 let plane = createGroundPlaneXZ(500, 500);
  scene.add(plane);
-//let planePhantomBox = new THREE.Mesh(new THREE.BoxGeometry(width, height, length), material);
- 
    // center.plane.translateY(+0.15);
 
 let scenario=S0.Scene0();
 scene.add(scenario); // Add the scenario to the scene
 scenario.translateY(-0.15);
 
-initGun(scene, camera);
+initGun(camera);
 let player = new THREE.Mesh(new THREE.BoxGeometry(1,2,1),setDefaultMaterial());
 scene.add(player);
 player.translateY(1);
@@ -53,11 +51,29 @@ const instructions = document.getElementById('instructions');
 
 // ---------------------Controles do mouse---------------------
 instructions.addEventListener('click', function () {
-
     controls.lock();
-
 }, false);
-  
+
+let isMouseDown = false; // Track whether the mouse button is held down
+
+renderer.domElement.addEventListener('mousedown', function (event) {
+    if (event.button === 2 || (event.button === 0 && crosshair.style.display === 'block')) { // Right mouse button or left mouse button when crosshair is visible
+        isMouseDown = true; 
+    }
+}, false);
+
+renderer.domElement.addEventListener('mouseup', function (event) {
+    if (event.button === 2 || event.button === 0) { // Right or left mouse button
+        isMouseDown = false; // Set the flag to false
+    }
+}, false);
+
+function shootWhileHolding(scene, camera) {
+    if (isMouseDown) {
+        initShootBall(scenario, scene, camera); // Call the shooting function
+    }
+}
+
 controls.addEventListener('lock', function () {
     crosshair.style.display = 'block'
     instructions.style.display = 'none';
@@ -135,14 +151,22 @@ function movementControls(key, value) { // if xabu , go back here
 
 function moveAnimate(delta) {
     raycaster.ray.origin.copy(controls.getObject().position);
-    const isIntersectingGround = raycaster.intersectObjects([scenario.objects[0], scenario.objects[1], scenario.objects[2], scenario.objects[3]]).length > 0;
-    const isIntersectingWall = raycaster.intersectObjects([scenario.objects[4], scenario.objects[5], scenario.objects[6], scenario.objects[7]]).length > 0;
-    const isIntersectingPlane = raycaster.intersectObject(plane).length > 0;
-    const isIntersectingRamp = raycaster.intersectObjects([scenario.objects[0], scenario.objects[1], scenario.objects[2], scenario.objects[3]]).length > 0;
-    // let newPosition = player.position.y
+    const LEFTMOST_BOX = scenario.objects[0];
+    const UPPER_MIDDLE_BOX = scenario.objects[1];
+    const RIGHTMOST_BOX = scenario.objects[2];
+    const LOWER_MIDDLE_BOX = scenario.objects[3];
+    const NORTH_WALL = scenario.objects[4];
+    const SOUTH_WALL = scenario.objects[5];
+    const LEFT_WALL = scenario.objects[6];
+    const RIGHT_WALL = scenario.objects[7];
+
+    const isIntersectingGround = raycaster.intersectObjects([plane, NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL]).length > 0;
+    const isIntersectingRamp = raycaster.intersectObjects([LEFTMOST_BOX, UPPER_MIDDLE_BOX, RIGHTMOST_BOX, LOWER_MIDDLE_BOX]).length > 0;
+    let newPosition = player.position.y
 
     if (moveForward) {
         controls.moveForward(speed * delta);
+
     }
     else if (moveBackward) {
         controls.moveForward(speed * -1 * delta);
@@ -176,15 +200,12 @@ const clock = new THREE.Clock();
 render();
 
 function render() {
-   stats.update();
-
+    stats.update();
+    shootWhileHolding(scene, camera); // will shoot if mouse is down
     if (controls.isLocked) {
         moveAnimate(clock.getDelta());
     }
-
-   moveBullet(); // will move bullet if its isShooting attribute is truthy
-
-
-   renderer.render(scene, camera) // Render scene
-   requestAnimationFrame(render);
+    moveBullet(scene, camera); // will move bullet if its isShooting attribute is truthy
+    renderer.render(scene, camera) // Render scene
+    requestAnimationFrame(render);
 }
