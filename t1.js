@@ -132,8 +132,17 @@ function movementControls(key, value) { // if xabu , go back here
 
 function moveAnimate(delta) {
     raycaster.ray.origin.copy(controls.getObject().position);
-    const isIntersectingGround = raycaster.intersectObjects([plane, scenario.objects[4], scenario.objects[5], scenario.objects[6], scenario.objects[7]]).length > 0;
-    const isIntersectingRamp = raycaster.intersectObjects([scenario.objects[0], scenario.objects[1], scenario.objects[2], scenario.objects[3]]).length > 0;
+    const LEFTMOST_BOX = scenario.objects[0];
+    const UPPER_MIDDLE_BOX = scenario.objects[1];
+    const RIGHTMOST_BOX = scenario.objects[2];
+    const LOWER_MIDDLE_BOX = scenario.objects[3];
+    const NORTH_WALL = scenario.objects[4];
+    const SOUTH_WALL = scenario.objects[5];
+    const LEFT_WALL = scenario.objects[6];
+    const RIGHT_WALL = scenario.objects[7];
+
+    const isIntersectingGround = raycaster.intersectObjects([plane, NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL]).length > 0;
+    const isIntersectingRamp = raycaster.intersectObjects([LEFTMOST_BOX, UPPER_MIDDLE_BOX, RIGHTMOST_BOX, LOWER_MIDDLE_BOX]).length > 0;
     let newPosition = player.position.y
 
     if (moveForward) {
