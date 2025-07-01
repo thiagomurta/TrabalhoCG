@@ -4,7 +4,8 @@ export function genStair(width,height,length,number_of_steps,materialForStair)
 {
     
     let centerGeometry=new THREE.BoxGeometry(0.1,0.1,0.1);
-    let center=new THREE.Mesh(centerGeometry,materialForStair);
+    let center=new THREE.Mesh(centerGeometry,materialForStair); // center: is on ground level, under the topmost step and at left  of the lowest step (using a vertical profile obtained by a cut with y - vertical - and z -horizontal .)
+                                                                // at the 3d space(representation), center would be under the topmost step and on an z line with the lowest. x is on the exact middle of width;  
     let l_p_step=length/number_of_steps;
     let h_p_step=height/number_of_steps;
     let step_array=new Array();

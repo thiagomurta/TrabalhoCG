@@ -11,16 +11,16 @@ import {
 export function Scene0()
 {
     let material0 = setDefaultMaterial("lightgreen");
-    let bu0=SL.genStairedLevel(100,6,100,33,10,8,material0);
+    let bu0=SL.genStairedLevel(100,6,100,33,10,8,material0,-0.25);
     
     let material1 = setDefaultMaterial();
-    let bu1=SL.genStairedLevel(100,6,100,33,10,8,material1);
+    let bu1=SL.genStairedLevel(100,6,100,33,10,8,material1,0);
 
     let material2 = setDefaultMaterial("lightblue");
-    let bu2=SL.genStairedLevel(100,6,100,33,10,8,material2);
+    let bu2=SL.genStairedLevel(100,6,100,33,10,8,material2,0.25);
 
     let material3 = setDefaultMaterial("lightyellow");
-    let bd0=SL.genStairedLevel(300,6,100,33,10,8, material3);
+    let bd0=SL.genStairedLevel(300,6,100,33,10,8, material3,0);
     bd0.rotateYC(Math.PI);
     
     let wallU=new THREE.Mesh(new THREE.BoxGeometry(500,40,0.1),setDefaultMaterial("lightgrey"));
