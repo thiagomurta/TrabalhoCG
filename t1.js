@@ -8,6 +8,7 @@ import {initRenderer,
 import * as S0 from "./scene0.js";
 import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
 import {initGun, moveBullet, initShootBall} from "./arma.js";
+import * as CHAVE from './chave.js';
 import { CSG } from '../libs/other/CSGMesh.js';
 import { loadEnemies } from './inimigos.js';
 
@@ -31,7 +32,7 @@ const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, 
 
 // ---------------------Ambiente---------------------
 
-let plane = createGroundPlaneXZ(500, 500);
+let plane = createGroundPlaneXZ(500, 500, 10, 10, "rgb(53, 48, 48)");
  scene.add(plane);
    // center.plane.translateY(+0.15);
 
@@ -111,7 +112,7 @@ let csgObject = cubeCSG.subtract(cylinder);
 let csgFinal = CSG.toMesh(csgObject, new THREE.Matrix4());
 csgFinal.material = new THREE.MeshPhongMaterial({color: 'lightgreen'})
 
-scene.add(csgFinal)
+scene.add(csgFinal);
 
 let enemies = await loadEnemies(scene);
 

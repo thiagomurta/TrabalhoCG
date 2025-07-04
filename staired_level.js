@@ -7,12 +7,12 @@ import {initRenderer,
         onWindowResize,
         createGroundPlaneXZ                } from "../libs/util/util.js";
 
-export function genStairedLevel(width, height, length, stair_w, stair_l, number_of_steps, material) {
+export function genStairedLevel(width, height, length, stair_w, stair_l, number_of_steps, material,stair_displacement) {
     // Main container
     let center = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1), material);
     center.offset=5;
     // Visible geometry
-    let vaultedBox = GB.genBox(width, height, length, stair_w, stair_l, material);
+    let vaultedBox = GB.genBox(width, height, length, stair_w, stair_l, material,stair_displacement);
     center.add(vaultedBox);
     vaultedBox.translateY(-0.05);
 
@@ -21,6 +21,7 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
     center.add(stair);
     stair.translateZ(+(length/2 - stair_l));
     stair.translateY(-0.05);
+    stair.translateX(stair_displacement*width);
 
     // Collision phantom box (invisible)
     let phantomBox = new THREE.Mesh(new THREE.BoxGeometry(width, height, length), material);
@@ -42,22 +43,22 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
 
     // Calculate stair points
     const stairDLeft = new THREE.Vector3(
-        center.position.x - stair_w/2,
+        center.position.x - stair_w/2+stair_displacement,
         0,
         center.position.z + length/2
     );
     const stairDRight = new THREE.Vector3(
-        center.position.x + stair_w/2,
+        center.position.x + stair_w/2+stair_displacement,
         0,
         center.position.z + length/2
     );
     const stairULeft = new THREE.Vector3(
-        center.position.x - stair_w/2,
+        center.position.x - stair_w/2+stair_displacement,
         height,
         center.position.z + length/2 - stair_l
     );
     const stairURight = new THREE.Vector3(
-        center.position.x + stair_w/2,
+        center.position.x + stair_w/2+stair_displacement,
         height,
         center.position.z + length/2 - stair_l
     );

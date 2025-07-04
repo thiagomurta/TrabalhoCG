@@ -1,14 +1,16 @@
 import * as THREE from  'three';
 
-export function genBox(width,height,length,stair_w,stair_l,materialForBox)
+export function genBox(width,height,length,stair_w,stair_l,materialForBox,stair_displacement,/*material_right*/) // uncomment so see the diference between right box and the rest (would need to pass an aditional material at the end)
 {
-    let BoxGeometry0=new THREE.BoxGeometry((width-stair_w)/2,height,length);
-    let BoxGeometry1=new THREE.BoxGeometry(stair_w,height,length-stair_l);
-    let subBox1=new THREE.Mesh(BoxGeometry0,materialForBox);
-    let subBox2=new THREE.Mesh(BoxGeometry0,materialForBox);
-    let subBox0=new THREE.Mesh(BoxGeometry1,materialForBox);
+    let BoxGeometryLeft=new THREE.BoxGeometry((width-stair_w)/2 + (stair_displacement*width),height,length);
+    let BoxGeometryRight=new THREE.BoxGeometry((width-stair_w)/2 - (stair_displacement*width),height,length);
+
+    let BoxGeometryUp=new THREE.BoxGeometry(stair_w,height,length-stair_l);
+    let subBox1=new THREE.Mesh(BoxGeometryLeft,materialForBox);
+    let subBox2=new THREE.Mesh(BoxGeometryRight,materialForBox/*material_right*/);
+    let subBox0=new THREE.Mesh(BoxGeometryUp,materialForBox);
     let center=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.1),materialForBox);
-    center.lowerBox=subBox0;
+    center.upperBox=subBox0;
     center.leftBox=subBox1;
     center.rightBox=subBox2;
 
@@ -18,15 +20,18 @@ export function genBox(width,height,length,stair_w,stair_l,materialForBox)
     center.stair_l=stair_l;
     center.stair_w=stair_w;
 
-    center.add(center.lowerBox);
+    center.add(center.upperBox);
     center.add(center.leftBox);
     center.add(center.rightBox);
 
-    center.lowerBox.translateZ(-stair_l/2);
-    center.leftBox.translateX(-(width-stair_w)/4 -(stair_w/2));
-    center.rightBox.translateX((width-stair_w)/4 + (stair_w/2));
+    center.upperBox.translateZ(-stair_l/2);
+    center.upperBox.translateX(+stair_displacement*width); // since upper is paralel to the stairs, it needs to be translated with it's displacement
 
-    center.lowerBox.translateY(height/2);
+    center.leftBox.translateX(-((width-stair_w)/2 + (stair_displacement*width))/2-(stair_w/2-stair_displacement*width));
+    center.rightBox.translateX(((width-stair_w)/2 - (stair_displacement*width))/2+(stair_w/2+stair_displacement*width));
+    
+
+    center.upperBox.translateY(height/2);
     center.leftBox.translateY(height/2);
     center.rightBox.translateY(height/2);
 
