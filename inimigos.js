@@ -1,6 +1,96 @@
+import * as THREE from  'three';
 import {GLTFLoader} from '../build/jsm/loaders/GLTFLoader.js';
 import {OBJLoader} from '../build/jsm/loaders/OBJLoader.js';
 import {MTLLoader} from '../build/jsm/loaders/MTLLoader.js';
+import { getMaxSize } from "../libs/util/util.js";
+
+
+
+// ----------------------- INIMIGOS -------------------------
+function normalizeAndRescale(obj, newScale)
+{
+  var scale = getMaxSize(obj); 
+  obj.scale.set(newScale * (1.0/scale),
+                newScale * (1.0/scale),
+                newScale * (1.0/scale));
+  return obj;
+}
+
+function fixPosition(obj)
+{
+  // Fix position of the object over the ground plane
+  var box = new THREE.Box3().setFromObject( obj );
+  if(box.min.y > 0)
+    obj.translateY(-box.min.y);
+  else
+    obj.translateY(-1*box.min.y);
+  return obj;
+}
+
+async function loadCocoDemon(scene) {
+    try {
+        let cocoDemon = await initCocoDemon();
+
+        cocoDemon = normalizeAndRescale(cocoDemon, 5);
+        cocoDemon = fixPosition(cocoDemon);
+        scene.add(cocoDemon);
+        return cocoDemon;
+    } catch (error) {
+        console.error('Error loading cocodemon: ', error);
+    }
+}
+
+async function loadSkull(scene) {
+    try {
+        let skull = await initSkull();
+
+        skull = normalizeAndRescale(skull, 5);
+        skull = fixPosition(skull);
+        scene.add(skull);
+        return skull;
+    } catch(error) {
+        console.error('Error loading skull: ', error);
+    }
+}
+
+export async function loadEnemies(scene) {
+    let skulls = [];
+    let cocodemons = [];
+    let i = 0;
+
+    for (let j = 0; j < 5; j++) {
+        const skull = await loadSkull(scene); 
+        skulls.push({ obj: skull, id: i++ });
+    }
+
+    for (let j = 0; j < 3; j++) {
+        const cocodemon = await loadCocoDemon(scene); 
+        cocodemons.push({ obj: cocodemon, id: i++ });
+    }
+
+    for (let skull of skulls){
+        skull.obj.translateZ(-150);
+        skull.obj.translateY(6);
+
+        let deltaX = Math.random() * 100 - 50;
+        let deltaZ = Math.random() * 100 - 50;
+        skull.obj.translateZ(deltaZ);
+        skull.obj.translateX(deltaX);
+    }
+
+    for (let cocodemon of cocodemons){
+        cocodemon.obj.translateZ(-150);
+        cocodemon.obj.translateY(6);
+        cocodemon.obj.translateX(-125);
+
+        let deltaX = Math.random() * 100 - 50;
+        let deltaZ = Math.random() * 100 - 50;
+        cocodemon.obj.translateZ(deltaZ);
+        cocodemon.obj.translateX(deltaX);
+    }
+
+    return { skulls, cocodemons }; // Return the loaded enemies
+}
 
 
 export function initCocoDemon() {
@@ -22,7 +112,7 @@ export function initCocoDemon() {
 }
 
 export function initSkull(){
-    let model;
+
     let mtlloader = new MTLLoader();
     let objloader = new OBJLoader();
     return new Promise((resolve, reject) => {
@@ -30,14 +120,13 @@ export function initSkull(){
             materials.preload();
 
             objloader.setMaterials(materials);
-            objloader.setPath(modelPath);
+            //objloader.setPath(modelPath);
             objloader.load('./2025.1_T2_Assets/skull.obj', function     ( obj ) {
-                model = obj.scene;
-                model.traverse ( function(child){
+                obj.traverse ( function(child){
                     if (child) child.castShadow = true;
                 });
 
-                resolve(model);
+                resolve(obj);
             }, undefined, function (error) {
                 reject(error); 
             });

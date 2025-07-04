@@ -4,13 +4,12 @@ import {initRenderer,
         initDefaultBasicLight,
         setDefaultMaterial, 
         onWindowResize,
-        createGroundPlaneXZ,
-        getMaxSize                } from "../libs/util/util.js";
+        createGroundPlaneXZ } from "../libs/util/util.js";
 import * as S0 from "./scene0.js";
 import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
 import {initGun, moveBullet, initShootBall} from "./arma.js";
 import { CSG } from '../libs/other/CSGMesh.js';
-import { initCocoDemon } from './inimigos.js';
+import { loadEnemies } from './inimigos.js';
 
 // ---------------------Configuração inicial---------------------
 let scene, renderer;
@@ -114,43 +113,9 @@ csgFinal.material = new THREE.MeshPhongMaterial({color: 'lightgreen'})
 
 scene.add(csgFinal)
 
+let enemies = await loadEnemies(scene);
 
 
-// ----------------------- INIMIGOS -------------------------
-function normalizeAndRescale(obj, newScale)
-{
-  var scale = getMaxSize(obj); 
-  obj.scale.set(newScale * (1.0/scale),
-                newScale * (1.0/scale),
-                newScale * (1.0/scale));
-  return obj;
-}
-
-async function loadCocoDemon(scene) {
-    try {
-        let cocoDemon = await initCocoDemon();
-
-        cocoDemon = normalizeAndRescale(cocoDemon, 5);
-        scene.add(cocoDemon);
-    } catch (error) {
-        console.error('Error loading cocodemon: ', error);
-    }
-}
-
-async function loadSkull(scene) {
-    try {
-        let skull = await initSkull();
-
-        skull = normalizeAndRescale(skull, 5);
-        scene.add(skull);
-
-    } catch(error) {
-        console.error('Error loading skull: ', error);
-    }
-}
-
-loadCocoDemon(scene);
-loadSkull(scene);
 
 // ------------ CONTROLES DO TECLADO --------------
 
@@ -163,6 +128,7 @@ const KEY_ARROW_LEFT = 37;
 const KEY_ARROW_UP = 38;
 const KEY_ARROW_RIGHT = 39;
 const KEY_ARROW_DOWN = 40;
+const KEY_SPACE = 32;
 // const SHOOT = ;
 let moveForward = false;
 let moveBackward = false;
@@ -183,6 +149,9 @@ function movementControls(key, value) { // if xabu , go back here
             break;
         case KEY_D || KEY_ARROW_RIGHT: // D
             moveRight = value;
+            break;
+        case KEY_SPACE: // Space
+            console.log("Player position: ", player.position);
             break;
         // case SHOOT:
         //     shoot = value;
