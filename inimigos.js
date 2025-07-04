@@ -4,6 +4,14 @@ import {OBJLoader} from '../build/jsm/loaders/OBJLoader.js';
 import {MTLLoader} from '../build/jsm/loaders/MTLLoader.js';
 import { getMaxSize } from "../libs/util/util.js";
 
+const AREA_DIMENSION = 100;
+const AREAS_Z = -150;
+const AREAS_Y = 6;
+const UPPER_LEFT_AREA_X = -125;
+
+const ENEMIES_SCALE = 5;
+
+
 
 
 // ----------------------- INIMIGOS -------------------------
@@ -44,7 +52,7 @@ async function loadSkull(scene) {
     try {
         let skull = await initSkull();
 
-        skull = normalizeAndRescale(skull, 5);
+        skull = normalizeAndRescale(skull, ENEMIES_SCALE);
         skull = fixPosition(skull);
         scene.add(skull);
         return skull;
@@ -60,33 +68,43 @@ export async function loadEnemies(scene) {
 
     for (let j = 0; j < 5; j++) {
         const skull = await loadSkull(scene); 
-        skulls.push({ obj: skull, id: i++ });
+        skulls.push({ obj: skull, id: i++, boundingBox: new THREE.Box3().setFromObject(skull) });
     }
 
     for (let j = 0; j < 3; j++) {
         const cocodemon = await loadCocoDemon(scene); 
-        cocodemons.push({ obj: cocodemon, id: i++ });
+        cocodemons.push({ obj: cocodemon, id: i++, boundingBox: new THREE.Box3().setFromObject(cocodemon) });
     }
 
     for (let skull of skulls){
-        skull.obj.translateZ(-150);
-        skull.obj.translateY(6);
+        skull.obj.translateZ(AREAS_Z);
+        skull.obj.translateY(AREAS_Y);
 
-        let deltaX = Math.random() * 100 - 50;
-        let deltaZ = Math.random() * 100 - 50;
-        skull.obj.translateZ(deltaZ);
-        skull.obj.translateX(deltaX);
+        const DELTA_X = Math.random() * AREA_DIMENSION - (AREA_DIMENSION / 2);
+        const DELTA_Z = Math.random() * AREA_DIMENSION - (AREA_DIMENSION / 2);
+        skull.obj.translateZ(DELTA_Z);
+        skull.obj.translateX(DELTA_X);
+
+        skull.boundingBox.setFromCenterAndSize(
+            skull.obj.position,
+            new THREE.Vector3(ENEMIES_SCALE, ENEMIES_SCALE, ENEMIES_SCALE)
+        );
     }
 
     for (let cocodemon of cocodemons){
-        cocodemon.obj.translateZ(-150);
-        cocodemon.obj.translateY(6);
-        cocodemon.obj.translateX(-125);
+        cocodemon.obj.translateZ(AREAS_Z);
+        cocodemon.obj.translateY(AREAS_Y);
+        cocodemon.obj.translateX(UPPER_LEFT_AREA_X);
 
-        let deltaX = Math.random() * 100 - 50;
-        let deltaZ = Math.random() * 100 - 50;
-        cocodemon.obj.translateZ(deltaZ);
-        cocodemon.obj.translateX(deltaX);
+        const DELTA_X = Math.random() * AREA_DIMENSION - (AREA_DIMENSION / 2);
+        const DELTA_Z = Math.random() * AREA_DIMENSION - (AREA_DIMENSION / 2);
+        cocodemon.obj.translateZ(DELTA_Z);
+        cocodemon.obj.translateX(DELTA_X);
+
+        cocodemon.boundingBox.setFromCenterAndSize(
+            cocodemon.obj.position,
+            new THREE.Vector3(ENEMIES_SCALE, ENEMIES_SCALE, ENEMIES_SCALE)
+        );
     }
 
     return { skulls, cocodemons }; // Return the loaded enemies
