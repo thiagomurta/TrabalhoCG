@@ -30,7 +30,7 @@ const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, 
 
 // ---------------------Ambiente---------------------
 
-let plane = createGroundPlaneXZ(500, 500);
+let plane = createGroundPlaneXZ(500, 500, 10, 10, "rgb(53, 48, 48)");
  scene.add(plane);
    // center.plane.translateY(+0.15);
 

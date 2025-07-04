@@ -38,7 +38,7 @@ export function CHAVE(){
     let csgObject = cubeCSG.subtract(cylinderObject).subtract(cylinderCSG3);
 
     let csgFinal = CSG.toMesh(csgObject, new THREE.Matrix4());
-    csgFinal.material = new THREE.MeshPhongMaterial({color: 'lightgreen'})
+    csgFinal.material = new THREE.MeshPhongMaterial({color: 'rgb(41, 48, 41)'})
     csgFinal.position.y = 1;
 
     return csgFinal;
