@@ -9,6 +9,8 @@ import * as S0 from "./scene0.js";
 import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
 import {initGun, moveBullet, initShootBall} from "./arma.js";
 import * as CHAVE from './chave.js';
+import * as LOOK from './lookers.js'
+import * as INTER from './intersecter.js'
 
 // ---------------------Configuração inicial---------------------
 let scene, renderer;
@@ -27,10 +29,8 @@ initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 
 const crosshair = document.querySelector('.crosshair');
 const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0).normalize(), 0.01, 2);
-const frontCaster = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(0,0,-1).normalize(),0.01,2);
-const backCaster = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(0,0,1).normalize(),0.01,2);
-const leftCaster = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(-1,0,0).normalize(),0.01,2);
-const rghtCaster = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(1,0,0).normalize(),0.01,2);
+const horizontalCaster = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(0,0,-1).normalize(),0.01,2);
+
 
 // ---------------------Ambiente---------------------
 
@@ -142,6 +142,7 @@ function movementControls(key, value) { // if xabu , go back here
 
 function moveAnimate(delta) {
     raycaster.ray.origin.copy(controls.getObject().position);
+    horizontalCaster.ray.origin.copy(controls.getObject().position);
     const LEFTMOST_BOX = scenario.objects[0];
     const UPPER_MIDDLE_BOX = scenario.objects[1];
     const RIGHTMOST_BOX = scenario.objects[2];
@@ -158,17 +159,30 @@ function moveAnimate(delta) {
     let newPosition = player.position.y
 
     if (moveForward) {
-        controls.moveForward(speed * delta);
+        horizontalCaster.ray.direction.copy(LOOK.Foward(controls)).normalize();
+        const colision = INTER.intersection(horizontalCaster,scenario.objects,controls,speed*delta);
+        if(!colision)
+            controls.moveForward(speed * delta);
 
     }
     else if (moveBackward) {
-        controls.moveForward(speed * -1 * delta);
+        horizontalCaster.ray.direction.copy(LOOK.Backward(controls)).normalize();
+         const colision = INTER.intersection(horizontalCaster,scenario.objects,controls,speed*delta);
+        if(!colision)
+            controls.moveForward(speed * -1 * delta);
     }
 
     if (moveRight) {
-        controls.moveRight(speed * delta);
+        
+        horizontalCaster.ray.direction.copy(LOOK.Right(controls)).normalize();
+         const colision = INTER.intersection(horizontalCaster,scenario.objects,controls,speed*delta);
+        if(!colision)
+            controls.moveRight(speed * delta);
     }
     else if (moveLeft) {
+        horizontalCaster.ray.direction.copy(LOOK.Left(controls)).normalize();
+         const colision = INTER.intersection(horizontalCaster,scenario.objects,controls,speed*delta);
+            if(!colision)
         controls.moveRight(speed * -1 * delta);
     }
 

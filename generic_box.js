@@ -11,8 +11,11 @@ export function genBox(width,height,length,stair_w,stair_l,materialForBox,stair_
     let subBox0=new THREE.Mesh(BoxGeometryUp,materialForBox);
     let center=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.1),materialForBox);
     center.upperBox=subBox0;
+    center.upperBox.name="upper";
     center.leftBox=subBox1;
+    center.leftBox.name="left";
     center.rightBox=subBox2;
+    center.rightBox.name="right";
 
     center.width=width;
     center.length=length;
@@ -34,6 +37,11 @@ export function genBox(width,height,length,stair_w,stair_l,materialForBox,stair_
     center.upperBox.translateY(height/2);
     center.leftBox.translateY(height/2);
     center.rightBox.translateY(height/2);
+    center.meshes=[];
+    center.meshes.push(center.leftBox);
+    center.meshes.push(center.upperBox);
+    center.meshes.push(center.rightBox);
+
 
     return center;
 
