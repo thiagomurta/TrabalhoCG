@@ -8,13 +8,87 @@ const AREA_DIMENSION = 100;
 const AREAS_Z = -150;
 const AREAS_Y = 6;
 const UPPER_LEFT_AREA_X = -125;
+const SEARCH_RADIUS = 10;
 
 const ENEMIES_SCALE = 5;
 
 
 
-
 // ----------------------- INIMIGOS -------------------------
+
+// FUNÇÕES DE MOVIMENTAÇÃO DOS INIMIGOS
+
+export function moveEnemies(enemies) {
+    const cocodemons = enemies.cocodemons;
+    const skulls = enemies.skulls;
+
+    for (let cocodemonData of cocodemons) moveCocodemon(cocodemonData);
+
+    for (let skullData of skulls) moveSkull(skullData);
+}
+
+// MOVIMENTAÇÃO COCODEMON
+
+function moveCocodemon(cocodemonData) {
+ return false; // TODO: Implementar lógica de movimentação do cocodemon
+
+}
+
+// MOVIMENTAÇÃO LOST SOUL
+
+function tryDetectPlayer(skullData) {
+    return false; // TODO: Implementar lógica de detecção do jogador
+}
+
+function getNewSkullTargetPoint(currentPosition) {
+    const xDelta = Math.random() * SEARCH_RADIUS*2 - SEARCH_RADIUS;
+    const zDelta = Math.random() * SEARCH_RADIUS*2 - SEARCH_RADIUS;
+    const newPosition = new THREE.Vector3(
+        currentPosition.x + xDelta,
+        currentPosition.y,
+        currentPosition.z + zDelta
+    );
+
+    return newPosition;
+}
+
+function moveSkull(skullData) {
+    const skull = skullData.obj;
+    const currentPosition = skull.position;
+    const targetPoint = skullData.targetPoint;
+
+    if (!targetPoint) { // Se não há um destino alvo, iniciar busca por um ponto aleatório em sua volta de raio 10
+
+        newPosition = getSkullTargetPoint(currentPosition);
+
+        targetPoint.copy(newPosition);
+    }
+
+    const isPlayerDetected = tryDetectPlayer(skullData);
+
+    if (isPlayerDetected) {
+        // Se o jogador for detectado, move em direção ao jogador
+    
+    }
+
+    //move towards the target point using raycaster
+
+    const direction = targetPoint.clone().sub(currentPosition).normalize();
+    const raycaster = new THREE.Raycaster(currentPosition, direction);
+    const intersects = raycaster.intersectObjects([skullData.boundingBox]);
+    if (intersects.length > 0) {
+        // Se houver colisão, mudar o destino alvo
+        targetPoint = getNewSkullTargetPoint(currentPosition);
+    } else {
+        // Move towards the target point
+        currentPosition.add(direction.multiplyScalar(0.1)); // Move at a constant speed
+    }
+
+
+}
+
+
+// FUNÇOES AUXILIARES
 function normalizeAndRescale(obj, newScale)
 {
   var scale = getMaxSize(obj); 
@@ -68,12 +142,16 @@ export async function loadEnemies(scene) {
 
     for (let j = 0; j < 5; j++) {
         const skull = await loadSkull(scene); 
-        skulls.push({ obj: skull, id: i++, boundingBox: new THREE.Box3().setFromObject(skull) });
+        skulls.push({   obj: skull, 
+                        id: i++, boundingBox: new THREE.Box3().setFromObject(skull),
+                        targetPoint: new THREE.Vector3() });
     }
 
     for (let j = 0; j < 3; j++) {
         const cocodemon = await loadCocoDemon(scene); 
-        cocodemons.push({ obj: cocodemon, id: i++, boundingBox: new THREE.Box3().setFromObject(cocodemon) });
+        cocodemons.push({   obj: cocodemon,
+                            id: i++, boundingBox: new THREE.Box3().setFromObject(cocodemon),
+                            targetPoint: new THREE.Vector3() });
     }
 
     for (let skull of skulls){
