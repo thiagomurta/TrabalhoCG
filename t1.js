@@ -26,7 +26,11 @@ camera.lookAt(new THREE.Vector3(-1.5, 2.0, -100.0));
 initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 
 const crosshair = document.querySelector('.crosshair');
-const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0).normalize(), 0, 2);
+const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0).normalize(), 0.01, 2);
+const frontCaster = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(0,0,-1).normalize(),0.01,2);
+const backCaster = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(0,0,1).normalize(),0.01,2);
+const leftCaster = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(-1,0,0).normalize(),0.01,2);
+const rghtCaster = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(1,0,0).normalize(),0.01,2);
 
 // ---------------------Ambiente---------------------
 
