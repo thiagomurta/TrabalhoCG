@@ -9,7 +9,8 @@ import * as S0 from "./scene0.js";
 import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
 import {initGun, moveBullet, initShootBall} from "./arma.js";
 import * as CHAVE from './chave.js';
-import { CSG } from '../libs/other/CSGMesh.js';
+import * as LOOK from './lookers.js'
+import * as INTER from './intersecter.js'
 import { loadEnemies } from './inimigos.js';
 
 // ---------------------Configuração inicial---------------------
@@ -28,7 +29,9 @@ camera.lookAt(new THREE.Vector3(-1.5, 2.0, -100.0));
 initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 
 const crosshair = document.querySelector('.crosshair');
-const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0).normalize(), 0, 2);
+const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0).normalize(), 0.01, 2);
+const horizontalCaster = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(0,0,-1).normalize(),0.01,2);
+
 
 // ---------------------Ambiente---------------------
 
@@ -97,20 +100,7 @@ window.addEventListener('keyup', (event) => movementControls(event.keyCode, fals
 scene.add(controls.getObject());
 // ---------------------Criando a Mesh que vai ser usada---------------------
 
-let cubeMesh = new THREE.Mesh(new THREE.BoxGeometry(2,2,2));
-let cylinderMesh = new THREE.Mesh(new THREE.CylinderGeometry(1,1,1));
-// let csg = new CSG();
-
-cubeMesh.position.set(0, 1, 0)
-cubeMesh.matrixAutoUpdate = false;
-cubeMesh.updateMatrix();
-
-let cubeCSG = CSG.fromMesh(cubeMesh);
-let cylinder = CSG.fromMesh(cylinderMesh);
-let csgObject = cubeCSG.subtract(cylinder);
-
-let csgFinal = CSG.toMesh(csgObject, new THREE.Matrix4());
-csgFinal.material = new THREE.MeshPhongMaterial({color: 'lightgreen'})
+let csgFinal = CHAVE.CHAVE();
 
 scene.add(csgFinal);
 
@@ -162,6 +152,7 @@ function movementControls(key, value) { // if xabu , go back here
 
 function moveAnimate(delta) {
     raycaster.ray.origin.copy(controls.getObject().position);
+    horizontalCaster.ray.origin.copy(controls.getObject().position);
     const LEFTMOST_BOX = scenario.objects[0];
     const UPPER_MIDDLE_BOX = scenario.objects[1];
     const RIGHTMOST_BOX = scenario.objects[2];
@@ -183,17 +174,30 @@ function moveAnimate(delta) {
     let oldPosition = player.position;
 
     if (moveForward) {
-        controls.moveForward(speed * delta);
+        horizontalCaster.ray.direction.copy(LOOK.Foward(controls)).normalize();
+        const colision = INTER.intersection(horizontalCaster,scenario.objects,controls,speed*delta);
+        if(!colision)
+            controls.moveForward(speed * delta);
 
     }
     else if (moveBackward) {
-        controls.moveForward(speed * -1 * delta);
+        horizontalCaster.ray.direction.copy(LOOK.Backward(controls)).normalize();
+         const colision = INTER.intersection(horizontalCaster,scenario.objects,controls,speed*delta);
+        if(!colision)
+            controls.moveForward(speed * -1 * delta);
     }
 
     if (moveRight) {
-        controls.moveRight(speed * delta);
+        
+        horizontalCaster.ray.direction.copy(LOOK.Right(controls)).normalize();
+         const colision = INTER.intersection(horizontalCaster,scenario.objects,controls,speed*delta);
+        if(!colision)
+            controls.moveRight(speed * delta);
     }
     else if (moveLeft) {
+        horizontalCaster.ray.direction.copy(LOOK.Left(controls)).normalize();
+         const colision = INTER.intersection(horizontalCaster,scenario.objects,controls,speed*delta);
+            if(!colision)
         controls.moveRight(speed * -1 * delta);
     }
 
