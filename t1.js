@@ -167,7 +167,7 @@ function moveAnimate(delta) {
     }
     else if (moveBackward) {
         horizontalCaster.ray.direction.copy(LOOK.Backward(controls)).normalize();
-         const colision = INTER.intersection(horizontalCaster,scenario.objects,controls,speed*delta);
+        const colision = INTER.intersection(horizontalCaster,scenario.objects,controls,speed*delta);
         if(!colision)
             controls.moveForward(speed * -1 * delta);
     }
@@ -175,13 +175,13 @@ function moveAnimate(delta) {
     if (moveRight) {
         
         horizontalCaster.ray.direction.copy(LOOK.Right(controls)).normalize();
-         const colision = INTER.intersection(horizontalCaster,scenario.objects,controls,speed*delta);
+        const colision = INTER.intersection(horizontalCaster,scenario.objects,controls,speed*delta);
         if(!colision)
             controls.moveRight(speed * delta);
     }
     else if (moveLeft) {
         horizontalCaster.ray.direction.copy(LOOK.Left(controls)).normalize();
-         const colision = INTER.intersection(horizontalCaster,scenario.objects,controls,speed*delta);
+        const colision = INTER.intersection(horizontalCaster,scenario.objects,controls,speed*delta);
             if(!colision)
         controls.moveRight(speed * -1 * delta);
     }
