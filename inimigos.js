@@ -42,8 +42,25 @@ function moveCocodemon(cocodemonData, scenario, player) {
 
 // MOVIMENTAÇÃO LOST SOUL
 
-function tryDetectPlayer(skullData) {
-    return false; // TODO: Implementar lógica de detecção do jogador
+function tryDetectPlayer(skullData, player) {
+    //see if the skull.lookAt() is facing the player in a radius of SEARCH_RADIUS
+
+    const skull = skullData.obj;
+    const currentPosition = skull.position;
+    const playerPosition = player.position;
+    const distanceToPlayer = currentPosition.distanceTo(playerPosition);
+    if (distanceToPlayer > SEARCH_RADIUS) return false; // Player is too far away to be detected
+
+    const directionToPlayer = playerPosition.clone().sub(currentPosition).normalize();
+    const lookDirection = skull.getWorldDirection(new THREE.Vector3());
+    const angleToPlayer = lookDirection.angleTo(directionToPlayer);
+    const detectionAngleThreshold = Math.PI / 4; // 45 degrees
+    if (angleToPlayer < detectionAngleThreshold) {
+        console.log("Player detected by skull at position: ", playerPosition);
+        return true; 
+    }
+
+    return false; 
 }
 
 function getNewSkullTargetPoint(currentPosition) {
@@ -72,10 +89,10 @@ function moveSkull(skullData, scenario, player) {
         targetPoint.copy(newPosition);
     }
 
-    const isPlayerDetected = tryDetectPlayer(skullData);
+    const isPlayerDetected = tryDetectPlayer(skullData, player);
 
     if (isPlayerDetected) {
-        // Se o jogador for detectado, move em direção ao jogador
+        targetPoint.copy(player.position); // If player is detected, set target point to player's position
     
     }
 

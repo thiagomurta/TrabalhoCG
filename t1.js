@@ -226,6 +226,8 @@ function render() {
     shootWhileHolding(scene, camera); // will shoot if mouse is down
     if (controls.isLocked) {
         moveAnimate(clock.getDelta());
+        if (enemies) moveEnemies(scenario, enemies, player); // will move enemies
+        moveBullet(scene, camera); // will move bullet if its isShooting attribute is truthy
     }
     renderer.render(scene, camera) // Render scene
     requestAnimationFrame(render);
