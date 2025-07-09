@@ -18,18 +18,24 @@ const ENEMIES_SCALE = 5;
 
 // FUNÇÕES DE MOVIMENTAÇÃO DOS INIMIGOS
 
-export function moveEnemies(enemies) {
+export function moveEnemies(scenario, enemies, player) {
+    if (!enemies || !Array.isArray(enemies.cocodemons) || !Array.isArray(enemies.skulls)) {
+        console.log("No enemies to move or enemies data is not in the expected format.");
+        console.log(enemies);
+        return;
+    }
+
     const cocodemons = enemies.cocodemons;
     const skulls = enemies.skulls;
 
-    for (let cocodemonData of cocodemons) moveCocodemon(cocodemonData);
+    for (let cocodemonData of cocodemons) moveCocodemon(cocodemonData, scenario, player);
 
-    for (let skullData of skulls) moveSkull(skullData);
+    for (let skullData of skulls) moveSkull(skullData, scenario, player);
 }
 
 // MOVIMENTAÇÃO COCODEMON
 
-function moveCocodemon(cocodemonData) {
+function moveCocodemon(cocodemonData, scenario, player) {
  return false; // TODO: Implementar lógica de movimentação do cocodemon
 
 }
@@ -52,14 +58,16 @@ function getNewSkullTargetPoint(currentPosition) {
     return newPosition;
 }
 
-function moveSkull(skullData) {
+function moveSkull(skullData, scenario, player) {
     const skull = skullData.obj;
     const currentPosition = skull.position;
-    const targetPoint = skullData.targetPoint;
+    let targetPoint = skullData.targetPoint;
+    let nullTargetPoint = new THREE.Vector3();
 
-    if (!targetPoint) { // Se não há um destino alvo, iniciar busca por um ponto aleatório em sua volta de raio 10
-
-        newPosition = getSkullTargetPoint(currentPosition);
+    if (targetPoint.equals(nullTargetPoint) || 
+        currentPosition.distanceTo(targetPoint) < 0.1) { // Se não há um destino alvo, iniciar busca por um ponto aleatório em sua volta de raio 10
+        console.log("No target point set for skull, setting a new one.");
+        let newPosition = getNewSkullTargetPoint(currentPosition);
 
         targetPoint.copy(newPosition);
     }
@@ -73,18 +81,34 @@ function moveSkull(skullData) {
 
     //move towards the target point using raycaster
 
+    let movementSpeed = isPlayerDetected ? 0.5 : 0.1; 
+
     const direction = targetPoint.clone().sub(currentPosition).normalize();
     const raycaster = new THREE.Raycaster(currentPosition, direction);
-    const intersects = raycaster.intersectObjects([skullData.boundingBox]);
-    if (intersects.length > 0) {
-        // Se houver colisão, mudar o destino alvo
+    skull.lookAt(targetPoint);
+
+    const LEFTMOST_BOX = scenario.objects[0];
+    const UPPER_MIDDLE_BOX = scenario.objects[1];
+    const RIGHTMOST_BOX = scenario.objects[2];
+    const LOWER_MIDDLE_BOX = scenario.objects[3];
+    const NORTH_WALL = scenario.objects[4];
+    const SOUTH_WALL = scenario.objects[5];
+    const LEFT_WALL = scenario.objects[6];
+    const RIGHT_WALL = scenario.objects[7];
+    const PLANE = scenario.parent.children[0];
+    const collisionObjects = [PLANE, LEFTMOST_BOX, UPPER_MIDDLE_BOX, RIGHTMOST_BOX, LOWER_MIDDLE_BOX, NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL];
+
+    let intersects = raycaster.intersectObjects(collisionObjects);
+
+    while (intersects?.length > 0) {
         targetPoint = getNewSkullTargetPoint(currentPosition);
-    } else {
-        // Move towards the target point
-        currentPosition.add(direction.multiplyScalar(0.1)); // Move at a constant speed
+        direction.copy(targetPoint).sub(currentPosition).normalize();
+        raycaster.set(currentPosition, direction);
+        intersects = raycaster.intersectObjects(collisionObjects);
     }
 
-
+        
+    currentPosition.add(direction.multiplyScalar(movementSpeed));
 }
 
 
@@ -135,6 +159,19 @@ async function loadSkull(scene) {
     }
 }
 
+function placeEnemyRandomStartPos(enemy, areaDimension, areasZ, areasY, upperLeftAreaX) {
+    enemy.translateZ(areasZ);
+    enemy.translateY(areasY);
+    enemy.translateX(upperLeftAreaX);
+
+    const deltaX = Math.random() * areaDimension - (areaDimension / 2);
+    const deltaZ = Math.random() * areaDimension - (areaDimension / 2);
+    enemy.translateZ(deltaZ);
+    enemy.translateX(deltaX);
+
+    return enemy;
+}
+
 export async function loadEnemies(scene) {
     let skulls = [];
     let cocodemons = [];
@@ -155,41 +192,21 @@ export async function loadEnemies(scene) {
     }
 
     for (let skull of skulls){
-        skull.obj.translateZ(AREAS_Z);
-        skull.obj.translateY(AREAS_Y);
-
-        const DELTA_X = Math.random() * AREA_DIMENSION - (AREA_DIMENSION / 2);
-        const DELTA_Z = Math.random() * AREA_DIMENSION - (AREA_DIMENSION / 2);
-        skull.obj.translateZ(DELTA_Z);
-        skull.obj.translateX(DELTA_X);
-
-        skull.boundingBox.setFromCenterAndSize(
-            skull.obj.position,
-            new THREE.Vector3(ENEMIES_SCALE, ENEMIES_SCALE, ENEMIES_SCALE)
-        );
+        const MIDDLE_AREA_X = 0;
+        placeEnemyRandomStartPos(skull.obj, AREA_DIMENSION, AREAS_Z, AREAS_Y, 
+                            MIDDLE_AREA_X);
     }
 
     for (let cocodemon of cocodemons){
-        cocodemon.obj.translateZ(AREAS_Z);
-        cocodemon.obj.translateY(AREAS_Y);
-        cocodemon.obj.translateX(UPPER_LEFT_AREA_X);
-
-        const DELTA_X = Math.random() * AREA_DIMENSION - (AREA_DIMENSION / 2);
-        const DELTA_Z = Math.random() * AREA_DIMENSION - (AREA_DIMENSION / 2);
-        cocodemon.obj.translateZ(DELTA_Z);
-        cocodemon.obj.translateX(DELTA_X);
-
-        cocodemon.boundingBox.setFromCenterAndSize(
-            cocodemon.obj.position,
-            new THREE.Vector3(ENEMIES_SCALE, ENEMIES_SCALE, ENEMIES_SCALE)
-        );
+        placeEnemyRandomStartPos(cocodemon.obj, AREA_DIMENSION, AREAS_Z, AREAS_Y,
+                            UPPER_LEFT_AREA_X);
     }
 
     return { skulls, cocodemons }; // Return the loaded enemies
 }
 
 
-export function initCocoDemon() {
+function initCocoDemon() {
     let glbLoader = new GLTFLoader();
 
     return new Promise((resolve, reject) => {
@@ -207,7 +224,7 @@ export function initCocoDemon() {
     });
 }
 
-export function initSkull(){
+function initSkull(){
 
     let mtlloader = new MTLLoader();
     let objloader = new OBJLoader();

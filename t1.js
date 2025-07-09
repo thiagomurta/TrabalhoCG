@@ -11,7 +11,7 @@ import {initGun, moveBullet, initShootBall} from "./arma.js";
 import * as CHAVE from './chave.js';
 import * as LOOK from './lookers.js'
 import * as INTER from './intersecter.js'
-import { loadEnemies } from './inimigos.js';
+import { loadEnemies, moveEnemies } from './inimigos.js';
 
 // ---------------------Configuração inicial---------------------
 let scene, renderer;
@@ -227,7 +227,6 @@ function render() {
     if (controls.isLocked) {
         moveAnimate(clock.getDelta());
     }
-    moveBullet(scene, camera); // will move bullet if its isShooting attribute is truthy
     renderer.render(scene, camera) // Render scene
     requestAnimationFrame(render);
 }
