@@ -36,7 +36,7 @@ export function moveEnemies(scenario, enemies, player) {
 // MOVIMENTAÇÃO COCODEMON
 
 function moveCocodemon(cocodemonData, scenario, player) {
- return false; // TODO: Implementar lógica de movimentação do cocodemon
+    return false; // TODO: Implementar lógica de movimentação do cocodemon
 
 }
 
@@ -104,7 +104,7 @@ function moveSkull(skullData, scenario, player) {
 
     if (isPlayerDetected) {
         targetPoint.copy(player.position); // If player is detected, set target point to player's position
-    
+
     }
 
     //move towards the target point using raycaster
