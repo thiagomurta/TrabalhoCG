@@ -8,8 +8,13 @@ const AREA_DIMENSION = 100;
 const AREAS_Z = -150;
 const AREAS_Y = 6;
 const UPPER_LEFT_AREA_X = -125;
-const SEARCH_RADIUS = 10;
-
+const SEARCH_RADIUS = 15;
+const DETECTION_ANGLE_THRESHOLD = Math.PI / 4; // 45 degrees
+const CHARGE_DISTANCE = 1000;
+const CHARGE_SPEED = 0.5;
+const WANDER_SPEED = 0.1;
+const PROXIMITY_THRESHOLD = 0.1; 
+const MAX_PATHFINDING_ATTEMPTS = 10; 
 const ENEMIES_SCALE = 5;
 
 
@@ -44,18 +49,25 @@ function moveCocodemon(cocodemonData, scenario, player) {
 
 function tryDetectPlayer(skullData, player) {
     //see if the skull.lookAt() is facing the player in a radius of SEARCH_RADIUS
-
+    
     const skull = skullData.obj;
     const currentPosition = skull.position;
     const playerPosition = player.position;
+
     const distanceToPlayer = currentPosition.distanceTo(playerPosition);
     if (distanceToPlayer > SEARCH_RADIUS) return false; // Player is too far away to be detected
-
+    console.log("Player is not too far");
     const directionToPlayer = playerPosition.clone().sub(currentPosition).normalize();
     const lookDirection = skull.getWorldDirection(new THREE.Vector3());
     const angleToPlayer = lookDirection.angleTo(directionToPlayer);
-    const detectionAngleThreshold = Math.PI / 4; // 45 degrees
-    if (angleToPlayer < detectionAngleThreshold) {
+
+    if (angleToPlayer < DETECTION_ANGLE_THRESHOLD) {
+        skullData.isCharging = true;
+        
+        // Set target point slightly ahead of player to continue charging past them, in 2D plane
+        skullData.targetPoint = playerPosition.clone().add(directionToPlayer.multiplyScalar(CHARGE_DISTANCE));
+        skullData.targetPoint.y = currentPosition.y; 
+        skull.lookAt(playerPosition);
         console.log("Player detected by skull at position: ", playerPosition);
         return true; 
     }
@@ -64,57 +76,25 @@ function tryDetectPlayer(skullData, player) {
 }
 
 function getNewSkullTargetPoint(currentPosition) {
-    const xDelta = Math.random() * SEARCH_RADIUS*2 - SEARCH_RADIUS;
-    const zDelta = Math.random() * SEARCH_RADIUS*2 - SEARCH_RADIUS;
-    const newPosition = new THREE.Vector3(
+    // Generate random point within search radius (2D plane)
+    const xDelta = Math.random() * SEARCH_RADIUS * 2 - SEARCH_RADIUS;
+    const zDelta = Math.random() * SEARCH_RADIUS * 2 - SEARCH_RADIUS;
+    
+    return new THREE.Vector3(
         currentPosition.x + xDelta,
         currentPosition.y,
         currentPosition.z + zDelta
     );
-
-    return newPosition;
 }
 
-function moveSkull(skullData, scenario, player) {
-    const skull = skullData.obj;
-    const currentPosition = skull.position;
-    let targetPoint = skullData.targetPoint;
-    let nullTargetPoint = new THREE.Vector3();
+function isPointWithinArea(point) {
+    return point.x >= -AREA_DIMENSION / 2 &&
+           point.x <= AREA_DIMENSION / 2 &&
+           point.z >= AREAS_Z - AREA_DIMENSION / 2 &&
+           point.z <= AREAS_Z + AREA_DIMENSION / 2;
+}
 
-    if (targetPoint.equals(nullTargetPoint) || 
-        currentPosition.distanceTo(targetPoint) < 0.1) { // Se não há um destino alvo, iniciar busca por um ponto aleatório em sua volta de raio 10
-        console.log("No target point set for skull, setting a new one.");
-        let newPosition = getNewSkullTargetPoint(currentPosition);
-
-        targetPoint.copy(newPosition);
-
-        let isTargetPointWithinArea =   newPosition.x >= -AREA_DIMENSION / 2 &&
-                                        newPosition.x <= AREA_DIMENSION / 2 &&
-                                        newPosition.z >= AREAS_Z - AREA_DIMENSION / 2 &&
-                                        newPosition.z >= AREAS_Z + AREA_DIMENSION / 2;
-        
-        if (!isTargetPointWithinArea) {
-            //adjust so it is within the area
-            targetPoint.x = Math.max(-AREA_DIMENSION / 2, Math.min(AREA_DIMENSION / 2, newPosition.x));
-            targetPoint.z = Math.max(AREAS_Z - AREA_DIMENSION / 2, Math.min(AREAS_Z + AREA_DIMENSION / 2, newPosition.z));
-        }
-    }
-
-    const isPlayerDetected = tryDetectPlayer(skullData, player);
-
-    if (isPlayerDetected) {
-        targetPoint.copy(player.position); // If player is detected, set target point to player's position
-
-    }
-
-    //move towards the target point using raycaster
-
-    let movementSpeed = isPlayerDetected ? 0.5 : 0.1; 
-
-    const direction = targetPoint.clone().sub(currentPosition).normalize();
-    const raycaster = new THREE.Raycaster(currentPosition, direction);
-    skull.lookAt(targetPoint);
-
+function getCollisionObjects(scenario) {
     const LEFTMOST_BOX = scenario.objects[0];
     const UPPER_MIDDLE_BOX = scenario.objects[1];
     const RIGHTMOST_BOX = scenario.objects[2];
@@ -125,18 +105,77 @@ function moveSkull(skullData, scenario, player) {
     const RIGHT_WALL = scenario.objects[7];
     const PLANE = scenario.parent.children[0];
     const collisionObjects = [PLANE, LEFTMOST_BOX, UPPER_MIDDLE_BOX, RIGHTMOST_BOX, LOWER_MIDDLE_BOX, NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL];
+    return collisionObjects;
+}
 
+function adjustPointToArea(point) {
+    // adjust point to be within the defined area
+    let adjustedX = Math.max(-AREA_DIMENSION / 2, Math.min(AREA_DIMENSION / 2, point.x));
+
+    let adjustedZ = Math.max(AREAS_Z - AREA_DIMENSION / 2, Math.min(AREAS_Z + AREA_DIMENSION / 2, point.z));
+
+    return new THREE.Vector3(adjustedX, point.y, adjustedZ);
+}
+
+function moveSkull(skullData, scenario, player) {
+    const skull = skullData.obj;
+    const currentPosition = skull.position;
+    
+    // Initialize or update target point if needed
+    if (!skullData.targetPoint || currentPosition.distanceTo(skullData.targetPoint) < PROXIMITY_THRESHOLD) {
+        skullData.isCharging = false;
+        let newTarget = getNewSkullTargetPoint(currentPosition);
+        
+        if (!isPointWithinArea(newTarget)) {
+            newTarget = adjustPointToArea(newTarget);
+        }
+        
+        if (!skullData.targetPoint) {
+            skullData.targetPoint = new THREE.Vector3();
+        }
+        skullData.targetPoint.copy(newTarget);
+    }
+
+    //INITIAL CHARGING DIRECTION ATTEMPT
+    const direction = skullData.targetPoint.clone().sub(currentPosition).normalize();
+    const raycaster = new THREE.Raycaster(currentPosition, direction);
+
+    // DETECT PLAYER
+    console.log(skullData.isCharging);
+    const isPlayerDetected = skullData.isCharging || tryDetectPlayer(skullData, player);
+    const movementSpeed = isPlayerDetected ? CHARGE_SPEED : WANDER_SPEED;
+
+    // TEST COLLISION
+    const collisionObjects = skullData.collisionObjects || getCollisionObjects(scenario);
+    skullData.collisionObjects = collisionObjects; // Cache for next time
     let intersects = raycaster.intersectObjects(collisionObjects);
-
-    while (intersects?.length > 0) {
-        targetPoint = getNewSkullTargetPoint(currentPosition);
-        direction.copy(targetPoint).sub(currentPosition).normalize();
+    let attempts = 0;
+    
+    //IF THERE IS COLLISION, TRY TO FIND A NEW PATH. IF EXHAUSTED TRIES, RETURN TO CENTER
+    while (intersects.length > 0 && attempts < MAX_PATHFINDING_ATTEMPTS) {
+        attempts++;
+        skullData.isCharging = false; // Reset charging state
+        
+        // GET NEW TARGET POINT AND UPDATE DIRECTION
+        skullData.targetPoint = getNewSkullTargetPoint(currentPosition);
+        direction.copy(skullData.targetPoint).sub(currentPosition).normalize();
         raycaster.set(currentPosition, direction);
         intersects = raycaster.intersectObjects(collisionObjects);
     }
 
-        
-    currentPosition.add(direction.multiplyScalar(movementSpeed));
+    if (attempts === MAX_PATHFINDING_ATTEMPTS && intersects.length > 0) {
+        // If we reach max attempts, return to center of area
+        skullData.targetPoint = new THREE.Vector3(0, currentPosition.y, AREAS_Z);
+        direction.copy(skullData.targetPoint).sub(currentPosition).normalize();
+        raycaster.set(currentPosition, direction);
+    }
+
+    if (attempts < MAX_PATHFINDING_ATTEMPTS) {
+        skull.lookAt(skullData.targetPoint);
+        currentPosition.add(direction.multiplyScalar(movementSpeed));
+    } else {
+        console.warn("Skull couldn't find valid path after", MAX_PATHFINDING_ATTEMPTS, "attempts");
+    }
 }
 
 
@@ -209,14 +248,15 @@ export async function loadEnemies(scene) {
         const skull = await loadSkull(scene); 
         skulls.push({   obj: skull, 
                         id: i++, boundingBox: new THREE.Box3().setFromObject(skull),
-                        targetPoint: new THREE.Vector3() });
+                        targetPoint: null });
     }
 
     for (let j = 0; j < 3; j++) {
         const cocodemon = await loadCocoDemon(scene); 
         cocodemons.push({   obj: cocodemon,
                             id: i++, boundingBox: new THREE.Box3().setFromObject(cocodemon),
-                            targetPoint: new THREE.Vector3() });
+                            targetPoint: null,
+                            isCharging: false });
     }
 
     for (let skull of skulls){
