@@ -207,7 +207,6 @@ function moveAnimate(delta) {
 
     if ((!isIntersectingRamp && !isIntersectingPlane && !isIntersectingGround)) {
         player.position.y -= speed * delta;
-        console.log("aqui");
     }
 
     if (isIntersectingWall) {
