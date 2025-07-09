@@ -87,6 +87,17 @@ function moveSkull(skullData, scenario, player) {
         let newPosition = getNewSkullTargetPoint(currentPosition);
 
         targetPoint.copy(newPosition);
+
+        let isTargetPointWithinArea =   newPosition.x >= -AREA_DIMENSION / 2 &&
+                                        newPosition.x <= AREA_DIMENSION / 2 &&
+                                        newPosition.z >= AREAS_Z - AREA_DIMENSION / 2 &&
+                                        newPosition.z >= AREAS_Z + AREA_DIMENSION / 2;
+        
+        if (!isTargetPointWithinArea) {
+            //adjust so it is within the area
+            targetPoint.x = Math.max(-AREA_DIMENSION / 2, Math.min(AREA_DIMENSION / 2, newPosition.x));
+            targetPoint.z = Math.max(AREAS_Z - AREA_DIMENSION / 2, Math.min(AREAS_Z + AREA_DIMENSION / 2, newPosition.z));
+        }
     }
 
     const isPlayerDetected = tryDetectPlayer(skullData, player);
