@@ -1,7 +1,7 @@
 import * as THREE from  'three';
 
 import * as SL from './staired_level.js';
-
+import * as A1 from './area1.js'
 
 import {
         setDefaultMaterial,
@@ -12,6 +12,7 @@ export function Scene0()
 {
     let material0 = new THREE.MeshLambertMaterial({color: "rgb(86, 202, 19)"});
     let bu0=SL.genStairedLevel(100,6,100,33,10,8,material0,-0.25);
+    A1.area1(bu0,material0);
     
     let material1 = new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"});
     let bu1=SL.genStairedLevel(100,6,100,33,10,8,material1,0);
