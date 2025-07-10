@@ -3,9 +3,9 @@ import { CSG } from '../libs/other/CSGMesh.js';
 
 export function CHAVE(){
 
-    let cubeMesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1));
+    let cubeMesh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5));
 
-    var cylinderGeometry = new THREE.CylinderGeometry(0.25, 0.25, 1, 25);
+    var cylinderGeometry = new THREE.CylinderGeometry(0.125, 0.125, 1, 25);
     var cylinderMaterial = new THREE.MeshPhongMaterial( {color:'rgb(100,255,100)'});
 
     let cylinderMesh = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
