@@ -7,8 +7,11 @@ import { getMaxSize } from "../libs/util/util.js";
 const AREA_DIMENSION = 100;
 const AREAS_Z = -150;
 const AREAS_Y = 6;
+//const AREAS_Z = 0;
+//const AREAS_Y = 0;
 const UPPER_LEFT_AREA_X = -125;
-const SEARCH_RADIUS = 15;
+const SEARCH_RADIUS = 25;
+const DEFAULT_DISTANCE = 25;
 const DETECTION_ANGLE_THRESHOLD = Math.PI / 4; // 45 degrees
 const CHARGE_DISTANCE = 1000;
 const CHARGE_SPEED = 0.5;
@@ -55,18 +58,21 @@ function tryDetectPlayer(skullData, player) {
     const playerPosition = player.position;
 
     const distanceToPlayer = currentPosition.distanceTo(playerPosition);
-    if (distanceToPlayer > SEARCH_RADIUS) return false; // Player is too far away to be detected
+    console.log("Distance to player: ", distanceToPlayer);
+    if (distanceToPlayer > (SEARCH_RADIUS * 2.5) + DEFAULT_DISTANCE) return false; // Player is too far away to be detected
+
     console.log("Player is not too far");
     const directionToPlayer = playerPosition.clone().sub(currentPosition).normalize();
     const lookDirection = skull.getWorldDirection(new THREE.Vector3());
     const angleToPlayer = lookDirection.angleTo(directionToPlayer);
 
-    if (angleToPlayer < DETECTION_ANGLE_THRESHOLD) {
+    if (angleToPlayer < DETECTION_ANGLE_THRESHOLD || distanceToPlayer < SEARCH_RADIUS / 2) {
         skullData.isCharging = true;
         
         // Set target point slightly ahead of player to continue charging past them, in 2D plane
         skullData.targetPoint = playerPosition.clone().add(directionToPlayer.multiplyScalar(CHARGE_DISTANCE));
         skullData.targetPoint.y = currentPosition.y; 
+        skullData.targetPoint = adjustPointToArea(skullData.targetPoint); 
         skull.lookAt(playerPosition);
         console.log("Player detected by skull at position: ", playerPosition);
         return true; 
