@@ -40,3 +40,13 @@ export function    Right(pointerLC) {
 
         return vector;
     }
+export function Down(pointerLC)
+{
+    let vector= new THREE.Vector3(0,-1,0);
+        return vector;
+}
+export function Up(pointerLC)
+{
+    let vector= new THREE.Vector3(0,1,0);
+        return vector;
+}

@@ -22,7 +22,7 @@ setDefaultMaterial(); // create a basic material
 
 // ---------------------Câmera---------------------
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0.0, 2.0, 0.0);
+camera.position.set(0.0, 0.0, 0.0);
 camera.lookAt(new THREE.Vector3(-1.5, 2.0, -100.0));
 
 initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
@@ -30,6 +30,7 @@ initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 const crosshair = document.querySelector('.crosshair');
 const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0).normalize(), 0.01, 2);
 const horizontalCaster = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(0,0,-1).normalize(),0.01,2);
+const verticalCaster= new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0).normalize(), 0.01, 2);
 
 
 // ---------------------Ambiente---------------------
@@ -105,6 +106,7 @@ scene.add(csgFinal);
 
 
 const speed = 20;
+const fall = 10;
 const KEY_S = 83;
 const KEY_W = 87;
 const KEY_A = 65;
@@ -143,6 +145,7 @@ function movementControls(key, value) { // if xabu , go back here
 function moveAnimate(delta) {
     raycaster.ray.origin.copy(controls.getObject().position);
     horizontalCaster.ray.origin.copy(controls.getObject().position);
+    verticalCaster.ray.origin.copy(controls.getObject().position);
     const LEFTMOST_BOX = scenario.objects[0];
     const UPPER_MIDDLE_BOX = scenario.objects[1];
     const RIGHTMOST_BOX = scenario.objects[2];
@@ -154,10 +157,14 @@ function moveAnimate(delta) {
 
     const isIntersectingGround = raycaster.intersectObjects([NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL]).length > 0;
     const isIntersectingWall = raycaster.intersectObjects([NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL]).length > 0;
-    const isIntersectingRamp = raycaster.intersectObjects([LEFTMOST_BOX, UPPER_MIDDLE_BOX, RIGHTMOST_BOX, LOWER_MIDDLE_BOX]).length > 0;
+    const isIntersectingRamp = raycaster.intersectObjects([LEFTMOST_BOX.stair, UPPER_MIDDLE_BOX.stair, RIGHTMOST_BOX.stair, LOWER_MIDDLE_BOX.stair]).length > 0;
     const isIntersectingPlane = raycaster.intersectObject(plane).length > 0;
-    let newPosition = player.position.y
+    
 
+    //FALL logic
+    verticalCaster.ray.direction.copy(LOOK.Down(controls)).normalize();
+    INTER.fall(verticalCaster,[LEFTMOST_BOX,UPPER_MIDDLE_BOX,RIGHTMOST_BOX,LOWER_MIDDLE_BOX,plane],controls,fall*delta);
+    
     if (moveForward) {
         horizontalCaster.ray.direction.copy(LOOK.Foward(controls)).normalize();
         const colision = INTER.intersection(horizontalCaster,scenario.objects,controls,speed*delta);
@@ -187,13 +194,13 @@ function moveAnimate(delta) {
     }
 
     if (isIntersectingRamp) {
-        player.position.y += speed * delta;
+       // player.position.y += speed * delta;
     }
 
-    if ((!isIntersectingRamp && !isIntersectingPlane && !isIntersectingGround)) {
-        player.position.y -= speed * delta;
-        console.log("aqui");
-    }
+    // if ((!isIntersectingRamp && !isIntersectingPlane && !isIntersectingGround)) {
+    //     player.position.y -= speed * delta;
+    //     console.log("aqui");
+    // }
 
     if (isIntersectingWall) {
         console.log("bateu na parede");

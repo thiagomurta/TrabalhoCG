@@ -6,8 +6,6 @@ import * as LOOK from './lookers.js'
 
 export function intersection(caster,objects,controls,distance)
 {
-    let which_one=[0,false,'n'];
-    let is_coliding;
     for(let i =0;i<objects.length;i++)
     {
         if(i<=3)
@@ -47,4 +45,39 @@ export function fixDir(normal,direction)
     if((normal.z>0 && direction.z<0)||(normal.z<0 && direction.z>0))
         direction.z=0;
     direction.normalize();
+}
+export function fall(caster,objects,controls,distance)
+{
+    let fall=true;
+    for(let i=0;i<objects.length && fall==true;i++)
+    {
+        if(i<4)
+        {
+            for(let j=0;j<objects[j].vaultedBox.meshes.length && fall==true;j++)
+            {
+                fall=(caster.intersectObject(objects[i].vaultedBox.meshes[j]).length>0)?false:true;
+                if(fall==false)
+                    console.log(fall," ",i," ",j," 0:1");
+                
+                
+            }
+            if(fall==true)
+            {
+                fall=(caster.intersectObject(objects[i].stair).length>0)?false:true;
+                if(fall==false)
+                    console.log(fall," ",i," 0:2");
+            }
+
+        }
+        if(i==4 && fall==true)
+        {
+            fall=(caster.intersectObject(objects[i]).length>0)?false:true;
+            if(fall==false)
+                console.log(fall," 1:1");
+        }
+    }
+    if(fall==true)
+    {
+        controls.camera.position.addScaledVector(caster.ray.direction,distance);
+    }
 }
