@@ -63,7 +63,7 @@ export function fall(caster,objects,controls,distance)
             }
             if(fall==true)
             {
-                fall=(caster.intersectObject(objects[i].stair).length>0)?false:true;
+                fall=(caster.intersectObject(objects[i].stair.plane).length>0)?false:true;
                 if(fall==false)
                     console.log(fall," ",i," 0:2");
             }

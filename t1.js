@@ -11,6 +11,7 @@ import {initGun, moveBullet, initShootBall} from "./arma.js";
 import * as CHAVE from './chave.js';
 import * as LOOK from './lookers.js'
 import * as INTER from './intersecter.js'
+import * as SCLIMB from './stairClimb.js'
 
 // ---------------------Configuração inicial---------------------
 let scene, renderer;
@@ -47,7 +48,8 @@ initGun(camera);
 let player = new THREE.Mesh(new THREE.BoxGeometry(1,2,1),setDefaultMaterial());
 scene.add(player);
 player.translateY(1);
-player.add(camera)
+player.add(camera);
+camera.translateY(1);
 
 const controls = new PointerLockControls(player, renderer.domElement);
 
@@ -164,6 +166,9 @@ function moveAnimate(delta) {
     //FALL logic
     verticalCaster.ray.direction.copy(LOOK.Down(controls)).normalize();
     INTER.fall(verticalCaster,[LEFTMOST_BOX,UPPER_MIDDLE_BOX,RIGHTMOST_BOX,LOWER_MIDDLE_BOX,plane],controls,fall*delta);
+
+    //STAIR LOGIC
+    SCLIMB.stairclimb(verticalCaster,[LEFTMOST_BOX,UPPER_MIDDLE_BOX,RIGHTMOST_BOX,LOWER_MIDDLE_BOX],controls);
     
     if (moveForward) {
         horizontalCaster.ray.direction.copy(LOOK.Foward(controls)).normalize();
@@ -193,9 +198,9 @@ function moveAnimate(delta) {
         controls.moveRight(speed * -1 * delta);
     }
 
-    if (isIntersectingRamp) {
-       // player.position.y += speed * delta;
-    }
+    // if (isIntersectingRamp) {
+    //    // player.position.y += speed * delta;
+    // }
 
     // if ((!isIntersectingRamp && !isIntersectingPlane && !isIntersectingGround)) {
     //     player.position.y -= speed * delta;
