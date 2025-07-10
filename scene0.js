@@ -22,16 +22,17 @@ export function Scene0()
     let material3 = new THREE.MeshLambertMaterial({color: "rgb(156, 165, 37)"});
     let bd0=SL.genStairedLevel(300,6,100,33,10,8, material3,0);
     bd0.rotateYC(Math.PI);
-    
+
+    let material4 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
+    let box = new THREE.Mesh(new THREE.BoxGeometry(3,4,3), material4);
+
     let material5 = new THREE.MeshLambertMaterial({color: "rgb(71, 68, 68)"})
     let wallU=new THREE.Mesh(new THREE.BoxGeometry(500,40,0.1),material5);
     let wallD=new THREE.Mesh(new THREE.BoxGeometry(500,40,0.1),material5);
     let wallL=new THREE.Mesh(new THREE.BoxGeometry(0.1,40,500),material5);
     let wallR=new THREE.Mesh(new THREE.BoxGeometry(0.1,40,500),material5);
+
     
-
-  
-
     let center=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.1),material1);
     
     center.add(bu0);
@@ -66,8 +67,12 @@ export function Scene0()
     center.add(wallR);
     wallR.translateX(+250.05);
     wallR.translateY(20);
+    
+    center.add(box);
+    box.translateZ(-98);
+    box.translateX(20);
 
-    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL];
+    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL, box];
     
     
     
