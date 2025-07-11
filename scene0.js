@@ -1,7 +1,7 @@
 import * as THREE from  'three';
 
 import * as SL from './staired_level.js';
-
+import * as A1 from './area1.js'
 
 import {
         setDefaultMaterial,
@@ -11,28 +11,31 @@ import {
 export function Scene0()
 {
     let material0 = new THREE.MeshLambertMaterial({color: "rgb(86, 202, 19)"});
-    let bu0=SL.genStairedLevel(100,4,100,33,10,8,material0,-0.25);
+    let bu0=SL.genStairedLevel(100,6,100,33,10,16,material0,-0.25);
+    A1.area1(bu0,material0);
     
     let material1 = new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"});
-    let bu1=SL.genStairedLevel(100,4,100,33,10,8,material1,0);
+    let bu1=SL.genStairedLevel(100,6,100,33,10,16,material1,0);
 
     let material2 = new THREE.MeshLambertMaterial({color: "rgb(7, 255, 214)"});
-    let bu2=SL.genStairedLevel(100,4,100,33,10,8,material2,0.25);
+    let bu2=SL.genStairedLevel(100,6,100,33,10,16,material2,0.25);
 
     let material3 = new THREE.MeshLambertMaterial({color: "rgb(156, 165, 37)"});
-    let bd0=SL.genStairedLevel(300,4,100,33,10,8, material3,0);
+    let bd0=SL.genStairedLevel(300,6,100,33,10,16, material3,0);
     bd0.rotateYC(Math.PI);
-
+    
     let material4 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
     let box = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), material4);
-
+        
     let material5 = new THREE.MeshLambertMaterial({color: "rgb(71, 68, 68)"})
     let wallU=new THREE.Mesh(new THREE.BoxGeometry(500,40,0.1),material5);
     let wallD=new THREE.Mesh(new THREE.BoxGeometry(500,40,0.1),material5);
     let wallL=new THREE.Mesh(new THREE.BoxGeometry(0.1,40,500),material5);
     let wallR=new THREE.Mesh(new THREE.BoxGeometry(0.1,40,500),material5);
-
     
+
+  
+
     let center=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.1),material1);
     
     center.add(bu0);
@@ -67,13 +70,13 @@ export function Scene0()
     center.add(wallR);
     wallR.translateX(+250.05);
     wallR.translateY(20);
-    
+
     center.add(box);
     box.translateZ(-98);
     box.translateX(20);
     box.translateY(0.75);
 
-    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL, box];
+    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL,box];
     
     
     

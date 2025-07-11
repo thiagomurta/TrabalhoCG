@@ -23,7 +23,27 @@ export function genStair(width,height,length,number_of_steps,materialForStair)
         center.step_array[i].translateY(h_p_step/2+(h_p_step*i));
 
     }
+    
+    
 
+    let p_length=Math.sqrt(Math.pow(height,2)+Math.pow(length,2));
+    
+    const planeGeometry = new THREE.PlaneGeometry(width,p_length);
+    let plane=new THREE.Mesh(planeGeometry,materialForStair);
+    center.plane=plane;
+    center.add(plane);
+   
+    plane.translateY(height/2);
+    plane.translateZ(length/2);
+    const quaternion = new THREE.Quaternion().setFromUnitVectors(
+    new THREE.Vector3(0, 1, 0), // Default normal (+Z)
+    new THREE.Vector3().crossVectors(new THREE.Vector3(1,0,0),new THREE.Vector3(0,-height,-length) )
+    )
+    plane.quaternion.copy(quaternion);
+   
+    
+
+    center.p_length=p_length;
     return center;
 
 }

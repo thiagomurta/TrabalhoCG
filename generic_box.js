@@ -22,6 +22,7 @@ export function genBox(width,height,length,stair_w,stair_l,materialForBox,stair_
     center.height=height;
     center.stair_l=stair_l;
     center.stair_w=stair_w;
+    center.stair_displacement=stair_displacement;
 
     center.add(center.upperBox);
     center.add(center.leftBox);
