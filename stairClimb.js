@@ -8,10 +8,10 @@ export function stairclimb(caster,objects,controls)
             
             let intersection=ramp[0].point;
             let playerPosition=controls.camera.position;
-            if(playerPosition.y<intersection.y+0.5 || playerPosition.y>intersection.y-0.5)
+            if(playerPosition.y<intersection.y+5 || playerPosition.y>intersection.y-5)
             {
                 console.log("ba");
-                playerPosition.y=intersection.y+0.2;
+                playerPosition.y=intersection.y+1;
             }
         }
     }
