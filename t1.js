@@ -17,16 +17,16 @@ import { loadEnemies, moveEnemies } from './inimigos.js';
 let scene, renderer;
 scene = new THREE.Scene();    // Create main scene
 renderer = initRenderer();    // View function in util/utils
-initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
+//initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 var stats = new Stats();
-setDefaultMaterial(); // create a basic material
+//setDefaultMaterial(); // create a basic material
 
 // ---------------------Câmera---------------------
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0.0, 2.0, 0.0);
+camera.position.set(0.0, 0.0, 0.0);
 camera.lookAt(new THREE.Vector3(-1.5, 2.0, -100.0));
 
-initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
+//initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 
 const crosshair = document.querySelector('.crosshair');
 const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0).normalize(), 0.01, 2);
@@ -44,7 +44,7 @@ scene.add(scenario); // Add the scenario to the scene
 scenario.translateY(-0.15);
 
 initGun(camera);
-let player = new THREE.Mesh(new THREE.BoxGeometry(1,2,1),setDefaultMaterial());
+let player = new THREE.Mesh(new THREE.BoxGeometry(1,2,1), new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"}));
 scene.add(player);
 player.translateY(1);
 player.add(camera)
@@ -90,6 +90,19 @@ controls.addEventListener('unlock', function () {
     blocker.style.display = 'block';
     instructions.style.display = '';
 });
+
+// ---------------------Iluminação---------------------
+let positionLight = new THREE.Vector3(0, 20, 100);
+let positionLight2 = new THREE.Vector3(0, 20, -100);
+let lightColor = "rgb(255,255,255)";
+let dirLight = new THREE.DirectionalLight(lightColor, 1);
+let dirLight2 = new THREE.DirectionalLight(lightColor, 1);
+dirLight.position.copy(positionLight);
+dirLight2.position.copy(positionLight2);
+dirLight.castShadow = true;
+dirLight2.castShadow = true;
+scene.add(dirLight);
+scene.add(dirLight2);
 
 // ---------------------Controles de teclado---------------------
 
