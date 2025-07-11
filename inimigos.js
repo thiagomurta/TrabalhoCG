@@ -10,7 +10,7 @@ const AREAS_Y = 6;
 //const AREAS_Z = 0;
 //const AREAS_Y = 0;
 const UPPER_LEFT_AREA_X = -125;
-const SEARCH_RADIUS = 25;
+const SEARCH_RADIUS = 3;
 const INSTA_DETECT_RADIUS = 6; 
 const DEFAULT_DISTANCE = 25;
 const DETECTION_ANGLE_THRESHOLD = Math.PI / 4; // 45 degrees
@@ -61,7 +61,7 @@ function tryDetectPlayer(skullData, player) {
 
     const distanceToPlayer = currentPosition.distanceTo(playerPosition);
     console.log("Distance to player: ", distanceToPlayer);
-    if (distanceToPlayer > (SEARCH_RADIUS * 2.5) + DEFAULT_DISTANCE) return false; // Player is too far away to be detected
+    if (distanceToPlayer > (SEARCH_RADIUS * SEARCH_RADIUS) + DEFAULT_DISTANCE) return false; // Player is too far away to be detected
 
     console.log("Player is not too far");
     const directionToPlayer = playerPosition.clone().sub(currentPosition).normalize();
@@ -128,6 +128,40 @@ function adjustPointToArea(point) {
     return new THREE.Vector3(adjustedX, point.y, adjustedZ);
 }
 
+function getSameDirectionButFartherPoint(targetPoint){
+    // Get the target point the object is looking at and walk 3 units in that direction
+
+    if (!targetPoint) {
+        console.warn("No target point provided, returning current position.");
+        return new THREE.Vector3(0, 0, AREAS_Z); // Default to center of area
+    }
+    // Calculate a new target point that is farther in the same direction
+    // from the current target point, but within the area bounds
+    // Move 3 units in the same direction as the target point
+    // This assumes the targetPoint is already within the area bounds
+    // and that the targetPoint is not the center of the area
+    if (targetPoint.x === 0 && targetPoint.z === AREAS_Z) {
+        console.warn("Target point is at the center, returning a new random point.");
+        return getNewSkullTargetPoint(targetPoint);
+    }
+
+    // Calculate a new target point in the same direction:
+    
+    const newTargetPoint = new THREE.Vector3(
+        targetPoint.x + (targetPoint.x > 0 ? SEARCH_RADIUS : -SEARCH_RADIUS),
+        targetPoint.y, // Keep the same Y position
+        targetPoint.z + (targetPoint.z > 0 ? SEARCH_RADIUS : -SEARCH_RADIUS)
+    );
+
+    
+    // Ensure the new point is within the area bounds
+    return adjustPointToArea(newTargetPoint);
+}
+
+function willFindNewDirection() {
+    return Math.random() < 0.5; // 50% chance to find a new direction
+}
+
 function moveSkull(skullData, scenario, player) {
     const skull = skullData.obj;
     const currentPosition = skull.position;
@@ -135,7 +169,8 @@ function moveSkull(skullData, scenario, player) {
     // Initialize or update target point if needed
     if (!skullData.targetPoint || currentPosition.distanceTo(skullData.targetPoint) < PROXIMITY_THRESHOLD) {
         skullData.isCharging = false;
-        let newTarget = getNewSkullTargetPoint(currentPosition);
+        let newTarget = getSameDirectionButFartherPoint(skullData.targetPoint || currentPosition);
+        if (willFindNewDirection()) newTarget = getNewSkullTargetPoint(currentPosition);
         
         if (!skullData.targetPoint) {
             skullData.targetPoint = new THREE.Vector3();
