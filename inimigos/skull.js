@@ -20,12 +20,15 @@ const WANDER_SPEED = 0.1;
 const PROXIMITY_THRESHOLD = 0.5;
 const COLLISION_CHECK_DISTANCE = 0.5;
 
+export let playerHasEnteredFirstArea = false;
+
 
 export function moveSkull(skullData, scenario, player) {
 
     if (!skullData.collisionObjects) {
         skullData.collisionObjects = getCollisionObjects(scenario);
     }
+    if (!playerHasEnteredFirstArea) return;
 
     switch (skullData.state) {
         case SKULL_STATE.WANDERING:
