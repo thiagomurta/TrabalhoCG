@@ -11,6 +11,7 @@ const AREAS_Y = 6;
 //const AREAS_Y = 0;
 const UPPER_LEFT_AREA_X = -125;
 const SEARCH_RADIUS = 25;
+const INSTA_DETECT_RADIUS = 6; 
 const DEFAULT_DISTANCE = 25;
 const DETECTION_ANGLE_THRESHOLD = Math.PI / 4; // 45 degrees
 const CHARGE_DISTANCE = 1000;
@@ -19,6 +20,7 @@ const WANDER_SPEED = 0.1;
 const PROXIMITY_THRESHOLD = 0.1; 
 const MAX_PATHFINDING_ATTEMPTS = 10; 
 const ENEMIES_SCALE = 5;
+const BOUNDARY_THRESHOLD = 0.5;
 
 
 
@@ -66,13 +68,12 @@ function tryDetectPlayer(skullData, player) {
     const lookDirection = skull.getWorldDirection(new THREE.Vector3());
     const angleToPlayer = lookDirection.angleTo(directionToPlayer);
 
-    if (angleToPlayer < DETECTION_ANGLE_THRESHOLD || distanceToPlayer < SEARCH_RADIUS / 2) {
+    if (angleToPlayer < DETECTION_ANGLE_THRESHOLD || distanceToPlayer < INSTA_DETECT_RADIUS) {
         skullData.isCharging = true;
         
         // Set target point slightly ahead of player to continue charging past them, in 2D plane
         skullData.targetPoint = playerPosition.clone().add(directionToPlayer.multiplyScalar(CHARGE_DISTANCE));
         skullData.targetPoint.y = currentPosition.y; 
-        skullData.targetPoint = adjustPointToArea(skullData.targetPoint); 
         skull.lookAt(playerPosition);
         console.log("Player detected by skull at position: ", playerPosition);
         return true; 
@@ -85,12 +86,16 @@ function getNewSkullTargetPoint(currentPosition) {
     // Generate random point within search radius (2D plane)
     const xDelta = Math.random() * SEARCH_RADIUS * 2 - SEARCH_RADIUS;
     const zDelta = Math.random() * SEARCH_RADIUS * 2 - SEARCH_RADIUS;
-    
-    return new THREE.Vector3(
+
+    let targetPoint = new THREE.Vector3(
         currentPosition.x + xDelta,
-        currentPosition.y,
+        currentPosition.y, // Keep the same Y position
         currentPosition.z + zDelta
     );
+    
+    if (!isPointWithinArea(targetPoint)) adjustPointToArea(targetPoint); 
+    
+    return targetPoint;
 }
 
 function isPointWithinArea(point) {
@@ -132,24 +137,30 @@ function moveSkull(skullData, scenario, player) {
         skullData.isCharging = false;
         let newTarget = getNewSkullTargetPoint(currentPosition);
         
-        if (!isPointWithinArea(newTarget)) {
-            newTarget = adjustPointToArea(newTarget);
-        }
-        
         if (!skullData.targetPoint) {
             skullData.targetPoint = new THREE.Vector3();
         }
         skullData.targetPoint.copy(newTarget);
     }
 
-    //INITIAL CHARGING DIRECTION ATTEMPT
-    const direction = skullData.targetPoint.clone().sub(currentPosition).normalize();
-    const raycaster = new THREE.Raycaster(currentPosition, direction);
+    const isAtBoundary = 
+        Math.abs(currentPosition.x) >= AREA_DIMENSION / 2 - BOUNDARY_THRESHOLD ||
+        Math.abs(currentPosition.z - AREAS_Z) >= AREA_DIMENSION / 2 - BOUNDARY_THRESHOLD;
+
+    // If the skull is at the boundary and not charging, change direction
+    if (isAtBoundary && !skullData.isCharging) {
+        skullData.targetPoint = getNewSkullTargetPoint(currentPosition);
+    }
+
 
     // DETECT PLAYER
     console.log(skullData.isCharging);
     const isPlayerDetected = skullData.isCharging || tryDetectPlayer(skullData, player);
     const movementSpeed = isPlayerDetected ? CHARGE_SPEED : WANDER_SPEED;
+
+    //INITIAL CHARGING DIRECTION ATTEMPT
+    const direction = skullData.targetPoint.clone().sub(currentPosition).normalize();
+    const raycaster = new THREE.Raycaster(currentPosition, direction);
 
     // TEST COLLISION
     const collisionObjects = skullData.collisionObjects || getCollisionObjects(scenario);
