@@ -5,6 +5,7 @@ import {MTLLoader} from '../build/jsm/loaders/MTLLoader.js';
 import { getMaxSize } from "../libs/util/util.js";
 import {moveSkull} from './inimigos/skull.js';
 import {moveCocodemon} from './inimigos/cocodemon.js';
+import { SKULL_STATE } from './inimigos/skull.js';
 
 export const AREA_DIMENSION = 100;
 export const AREAS_Z = -150;
@@ -103,7 +104,8 @@ export async function loadEnemies(scene) {
         const skull = await loadSkull(scene); 
         skulls.push({   obj: skull, 
                         id: i++, boundingBox: new THREE.Box3().setFromObject(skull),
-                        targetPoint: null });
+                        targetPoint: null,
+                        state: SKULL_STATE.WANDERING});
     }
 
     for (let j = 0; j < 3; j++) {
