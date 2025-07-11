@@ -24,6 +24,9 @@ export function Scene0()
     let bd0=SL.genStairedLevel(300,6,100,33,10,16, material3,0);
     bd0.rotateYC(Math.PI);
     
+    let material4 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
+    let box = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), material4);
+        
     let material5 = new THREE.MeshLambertMaterial({color: "rgb(71, 68, 68)"})
     let wallU=new THREE.Mesh(new THREE.BoxGeometry(500,40,0.1),material5);
     let wallD=new THREE.Mesh(new THREE.BoxGeometry(500,40,0.1),material5);
@@ -68,7 +71,12 @@ export function Scene0()
     wallR.translateX(+250.05);
     wallR.translateY(20);
 
-    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL];
+    center.add(box);
+    box.translateZ(-98);
+    box.translateX(20);
+    box.translateY(0.75);
+
+    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL,box];
     
     
     
