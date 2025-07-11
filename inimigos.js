@@ -12,6 +12,7 @@ export const AREAS_Z = -150;
 export const AREAS_Y = 6;
 export const UPPER_LEFT_AREA_X = -125;
 export const ENEMIES_SCALE = 5;
+const MIDDLE_AREA_X = 0;
 
 
 
@@ -117,14 +118,14 @@ export async function loadEnemies(scene) {
     }
 
     for (let skull of skulls){
-        const MIDDLE_AREA_X = 0;
+        
         placeEnemyRandomStartPos(skull.obj, AREA_DIMENSION, AREAS_Z, AREAS_Y, 
-                            MIDDLE_AREA_X);
+                            UPPER_LEFT_AREA_X);
     }
 
     for (let cocodemon of cocodemons){
         placeEnemyRandomStartPos(cocodemon.obj, AREA_DIMENSION, AREAS_Z, AREAS_Y,
-                            UPPER_LEFT_AREA_X);
+                            MIDDLE_AREA_X);
     }
 
     return { skulls, cocodemons }; // Return the loaded enemies

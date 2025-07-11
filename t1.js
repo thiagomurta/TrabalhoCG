@@ -246,12 +246,14 @@ window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)},
 const clock = new THREE.Clock();
 render();
 
+let playerHasEnteredFirstArea = true;
+
 function render() {
     stats.update();
     shootWhileHolding(scene, camera); // will shoot if mouse is down
     if (controls.isLocked) {
         moveAnimate(clock.getDelta());
-        if (enemies) moveEnemies(scenario, enemies, player); // will move enemies
+        if (enemies && playerHasEnteredFirstArea) moveEnemies(scenario, enemies, player); // will move enemies
         moveBullet(scene, camera); // will move bullet if its isShooting attribute is truthy
     }
     renderer.render(scene, camera) // Render scene

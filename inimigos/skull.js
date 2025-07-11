@@ -20,7 +20,6 @@ const WANDER_SPEED = 0.1;
 const PROXIMITY_THRESHOLD = 0.5;
 const COLLISION_CHECK_DISTANCE = 0.5;
 
-export let playerHasEnteredFirstArea = false;
 
 
 export function moveSkull(skullData, scenario, player) {
@@ -28,7 +27,6 @@ export function moveSkull(skullData, scenario, player) {
     if (!skullData.collisionObjects) {
         skullData.collisionObjects = getCollisionObjects(scenario);
     }
-    if (!playerHasEnteredFirstArea) return;
 
     switch (skullData.state) {
         case SKULL_STATE.WANDERING:
@@ -94,11 +92,6 @@ function moveTowardsTarget(skullData, speed, onBlockCallback) {
         skull.lookAt(skullData.targetPoint);
         currentPosition.add(direction.multiplyScalar(speed));
         //check if new currentPosition is outside boundaries, if so, reset targetPoint
-        if (Math.abs(currentPosition.x) > AREA_DIMENSION / 2 || Math.abs(currentPosition.z - AREAS_Z) > AREA_DIMENSION / 2) {
-            console.warn("Skull is out of bounds, resetting target point.");
-            skullData.targetPoint = null;
-            skullData.state = SKULL_STATE.WANDERING; // Reset state to wandering
-        }
     }
 }
 
