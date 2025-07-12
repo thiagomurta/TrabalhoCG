@@ -17,6 +17,8 @@ export function genStair(width,height,length,number_of_steps,materialForStair)
     {
         let aux_buff=new THREE.Mesh(step_geometry,materialForStair);
         center.add(aux_buff);
+        aux_buff.castShadow=true;
+        aux_buff.recieveShadow=true;
         center.step_array.push(aux_buff);
 
         center.step_array[i].translateZ((length-l_p_step/2)-l_p_step*i);
@@ -33,7 +35,7 @@ export function genStair(width,height,length,number_of_steps,materialForStair)
     center.plane=plane;
     center.add(plane);
    
-    plane.translateY(height/2);
+    plane.translateY(height/2+0.3);
     plane.translateZ(length/2);
     const quaternion = new THREE.Quaternion().setFromUnitVectors(
     new THREE.Vector3(0, 1, 0), // Default normal (+Z)
@@ -44,6 +46,7 @@ export function genStair(width,height,length,number_of_steps,materialForStair)
     
 
     center.p_length=p_length;
+    plane.visible=false;
     return center;
 
 }

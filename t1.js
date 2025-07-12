@@ -37,8 +37,9 @@ const verticalCaster= new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3
 
 // ---------------------Ambiente---------------------
 
-let plane = createGroundPlaneXZ(500, 500, 10, 10, "rgb(53, 48, 48)");
+let plane = createGroundPlaneXZ(500, 500, 10, 10, "rgb(153, 148, 148)");
  scene.add(plane);
+ plane.receiveShadow=true;
    // center.plane.translateY(+0.15);
 
 let scenario=S0.Scene0();
@@ -49,7 +50,7 @@ initGun(camera);
 let player = new THREE.Mesh(new THREE.BoxGeometry(1,2,1), new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"}));
 scene.add(player);
 player.translateY(1);
-player.add(camera);
+player.add(camera)
 camera.translateY(1);
 
 const controls = new PointerLockControls(player, renderer.domElement);
@@ -95,15 +96,34 @@ controls.addEventListener('unlock', function () {
 });
 
 // ---------------------Iluminação---------------------
-let positionLight = new THREE.Vector3(0, 20, 100);
-let positionLight2 = new THREE.Vector3(0, 20, -100);
+let positionLight = new THREE.Vector3(50, 250, 100);
+let positionLight2 = new THREE.Vector3(-50, 250, -100);
+
 let lightColor = "rgb(255,255,255)";
-let dirLight = new THREE.DirectionalLight(lightColor, 1);
-let dirLight2 = new THREE.DirectionalLight(lightColor, 1);
+
+let dirLight = new THREE.DirectionalLight(lightColor, 10);
+let dirLight2 = new THREE.DirectionalLight(lightColor,5);
+
 dirLight.position.copy(positionLight);
 dirLight2.position.copy(positionLight2);
 dirLight.castShadow = true;
-dirLight2.castShadow = true;
+dirLight2.castShadow = false;
+
+let camera2 = new THREE.OrthographicCamera(-250, 250, 250, -250, 0.1, 250);
+camera2.position.copy(positionLight);
+camera2.lookAt(new THREE.Vector3(0,0,0));
+let camera3 = new THREE.CameraHelper(camera2);
+scene.add(camera3);
+
+dirLight.shadow.mapSize.width = 512;
+dirLight.shadow.mapSize.height = 512;
+dirLight.shadow.camera.near = 0.1;
+dirLight.shadow.camera.far =5000;
+dirLight.shadow.camera.left = -250;
+dirLight.shadow.camera.right = 250;
+dirLight.shadow.camera.bottom = -250;
+dirLight.shadow.camera.top = 250;
+
 scene.add(dirLight);
 scene.add(dirLight2);
 
@@ -116,9 +136,11 @@ window.addEventListener('keyup', (event) => movementControls(event.keyCode, fals
 scene.add(controls.getObject());
 // ---------------------Criando a Mesh que vai ser usada---------------------
 
-let csgFinal = CHAVE.CHAVE();
-
-scene.add(csgFinal);
+let chave1 = CHAVE.CHAVE('rgb(255, 0, 0)');
+// let chave2 = CHAVE.CHAVE('rgb(255, 255, 0)');
+// chave2.translateX(2);
+scene.add(chave1);
+// scene.add(chave2);
 
 let enemies = await loadEnemies(scene);
 
@@ -127,7 +149,6 @@ let enemies = await loadEnemies(scene);
 // ------------ CONTROLES DO TECLADO --------------
 
 const speed = 20;
-const fall = 10;
 const KEY_S = 83;
 const KEY_W = 87;
 const KEY_A = 65;
@@ -251,6 +272,8 @@ function render() {
         if (enemies && playerHasEnteredFirstArea) moveEnemies(scenario, enemies, player); // will move enemies
         moveBullet(scene, camera); // will move bullet if its isShooting attribute is truthy
     }
+    renderer.shadowMap.enabled=true;
+    renderer.shadowMap.type=THREE.VSMShadowMap;
     renderer.render(scene, camera) // Render scene
     requestAnimationFrame(render);
 }

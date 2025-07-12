@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import {setDefaultMaterial} from "../libs/util/util.js";
 // --------------------- ARMA ---------------------
 // MACROS 
 const GUN_COLOR = 'rgb(100,255,100)';
@@ -116,7 +115,7 @@ function initBullet(camera) {
     BALL_SIZE.heightSegments
   )
 
-  const ballMaterial = setDefaultMaterial(BALL_COLOR);
+  const ballMaterial = new THREE.MeshLambertMaterial({color:BALL_COLOR});
   const ball = new THREE.Mesh(sphereGeometry, ballMaterial);
   ball.position.set(BULLET_ORIGIN_POS.x, BULLET_ORIGIN_POS.y, BULLET_ORIGIN_POS.z);
 
@@ -140,7 +139,7 @@ export function initGun(camera) {
     GUN_SIZE.height,
     GUN_SIZE.segments
   );
-  const gunMaterial = setDefaultMaterial(GUN_COLOR);
+  const gunMaterial = new THREE.MeshLambertMaterial({color:GUN_COLOR});
 
   const gun = new THREE.Mesh(cylinderGeometry, gunMaterial);
 

@@ -125,7 +125,12 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
         this.bb.setFromObject(this.phBx);
         this.stairBB.setFromObject(stairCollider);
     };
-
+    center.width=width;
+    center.height=height;
+    center.length=length;
+    center.s_l=stair_l;
+    center.s_w=stair_w;
+    center.stair_displacement=stair_displacement;
 
     return center;
 }

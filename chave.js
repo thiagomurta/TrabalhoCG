@@ -1,7 +1,7 @@
 import * as THREE from  'three';
 import { CSG } from '../libs/other/CSGMesh.js';
 
-export function CHAVE(){
+export function CHAVE(cor){
 
     let cubeMesh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5));
 
@@ -38,7 +38,7 @@ export function CHAVE(){
     let csgObject = cubeCSG.subtract(cylinderObject).subtract(cylinderCSG3);
 
     let csgFinal = CSG.toMesh(csgObject, new THREE.Matrix4());
-    csgFinal.material = new THREE.MeshPhongMaterial({color: 'rgb(41, 48, 41)'})
+    csgFinal.material = new THREE.MeshPhongMaterial({color: cor})
     csgFinal.position.y = 1;
 
     return csgFinal;
