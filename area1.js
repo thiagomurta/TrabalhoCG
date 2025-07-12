@@ -52,7 +52,11 @@ export function area1(staired_level,material)
         staired_level.vaultedBox.remove(collumn);
     }else
     {
-         staired_level.vaultedBox.meshes.push(collumn);
+        let cylinderGeo1=new THREE.CylinderGeometry( radius+0.8, radius+0.8, height, 35 );
+        let collumnCol = new THREE.Mesh(cylinderGeo1,material);
+        collumn.add(collumnCol);
+        collumnCol.visible=false;
+        staired_level.vaultedBox.meshes.push(collumnCol);
     }
     
     }  
