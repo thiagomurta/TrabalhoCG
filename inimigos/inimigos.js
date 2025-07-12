@@ -138,6 +138,7 @@ export async function loadEnemies(scene) {
             lookAtFrames: 0,
             targetPoint: null,
             state: CACODEMON_STATE.WANDERING,
+            hasShot: false,
             
             // HP Bar specific properties
             hp: 100,
