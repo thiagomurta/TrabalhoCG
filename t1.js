@@ -7,7 +7,8 @@ import {initRenderer,
         createGroundPlaneXZ } from "../libs/util/util.js";
 import * as S0 from "./scene0.js";
 import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
-import {initGun, moveBullet, initShootBall} from "./arma/armaLancador.js";
+import {initGun, moveBullet, initShootBall, removeGun} from "./arma/armaLancador.js";
+import {loadChaingun, removeChaingun, startShootingChaingun, stopShootingChaingun} from "./arma/chaingun.js";
 import * as CHAVE from './chave.js';
 import * as LOOK from './lookers.js'
 import * as INTER from './intersecter.js'
@@ -46,7 +47,8 @@ let scenario=S0.Scene0();
 scene.add(scenario); // Add the scenario to the scene
 scenario.translateY(-0.15);
 
-initGun(camera);
+//initGun(camera);
+loadChaingun(camera);
 let player = new THREE.Mesh(new THREE.BoxGeometry(1,2,1), new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"}));
 scene.add(player);
 player.translateY(1);
@@ -77,11 +79,18 @@ renderer.domElement.addEventListener('mouseup', function (event) {
     }
 }, false);
 
-function shootWhileHolding(scene, camera) {
-    if (isMouseDown) {
-        initShootBall(scenario, scene, camera); // Call the shooting function
+//scrolling up and down calls toggleGun()
+let isCoolingDown = false;
+
+renderer.domElement.addEventListener('wheel', function (event) {
+    if (event.deltaY !== 0 && !isCoolingDown) {
+        toggleGun(); 
+        isCoolingDown = true;
+        setTimeout(() => {
+            isCoolingDown = false;
+        }, 500); //delayzinho dos cria
     }
-}
+}, false);
 
 controls.addEventListener('lock', function () {
     crosshair.style.display = 'block'
@@ -135,6 +144,7 @@ window.addEventListener('keydown', (event) => movementControls(event.keyCode, tr
 window.addEventListener('keyup', (event) => movementControls(event.keyCode, false));
 
 
+
 scene.add(controls.getObject());
 // ---------------------Criando a Mesh que vai ser usada---------------------
 
@@ -161,6 +171,8 @@ const KEY_ARROW_UP = 38;
 const KEY_ARROW_RIGHT = 39;
 const KEY_ARROW_DOWN = 40;
 const KEY_SPACE = 32;
+const KEY_1 = 49; // 1 key
+const KEY_2 = 50; // 2 key
 // const SHOOT = ;
 let moveForward = false;
 let moveBackward = false;
@@ -185,9 +197,16 @@ function movementControls(key, value) { // if xabu , go back here
         case KEY_SPACE: // Space
             console.log("Player position: ", player.position);
             break;
-        // case SHOOT:
-        //     shoot = value;
-        //     break;
+        case KEY_1: // 1 key
+            if (currentGun === GUNTYPE.lancador) {
+                toggleGun(); // Switch to chaingun
+            }
+            break;
+        case KEY_2: // 2 key
+            if (currentGun === GUNTYPE.chaingun) {
+                toggleGun(); // Switch to ball launcher
+            }
+            break;
     }
 }
 
@@ -263,6 +282,44 @@ const clock = new THREE.Clock();
 render();
 
 let playerHasEnteredFirstArea = true;
+const GUNTYPE = {
+    chaingun: 'chaingun',
+    lancador: 'lancador'
+};
+let currentGun = GUNTYPE.chaingun;
+
+function toggleGun() {
+    if (currentGun === GUNTYPE.chaingun) {
+        currentGun = GUNTYPE.lancador;
+        removeChaingun(camera); // Remove the chaingun from the camera
+        initGun(camera); // Initialize the ball launcher
+    } else {
+        currentGun = GUNTYPE.chaingun;
+        removeGun(camera); 
+        loadChaingun(camera); 
+    }
+}
+
+function shootWhileHolding(scene, camera) {
+    if (isMouseDown) {
+        switch (currentGun) {
+            case GUNTYPE.chaingun:
+                startShootingChaingun(); // Call the chaingun shooting function
+                break;
+            case GUNTYPE.lancador:
+                initShootBall(scenario, scene, camera); // Call the shooting function
+                break;
+            default:
+                console.warn("Error with gun type:", currentGun);
+                break;
+        }
+    }
+
+    else {
+        stopShootingChaingun();
+    }
+
+}
 
 function render() {
     stats.update();
