@@ -12,6 +12,7 @@ const BULLET_ORIGIN_POS = {x: 0.0, y: -0.0, z: 0.0};
 
 const BALL_BOX_SIZE = 0.1;
 
+let gun = null;
 let ballArray = [];
 let currentBulletIndex = 0;
 let lastShotTime = 0;
@@ -152,6 +153,9 @@ function initBullet(camera) {
 // CRIA O CILINDRO (ARMA), ADICIONA A CAMERA NA CENA E A ARMA NA CAMERA
 // E INICIALIZA A PRIMEIRA BALA
 export function initGun(camera) {
+  if (gun) {
+      removeGun(camera);
+  }
   const cylinderGeometry = new THREE.CylinderGeometry(
     GUN_SIZE.radius,
     GUN_SIZE.radius,
@@ -160,7 +164,7 @@ export function initGun(camera) {
   );
   const gunMaterial = new THREE.MeshLambertMaterial({color:GUN_COLOR});
 
-  const gun = new THREE.Mesh(cylinderGeometry, gunMaterial);
+  gun = new THREE.Mesh(cylinderGeometry, gunMaterial);
 
   const GUN_Y_OFFSET = -0.3;
   const GUN_AIMS_FORWARD = THREE.MathUtils.degToRad(-90);
@@ -171,3 +175,26 @@ export function initGun(camera) {
   camera.add(gun);
   initBullet(camera);
 }
+
+export function removeGun(camera) {
+    if (gun) {
+        camera.remove(gun);
+        gun = null;
+    }
+
+    for (let i = ballArray.length - 1; i >= 0; i--) {
+        const bulletObj = ballArray[i];
+        const ballMesh = bulletObj.ball;
+
+        if (ballMesh.parent) {
+            ballMesh.parent.remove(ballMesh);
+        }
+    }
+
+    ballArray = [];
+    currentBulletIndex = 0;
+    lastShotTime = 0;
+    
+    console.log("Gun and all bullets removed.");
+}
+
