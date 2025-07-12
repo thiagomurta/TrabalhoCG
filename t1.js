@@ -12,7 +12,7 @@ import * as CHAVE from './chave.js';
 import * as LOOK from './lookers.js'
 import * as INTER from './intersecter.js'
 import * as SCLIMB from './stairClimb.js'
-import { loadEnemies, moveEnemies } from './inimigos.js';
+import { loadEnemies, moveEnemies } from './inimigos/inimigos.js';
 
 // ---------------------Configuração inicial---------------------
 let scene, renderer;
@@ -182,7 +182,7 @@ function moveAnimate(delta) {
 
 
     const isIntersectingEnemies = raycaster.intersectObjects(enemies.skulls.map(e => e.obj)).length > 0 ||
-        raycaster.intersectObjects(enemies.cocodemons.map(e => e.obj)).length
+        raycaster.intersectObjects(enemies.cacodemons.map(e => e.obj)).length
         > 0;
 
     const isIntersectingGround = raycaster.intersectObjects([NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL]).length > 0;

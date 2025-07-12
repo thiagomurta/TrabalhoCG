@@ -1,11 +1,11 @@
 import * as THREE from  'three';
-import {GLTFLoader} from '../build/jsm/loaders/GLTFLoader.js';
-import {OBJLoader} from '../build/jsm/loaders/OBJLoader.js';
-import {MTLLoader} from '../build/jsm/loaders/MTLLoader.js';
-import { getMaxSize } from "../libs/util/util.js";
-import {moveSkull} from './inimigos/skull.js';
-import {moveCocodemon} from './inimigos/cocodemon.js';
-import { SKULL_STATE } from './inimigos/skull.js';
+import {GLTFLoader} from '../../build/jsm/loaders/GLTFLoader.js';
+import {OBJLoader} from '../../build/jsm/loaders/OBJLoader.js';
+import {MTLLoader} from '../../build/jsm/loaders/MTLLoader.js';
+import { getMaxSize } from "../../libs/util/util.js";
+import {moveSkull} from './skull.js';
+import {moveCacodemon} from './cacodemon.js';
+import { SKULL_STATE } from './skull.js';
 
 export const AREA_DIMENSION = 100;
 export const AREAS_Z = -150;
@@ -21,16 +21,16 @@ const MIDDLE_AREA_X = 0;
 // FUNÇÕES DE MOVIMENTAÇÃO DOS INIMIGOS
 
 export function moveEnemies(scenario, enemies, player) {
-    if (!enemies || !Array.isArray(enemies.cocodemons) || !Array.isArray(enemies.skulls)) {
+    if (!enemies || !Array.isArray(enemies.cacodemons) || !Array.isArray(enemies.skulls)) {
         console.log("No enemies to move or enemies data is not in the expected format.");
         console.log(enemies);
         return;
     }
 
-    const cocodemons = enemies.cocodemons;
+    const cacodemons = enemies.cacodemons;
     const skulls = enemies.skulls;
 
-    for (let cocodemonData of cocodemons) moveCocodemon(cocodemonData, scenario, player);
+    for (let cacodemonData of cacodemons) moveCacodemon(cacodemonData, scenario, player);
 
     for (let skullData of skulls) moveSkull(skullData, scenario, player);
 }
@@ -57,16 +57,16 @@ function fixPosition(obj)
   return obj;
 }
 
-async function loadCocoDemon(scene) {
+async function loadCacodemon(scene) {
     try {
-        let cocoDemon = await initCocoDemon();
+        let cacodemon = await initCacodemon();
 
-        cocoDemon = normalizeAndRescale(cocoDemon, 5);
-        cocoDemon = fixPosition(cocoDemon);
-        scene.add(cocoDemon);
-        return cocoDemon;
+        cacodemon = normalizeAndRescale(cacodemon, 5);
+        cacodemon = fixPosition(cacodemon);
+        scene.add(cacodemon);
+        return cacodemon;
     } catch (error) {
-        console.error('Error loading cocodemon: ', error);
+        console.error('Error loading cacodemon: ', error);
     }
 }
 
@@ -98,7 +98,7 @@ function placeEnemyRandomStartPos(enemy, areaDimension, areasZ, areasY, upperLef
 
 export async function loadEnemies(scene) {
     let skulls = [];
-    let cocodemons = [];
+    let cacodemons = [];
     let i = 0;
 
     for (let j = 0; j < 5; j++) {
@@ -110,9 +110,9 @@ export async function loadEnemies(scene) {
     }
 
     for (let j = 0; j < 3; j++) {
-        const cocodemon = await loadCocoDemon(scene); 
-        cocodemons.push({   obj: cocodemon,
-                            id: i++, boundingBox: new THREE.Box3().setFromObject(cocodemon),
+        const cacodemon = await loadCacodemon(scene); 
+        cacodemons.push({   obj: cacodemon,
+                            id: i++, boundingBox: new THREE.Box3().setFromObject(cacodemon),
                             targetPoint: null,
                             isCharging: false });
     }
@@ -123,16 +123,16 @@ export async function loadEnemies(scene) {
                             UPPER_LEFT_AREA_X);
     }
 
-    for (let cocodemon of cocodemons){
-        placeEnemyRandomStartPos(cocodemon.obj, AREA_DIMENSION, AREAS_Z, AREAS_Y,
+    for (let cacodemon of cacodemons){
+        placeEnemyRandomStartPos(cacodemon.obj, AREA_DIMENSION, AREAS_Z, AREAS_Y,
                             MIDDLE_AREA_X);
     }
 
-    return { skulls, cocodemons }; // Return the loaded enemies
+    return { skulls, cacodemons }; // Return the loaded enemies
 }
 
 
-function initCocoDemon() {
+function initCacodemon() {
     let glbLoader = new GLTFLoader();
 
     return new Promise((resolve, reject) => {
@@ -171,4 +171,18 @@ function initSkull(){
             });
         });
     });
+}
+
+export function getCollisionObjects(scenario) {
+    const LEFTMOST_BOX = scenario.objects[0];
+    const UPPER_MIDDLE_BOX = scenario.objects[1];
+    const RIGHTMOST_BOX = scenario.objects[2];
+    const LOWER_MIDDLE_BOX = scenario.objects[3];
+    const NORTH_WALL = scenario.objects[4];
+    const SOUTH_WALL = scenario.objects[5];
+    const LEFT_WALL = scenario.objects[6];
+    const RIGHT_WALL = scenario.objects[7];
+    const PLANE = scenario.parent.children[0];
+    const collisionObjects = [PLANE, LEFTMOST_BOX, UPPER_MIDDLE_BOX, RIGHTMOST_BOX, LOWER_MIDDLE_BOX, NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL];
+    return collisionObjects;
 }
