@@ -100,21 +100,29 @@ export async function loadEnemies(scene) {
     let i = 0;
 
     for (let j = 0; j < 5; j++) {
-        const skull = await loadSkull(); 
+        const skull = await loadSkull();
+        const { hpBarSprite, context, texture } = createHpBar();
+        const enemyGroup = new THREE.Group();
+        enemyGroup.add(skull);
+        hpBarSprite.position.y = 5; 
+        enemyGroup.add(hpBarSprite); 
         const skullData = {
-            obj: skull, 
-            id: i++, boundingBox: new THREE.Box3().setFromObject(skull),
+            obj: enemyGroup, 
+            id: i++, 
+            boundingBox: new THREE.Box3().setFromObject(skull),
             targetPoint: null,
             state: SKULL_STATE.WANDERING,
 
+            // HP Bar specific properties
             hp: 100,
             maxHp: 100,
-            //context: context,
-            //texture: texture,
-            //hpBar: hpBarSprite 
+            context: context,
+            texture: texture,
+            hpBar: hpBarSprite 
         };
         skulls.push(skullData);
-        scene.add(skull); 
+        updateHpBar(skullData); // Initialize the HP bar
+        scene.add(enemyGroup); 
     }
 
     for (let j = 0; j < 3; j++) {
@@ -125,7 +133,7 @@ export async function loadEnemies(scene) {
         hpBarSprite.position.y = 5; 
         enemyGroup.add(hpBarSprite);
         const cacodemonData = {
-            obj: enemyGroup, // The 'obj' is now the GROUP.
+            obj: enemyGroup,
             id: i++,
             lookAtFrames: 0,
             targetPoint: null,
