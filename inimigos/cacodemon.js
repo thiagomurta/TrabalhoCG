@@ -13,7 +13,7 @@ const MAX_WANDER_DISTANCE = 25;
 const WANDER_SPEED = 0.05;
 const PROXIMITY_THRESHOLD = 1.0;
 const COLLISION_CHECK_DISTANCE = 1.0;
-const CACODEMON_VERTICAL_OFFSET = 3.0;
+const CACODEMON_VERTICAL_OFFSET = 2.0;
 
  
 export function moveCacodemon(cacodemonData, scenario, player) {

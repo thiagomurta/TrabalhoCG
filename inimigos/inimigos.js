@@ -58,26 +58,23 @@ function fixPosition(obj)
   return obj;
 }
 
-async function loadCacodemon(scene) {
+async function loadCacodemon() {
     try {
         let cacodemon = await initCacodemon();
 
         cacodemon = normalizeAndRescale(cacodemon, 5);
         cacodemon = fixPosition(cacodemon);
-        scene.add(cacodemon);
         return cacodemon;
     } catch (error) {
         console.error('Error loading cacodemon: ', error);
     }
 }
 
-async function loadSkull(scene) {
+async function loadSkull() {
     try {
         let skull = await initSkull();
-
         skull = normalizeAndRescale(skull, ENEMIES_SCALE);
         skull = fixPosition(skull);
-        scene.add(skull);
         return skull;
     } catch(error) {
         console.error('Error loading skull: ', error);
@@ -103,20 +100,48 @@ export async function loadEnemies(scene) {
     let i = 0;
 
     for (let j = 0; j < 5; j++) {
-        const skull = await loadSkull(scene); 
-        skulls.push({   obj: skull, 
-                        id: i++, boundingBox: new THREE.Box3().setFromObject(skull),
-                        targetPoint: null,
-                        state: SKULL_STATE.WANDERING});
+        const skull = await loadSkull(); 
+        const skullData = {
+            obj: skull, 
+            id: i++, boundingBox: new THREE.Box3().setFromObject(skull),
+            targetPoint: null,
+            state: SKULL_STATE.WANDERING,
+
+            hp: 100,
+            maxHp: 100,
+            //context: context,
+            //texture: texture,
+            //hpBar: hpBarSprite 
+        };
+        skulls.push(skullData);
+        scene.add(skull); 
     }
 
     for (let j = 0; j < 3; j++) {
-        const cacodemon = await loadCacodemon(scene); 
-        cacodemons.push({   obj: cacodemon,
-                            id: i++,
-                            lookAtFrames: 0,
-                            targetPoint: null,
-                            state: CACODEMON_STATE.WANDERING });
+        const cacodemon = await loadCacodemon(); 
+        const { hpBarSprite, context, texture } = createHpBar();
+        const enemyGroup = new THREE.Group();
+        enemyGroup.add(cacodemon);
+        hpBarSprite.position.y = 5; 
+        enemyGroup.add(hpBarSprite);
+        const cacodemonData = {
+            obj: enemyGroup, // The 'obj' is now the GROUP.
+            id: i++,
+            lookAtFrames: 0,
+            targetPoint: null,
+            state: CACODEMON_STATE.WANDERING,
+            
+            // HP Bar specific properties
+            hp: 100,
+            maxHp: 100,
+            context: context,
+            texture: texture,
+            hpBar: hpBarSprite 
+        };
+
+        cacodemons.push(cacodemonData);
+        updateHpBar(cacodemonData); // Initialize the HP bar
+        scene.add(enemyGroup);
     }
 
     for (let skull of skulls){
@@ -188,4 +213,47 @@ export function getCollisionObjects(scenario) {
     const PLANE = scenario.parent.children[0];
     const collisionObjects = [PLANE, LEFTMOST_BOX, UPPER_MIDDLE_BOX, RIGHTMOST_BOX, LOWER_MIDDLE_BOX, NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL];
     return collisionObjects;
+}
+
+function createHpBar() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 64;
+    const context = canvas.getContext('2d');
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace; 
+
+    const material = new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true, 
+    });
+
+    const hpBarSprite = new THREE.Sprite(material);
+    hpBarSprite.scale.set(3, 0.75, 1.0); 
+    hpBarSprite.raycast = () => {};
+    return { hpBarSprite, context, texture };
+}
+
+function updateHpBar(cacodemonData) {
+    const { context, texture, hp, maxHp } = cacodemonData;
+    const canvas = context.canvas;
+
+    //clears the canvas
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    context.fillStyle = '#FF0000'; // Red
+    context.fillRect(0, 10, canvas.width, 44); // x, y, width, height
+
+    // draws hp percentage
+    const healthPercentage = hp / maxHp;
+    const healthWidth = canvas.width * healthPercentage;
+    context.fillStyle = '#00FF00'; // Green
+    context.fillRect(0, 10, healthWidth, 44);
+
+    context.strokeStyle = '#000000'; // Black
+    context.lineWidth = 8;
+    context.strokeRect(0, 10, canvas.width, 44);
+
+    texture.needsUpdate = true;
 }
