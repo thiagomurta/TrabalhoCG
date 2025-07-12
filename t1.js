@@ -95,13 +95,13 @@ controls.addEventListener('unlock', function () {
 });
 
 // ---------------------Iluminação---------------------
-let positionLight = new THREE.Vector3(50, 30, 100);
-let positionLight2 = new THREE.Vector3(-50, 30, -100);
+let positionLight = new THREE.Vector3(50, 250, 100);
+let positionLight2 = new THREE.Vector3(-50, 250, -100);
 
 let lightColor = "rgb(255,255,255)";
 
 let dirLight = new THREE.DirectionalLight(lightColor, 10);
-let dirLight2 = new THREE.DirectionalLight(lightColor, 0.75);
+let dirLight2 = new THREE.DirectionalLight(lightColor,5);
 
 dirLight.position.copy(positionLight);
 dirLight2.position.copy(positionLight2);
@@ -117,7 +117,7 @@ scene.add(camera3);
 dirLight.shadow.mapSize.width = 512;
 dirLight.shadow.mapSize.height = 512;
 dirLight.shadow.camera.near = 0.1;
-dirLight.shadow.camera.far = 250;
+dirLight.shadow.camera.far =5000;
 dirLight.shadow.camera.left = -250;
 dirLight.shadow.camera.right = 250;
 dirLight.shadow.camera.bottom = -250;
@@ -260,7 +260,8 @@ function render() {
         moveAnimate(clock.getDelta());
     }
     moveBullet(scene, camera); // will move bullet if its isShooting attribute is truthy
-    
+    renderer.shadowMap.enabled=true;
+    renderer.shadowMap.type=THREE.VSMShadowMap;
     renderer.render(scene, camera) // Render scene
     requestAnimationFrame(render);
 }
