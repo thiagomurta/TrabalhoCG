@@ -4,13 +4,14 @@ import * as THREE from 'three';
 
 const MOVE_SPEED = 0.1;
 const COLLISION_CHECK_DISTANCE = 0.5;
+const MAX_WANDER_DISTANCE = 20; // Maximum distance for wandering
 
 export function moveCacodemon(cacodemonData, scenario, player) {
     if (!cacodemonData.collisionObjects) cacodemonData.collisionObjects = getCollisionObjects(scenario);
 
     handleWanderingState(cacodemonData, player);
     
-    applyVerticalCollision(cacodemonData);
+    //applyVerticalCollision(cacodemonData);
 }
 
 function getNewWanderTarget(currentPosition) {
