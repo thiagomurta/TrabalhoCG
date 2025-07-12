@@ -6,6 +6,7 @@ import { getMaxSize } from "../../libs/util/util.js";
 import {moveSkull} from './skull.js';
 import {moveCacodemon} from './cacodemon.js';
 import { SKULL_STATE } from './skull.js';
+import { CACODEMON_STATE } from './cacodemon.js';
 
 export const AREA_DIMENSION = 100;
 export const AREAS_Z = -150;
@@ -112,15 +113,17 @@ export async function loadEnemies(scene) {
     for (let j = 0; j < 3; j++) {
         const cacodemon = await loadCacodemon(scene); 
         cacodemons.push({   obj: cacodemon,
-                            id: i++, boundingBox: new THREE.Box3().setFromObject(cacodemon),
+                            id: i++,
+                            lookAtFrames: 0,
                             targetPoint: null,
-                            isCharging: false });
+                            state: CACODEMON_STATE.WANDERING });
     }
 
     for (let skull of skulls){
         
         placeEnemyRandomStartPos(skull.obj, AREA_DIMENSION, AREAS_Z, AREAS_Y, 
                             UPPER_LEFT_AREA_X);
+
     }
 
     for (let cacodemon of cacodemons){

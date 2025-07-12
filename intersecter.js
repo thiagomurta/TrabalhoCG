@@ -4,8 +4,18 @@ import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js'
 
 import * as LOOK from './lookers.js'
 
-export function intersection(caster,objects,controls,distance)
+export function intersection(caster, objects, enemies, controls, distance)
 {
+    const ray = caster.ray;
+
+    // Check intersection with skull meshes
+    const isIntersectingSkulls = caster.intersectObjects(enemies.skulls.map(e => e.obj)).length > 0;
+    // Check intersection with meshes
+    const isIntersectingCacodemons = caster.intersectObjects(enemies.cacodemons.map(e => e.obj)).length > 0;
+
+
+    if (isIntersectingSkulls || isIntersectingCacodemons) return true;
+
     for(let i =0;i<objects.length;i++)
     {
         if(i<=3)
