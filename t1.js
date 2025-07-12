@@ -94,15 +94,34 @@ controls.addEventListener('unlock', function () {
 });
 
 // ---------------------Iluminação---------------------
-let positionLight = new THREE.Vector3(0, 20, 100);
-let positionLight2 = new THREE.Vector3(0, 20, -100);
+let positionLight = new THREE.Vector3(50, 30, 100);
+let positionLight2 = new THREE.Vector3(-50, 30, -100);
+
 let lightColor = "rgb(255,255,255)";
-let dirLight = new THREE.DirectionalLight(lightColor, 1);
-let dirLight2 = new THREE.DirectionalLight(lightColor, 1);
+
+let dirLight = new THREE.DirectionalLight(lightColor, 1.5);
+let dirLight2 = new THREE.DirectionalLight(lightColor, 0.75);
+
 dirLight.position.copy(positionLight);
 dirLight2.position.copy(positionLight2);
 dirLight.castShadow = true;
-dirLight2.castShadow = true;
+dirLight2.castShadow = false;
+
+let camera2 = new THREE.OrthographicCamera(-250, 250, 250, -250, 0.1, 250);
+camera2.position.copy(positionLight);
+camera2.lookAt(new THREE.Vector3(0,0,0));
+let camera3 = new THREE.CameraHelper(camera2);
+scene.add(camera3);
+
+dirLight.shadow.mapSize.width = 512;
+dirLight.shadow.mapSize.height = 512;
+dirLight.shadow.camera.near = 0.1;
+dirLight.shadow.camera.far = 250;
+dirLight.shadow.camera.left = -250;
+dirLight.shadow.camera.right = 250;
+dirLight.shadow.camera.bottom = -250;
+dirLight.shadow.camera.top = 250;
+
 scene.add(dirLight);
 scene.add(dirLight2);
 
@@ -115,9 +134,11 @@ window.addEventListener('keyup', (event) => movementControls(event.keyCode, fals
 scene.add(controls.getObject());
 // ---------------------Criando a Mesh que vai ser usada---------------------
 
-let csgFinal = CHAVE.CHAVE();
-
-scene.add(csgFinal);
+let chave1 = CHAVE.CHAVE('rgb(255, 0, 0)');
+// let chave2 = CHAVE.CHAVE('rgb(255, 255, 0)');
+// chave2.translateX(2);
+scene.add(chave1);
+// scene.add(chave2);
 
 
 const speed = 20;
