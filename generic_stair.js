@@ -16,9 +16,10 @@ export function genStair(width,height,length,number_of_steps,materialForStair)
     for(let i=0;i<number_of_steps;i++)
     {
         let aux_buff=new THREE.Mesh(step_geometry,materialForStair);
-        center.add(aux_buff);
         aux_buff.castShadow=true;
         aux_buff.recieveShadow=true;
+        center.add(aux_buff);
+        
         center.step_array.push(aux_buff);
 
         center.step_array[i].translateZ((length-l_p_step/2)-l_p_step*i);
