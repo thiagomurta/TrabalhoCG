@@ -7,7 +7,7 @@ import {initRenderer,
         createGroundPlaneXZ } from "../libs/util/util.js";
 import * as S0 from "./scene0.js";
 import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
-import {initGun, moveBullet, initShootBall} from "./arma.js";
+import {initGun, moveBullet, initShootBall} from "./arma/armaLancador.js";
 import * as CHAVE from './chave.js';
 import * as LOOK from './lookers.js'
 import * as INTER from './intersecter.js'
@@ -96,33 +96,35 @@ controls.addEventListener('unlock', function () {
 });
 
 // ---------------------Iluminação---------------------
-let positionLight = new THREE.Vector3(50, 250, 100);
-let positionLight2 = new THREE.Vector3(-50, 250, -100);
+let positionLight = new THREE.Vector3(-200, 400, -200);
+let positionLight2 = new THREE.Vector3(200, 400, 200);
 
 let lightColor = "rgb(255,255,255)";
 
-let dirLight = new THREE.DirectionalLight(lightColor, 10);
-let dirLight2 = new THREE.DirectionalLight(lightColor,5);
+let dirLight = new THREE.DirectionalLight(lightColor, 2);
+let dirLight2 = new THREE.DirectionalLight(lightColor, 1);
 
 dirLight.position.copy(positionLight);
 dirLight2.position.copy(positionLight2);
 dirLight.castShadow = true;
-dirLight2.castShadow = false;
 
-let camera2 = new THREE.OrthographicCamera(-250, 250, 250, -250, 0.1, 250);
-camera2.position.copy(positionLight);
-camera2.lookAt(new THREE.Vector3(0,0,0));
-let camera3 = new THREE.CameraHelper(camera2);
-scene.add(camera3);
+dirLight.shadow.mapSize.width = 1024;
+dirLight.shadow.mapSize.height = 1024;
+dirLight.shadow.camera.left = -300;
+dirLight.shadow.camera.right = 300;
+dirLight.shadow.camera.top = 300;
+dirLight.shadow.camera.bottom = -300;
+dirLight.shadow.camera.near = 1;
+dirLight.shadow.camera.far = 1000;
 
-dirLight.shadow.mapSize.width = 512;
-dirLight.shadow.mapSize.height = 512;
-dirLight.shadow.camera.near = 0.1;
-dirLight.shadow.camera.far =5000;
-dirLight.shadow.camera.left = -250;
-dirLight.shadow.camera.right = 250;
-dirLight.shadow.camera.bottom = -250;
-dirLight.shadow.camera.top = 250;
+
+dirLight.target.position.set(0, 0, 5);
+dirLight2.target.position.set(0, 0, -5);
+scene.add(dirLight.target);
+scene.add(dirLight2.target);
+
+const ambiente = new THREE.AmbientLight(lightColor, 0.5);
+scene.add(ambiente);
 
 scene.add(dirLight);
 scene.add(dirLight2);
@@ -268,7 +270,7 @@ function render() {
     if (controls.isLocked) {
         moveAnimate(clock.getDelta());
         if (enemies && playerHasEnteredFirstArea) moveEnemies(scene, scenario, enemies, player); // will move enemies
-        moveBullet(scene, camera); // will move bullet if its isShooting attribute is truthy
+        moveBullet(scene, camera, enemies); // will move bullet if its isShooting attribute is truthy
     }
     renderer.shadowMap.enabled=true;
     renderer.shadowMap.type=THREE.VSMShadowMap;

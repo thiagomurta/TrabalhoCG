@@ -10,7 +10,7 @@ export function stairclimb(caster,objects,controls)
             let playerPosition=controls.camera.position;
             if(playerPosition.y<intersection.y+5 || playerPosition.y>intersection.y-5)
             {
-                console.log("ba");
+                //console.log("ba");
                 playerPosition.y=intersection.y+1;
             }
         }

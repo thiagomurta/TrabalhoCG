@@ -59,8 +59,8 @@ export async function loadEnemies(scene) {
             state: SKULL_STATE.WANDERING,
 
             // HP Bar 
-            hp: 50,
-            maxHp: 50,
+            hp: 20,
+            maxHp: 20,
             context: context,
             texture: texture,
             hpBar: hpBarSprite 
@@ -86,8 +86,8 @@ export async function loadEnemies(scene) {
             hasShot: false,
             
             // HP Bar
-            hp: 20,
-            maxHp: 20,
+            hp: 50,
+            maxHp: 50,
             context: context,
             texture: texture,
             hpBar: hpBarSprite 
@@ -99,10 +99,8 @@ export async function loadEnemies(scene) {
     }
 
     for (let skull of skulls){
-        
         placeEnemyRandomStartPos(skull.obj, AREA_DIMENSION, AREAS_Z, AREAS_Y, 
                             UPPER_LEFT_AREA_X);
-
     }
 
     for (let cacodemon of cacodemons){
@@ -267,4 +265,24 @@ function updateHpBar(cacodemonData) {
     context.strokeRect(0, 10, canvas.width, 44);
 
     texture.needsUpdate = true;
+}
+
+export function damageCacodemon(cacodemonData, damage) {
+    cacodemonData.hp -= damage;
+    if (cacodemonData.hp <= 0) {
+        cacodemonData.hp = 0;
+        cacodemonData.state = CACODEMON_STATE.DEAD; 
+        cacodemonData.obj.visible = false; 
+    }
+    updateHpBar(cacodemonData);
+}
+
+export function damageSkull(skullData, damage) {
+    skullData.hp -= damage;
+    if (skullData.hp <= 0) {
+        skullData.hp = 0;
+        skullData.state = SKULL_STATE.DEAD; 
+        skullData.obj.visible = false; 
+    }
+    updateHpBar(skullData);
 }

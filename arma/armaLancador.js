@@ -1,11 +1,12 @@
 import * as THREE from 'three';
+import { damageCacodemon, damageSkull } from '../inimigos/inimigos.js';
 // --------------------- ARMA ---------------------
 // MACROS 
 const GUN_COLOR = 'rgb(100,255,100)';
 const BALL_COLOR = 'rgb(100, 193, 255)';
 const GUN_SIZE = { radius: 0.1, height: 2, segments: 32};
 const BALL_SIZE = { radius: 0.05, widthSegments: 20, heightSegments: 20 };
-const BALL_SPEED = 0.5;
+const BALL_SPEED = 0.8;
 const BULLET_ORIGIN_POS = {x: 0.0, y: -0.0, z: 0.0};
 //{x: 0.0, y: -0.35, z: -1.3}; muzzle
 
@@ -70,8 +71,17 @@ export function shootBall(scenario, scene, camera) {
   currentBulletIndex++;
 }
 
+function removeBullet(scene, bullet, ball, ballArray, i, camera){
+  bullet.isShooting = false; // Stop movement
+  //remove bullet from the scene
+  scene.remove(ball);
+  ballArray.splice(i, 1);
+  i--;
+  initBullet(camera);
+}
+
 // PARA CADA BALA NA CENA, TRANSLADA O Z SE MOVIMENTAÇÃO HABILITADA
-export function moveBullet(scene, camera) {
+export function moveBullet(scene, camera, enemies) {
   for (let i = 0; i < ballArray.length; i++) {
     const bullet = ballArray[i];
     const ball = bullet.ball; 
@@ -79,26 +89,35 @@ export function moveBullet(scene, camera) {
       const distanceToTarget = ball.position.distanceTo(bullet.targetPoint);
 
       if (distanceToTarget <= BALL_SPEED) {
-        bullet.isShooting = false; // Stop movement
-        //remove bullet from the scene
-        scene.remove(ball);
-        ballArray.splice(i, 1);
-        i--;
-        initBullet(camera);
+        removeBullet(scene, bullet, ball, ballArray, i, camera);
         continue; // Skip further processing for this bullet
       }
 
       bullet.ball.position.add(bullet.velocity);
-      if (bullet.boundingBox) {
-        
-        const worldPosition = new THREE.Vector3();
-        bullet.ball.getWorldPosition(worldPosition);
-        
-
-        bullet.boundingBox.setFromCenterAndSize(
-          worldPosition,
-          new THREE.Vector3(BALL_BOX_SIZE, BALL_BOX_SIZE, BALL_BOX_SIZE)
-        );
+      if (!enemies || !Array.isArray(enemies.cacodemons) || !Array.isArray(enemies.skulls)) {
+        console.log("No enemies to move or enemies data is not in the expected format.");
+        console.log(enemies);
+        return;
+      }
+      const bulletBox = new THREE.Box3().setFromObject(bullet.ball);
+      
+      for (const enemy of enemies.cacodemons) {
+        const enemyBox = new THREE.Box3().setFromObject(enemy.obj.children[0]);
+        if (bulletBox.intersectsBox(enemyBox)) {
+          console.log("Hit an enemy!");
+          removeBullet(scene, bullet, ball, ballArray, i, camera);
+          damageCacodemon(enemy, 10);
+          continue;
+        }
+      }
+      for (const enemy of enemies.skulls) {
+        const enemyBox = new THREE.Box3().setFromObject(enemy.obj.children[0]);
+        if (bulletBox.intersectsBox(enemyBox)) {
+          console.log("Hit an enemy!");
+          removeBullet(scene, bullet, ball, ballArray, i, camera);
+          damageSkull(enemy, 10);
+          continue;
+        }
       }
 
     }

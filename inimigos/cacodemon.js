@@ -30,7 +30,6 @@ export function moveCacodemon(cacodemonData, scenario, player, scene) {
             handleLookingState(cacodemonData, player, scene);
             break;
     }
-    console.log("cacodemon lookat frames: ", cacodemonData.lookAtFrames);
 
     moveFireball(cacodemonData, scene);
 
@@ -192,7 +191,6 @@ function initFireball(cacodemonData) {
       targetPoint: new THREE.Vector3() 
     }); //set when shot 
     cacodemonData.obj.add(fireball);
-    console.log(cacodemonData.obj);
 }
 
 function moveFireball(cacodemonData, scene) {
