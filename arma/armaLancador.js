@@ -107,7 +107,7 @@ export function moveBullet(scene, camera, enemies) {
         if (bulletBox.intersectsBox(enemyBox)) {
           console.log("Hit an enemy!");
           removeBullet(scene, bullet, ball, ballArray, i, camera);
-          damageCacodemon(enemy, 10);
+          damageCacodemon(enemies.cacodemons, enemy, 10);
           continue;
         }
       }
@@ -116,7 +116,7 @@ export function moveBullet(scene, camera, enemies) {
         if (bulletBox.intersectsBox(enemyBox)) {
           console.log("Hit an enemy!");
           removeBullet(scene, bullet, ball, ballArray, i, camera);
-          damageSkull(enemy, 10);
+          damageSkull(enemies.skulls, enemy, 10);
           continue;
         }
       }

@@ -94,7 +94,7 @@ function damageEnemies(enemies, camera) {
         });
 
         if (cacodemonData) {
-            damageCacodemon(cacodemonData, 2);
+            damageCacodemon(enemies.cacodemons, cacodemonData, 2);
             return; 
         }
 
@@ -108,7 +108,7 @@ function damageEnemies(enemies, camera) {
         });
 
         if (skullData) {
-            damageSkull(skullData, 2);
+            damageSkull(enemies.skulls, skullData, 2);
         }
     }
 }

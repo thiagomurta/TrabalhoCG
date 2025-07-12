@@ -13,7 +13,7 @@ import * as CHAVE from './chave.js';
 import * as LOOK from './lookers.js'
 import * as INTER from './intersecter.js'
 import * as SCLIMB from './stairClimb.js'
-import { loadEnemies, moveEnemies } from './inimigos/inimigos.js';
+import { loadEnemies, moveEnemies, updateAnimations } from './inimigos/inimigos.js';
 
 // ---------------------Configuração inicial---------------------
 let scene, renderer;
@@ -289,6 +289,7 @@ const clock = new THREE.Clock();
 render();
 
 let playerHasEnteredFirstArea = true;
+export let fadingObjects = [];
 const GUNTYPE = {
     chaingun: 'chaingun',
     lancador: 'lancador'
@@ -333,6 +334,7 @@ function render() {
     stats.update();
     shootWhileHolding(scene, camera); // will shoot if mouse is down
     if (controls.isLocked) {
+        updateAnimations();
         moveAnimate(clock.getDelta());
         if (enemies && playerHasEnteredFirstArea) moveEnemies(scene, scenario, enemies, player); // will move enemies
         moveBullet(scene, camera, enemies); // will move bullet if its isShooting attribute is truthy
