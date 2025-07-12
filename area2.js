@@ -16,10 +16,10 @@ export function area2(staired_level,material)
     {
         for(let j=0;j<numCollumns;j++)
         {
-            let boxGeometry=new THREE.BoxGeometry(b_w,(i)+(j)+4,b_w);
+            let boxGeometry=new THREE.BoxGeometry(b_w,(4-i)+(5-j)+4,b_w);
             let box= new THREE.Mesh(boxGeometry,material);
             staired_level.vaultedBox.add(box);
-            box.translateY(sl_height+((i)+(j)+4)/2);
+            box.translateY(sl_height+((4-i)+(5-j)+4)/2);
             box.translateX(+b_w/2 -sl_width/2+(j)*(displacement_x+b_w) );
             box.translateZ(+b_w/2-sl_width/2+(i)*(displacement_z+b_w));
             if(box.position.z>(sl_width/2-staired_level.s_l) && box.position.x>=(-staired_level.s_w/2 )&& (box.position.x<=(staired_level.s_w/2)))
@@ -29,6 +29,8 @@ export function area2(staired_level,material)
                     let boxCol= new THREE.Mesh(boxGeometry1,material);
                     box.add(boxCol);
                     boxCol.visible=false;
+                    box.castShadow=true;
+                    box.recieveShadow=true;
                     
                     staired_level.vaultedBox.meshes.push(boxCol);
             }

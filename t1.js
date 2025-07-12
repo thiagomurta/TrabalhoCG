@@ -36,8 +36,9 @@ const verticalCaster= new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3
 
 // ---------------------Ambiente---------------------
 
-let plane = createGroundPlaneXZ(500, 500, 10, 10, "rgb(53, 48, 48)");
+let plane = createGroundPlaneXZ(500, 500, 10, 10, "rgb(153, 148, 148)");
  scene.add(plane);
+ plane.receiveShadow=true;
    // center.plane.translateY(+0.15);
 
 let scenario=S0.Scene0();
@@ -99,7 +100,7 @@ let positionLight2 = new THREE.Vector3(-50, 30, -100);
 
 let lightColor = "rgb(255,255,255)";
 
-let dirLight = new THREE.DirectionalLight(lightColor, 1.5);
+let dirLight = new THREE.DirectionalLight(lightColor, 10);
 let dirLight2 = new THREE.DirectionalLight(lightColor, 0.75);
 
 dirLight.position.copy(positionLight);
@@ -259,6 +260,7 @@ function render() {
         moveAnimate(clock.getDelta());
     }
     moveBullet(scene, camera); // will move bullet if its isShooting attribute is truthy
+    
     renderer.render(scene, camera) // Render scene
     requestAnimationFrame(render);
 }
