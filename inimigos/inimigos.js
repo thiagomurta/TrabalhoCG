@@ -19,9 +19,9 @@ const MIDDLE_AREA_X = 0;
 
 // ----------------------- INIMIGOS -------------------------
 
-// FUNÇÕES DE MOVIMENTAÇÃO DOS INIMIGOS
+// ## FUNÇÕES DE MOVIMENTAÇÃO DOS INIMIGOS ##
 
-export function moveEnemies(scenario, enemies, player) {
+export function moveEnemies(scene, scenario, enemies, player) {
     if (!enemies || !Array.isArray(enemies.cacodemons) || !Array.isArray(enemies.skulls)) {
         console.log("No enemies to move or enemies data is not in the expected format.");
         console.log(enemies);
@@ -31,68 +31,13 @@ export function moveEnemies(scenario, enemies, player) {
     const cacodemons = enemies.cacodemons;
     const skulls = enemies.skulls;
 
-    for (let cacodemonData of cacodemons) moveCacodemon(cacodemonData, scenario, player);
+    for (let cacodemonData of cacodemons) moveCacodemon(cacodemonData, scenario, player, scene);
 
     for (let skullData of skulls) moveSkull(skullData, scenario, player);
 }
 
 
-// FUNÇOES AUXILIARES
-function normalizeAndRescale(obj, newScale)
-{
-  var scale = getMaxSize(obj); 
-  obj.scale.set(newScale * (1.0/scale),
-                newScale * (1.0/scale),
-                newScale * (1.0/scale));
-  return obj;
-}
-
-function fixPosition(obj)
-{
-  // Fix position of the object over the ground plane
-  var box = new THREE.Box3().setFromObject( obj );
-  if(box.min.y > 0)
-    obj.translateY(-box.min.y);
-  else
-    obj.translateY(-1*box.min.y);
-  return obj;
-}
-
-async function loadCacodemon() {
-    try {
-        let cacodemon = await initCacodemon();
-
-        cacodemon = normalizeAndRescale(cacodemon, 5);
-        cacodemon = fixPosition(cacodemon);
-        return cacodemon;
-    } catch (error) {
-        console.error('Error loading cacodemon: ', error);
-    }
-}
-
-async function loadSkull() {
-    try {
-        let skull = await initSkull();
-        skull = normalizeAndRescale(skull, ENEMIES_SCALE);
-        skull = fixPosition(skull);
-        return skull;
-    } catch(error) {
-        console.error('Error loading skull: ', error);
-    }
-}
-
-function placeEnemyRandomStartPos(enemy, areaDimension, areasZ, areasY, upperLeftAreaX) {
-    enemy.translateZ(areasZ);
-    enemy.translateY(areasY);
-    enemy.translateX(upperLeftAreaX);
-
-    const deltaX = Math.random() * areaDimension - (areaDimension / 2);
-    const deltaZ = Math.random() * areaDimension - (areaDimension / 2);
-    enemy.translateZ(deltaZ);
-    enemy.translateX(deltaX);
-
-    return enemy;
-}
+// ## CARREGAMENTO DOS MODELOS DOS INIMIGOS ##
 
 export async function loadEnemies(scene) {
     let skulls = [];
@@ -113,9 +58,9 @@ export async function loadEnemies(scene) {
             targetPoint: null,
             state: SKULL_STATE.WANDERING,
 
-            // HP Bar specific properties
-            hp: 100,
-            maxHp: 100,
+            // HP Bar 
+            hp: 50,
+            maxHp: 50,
             context: context,
             texture: texture,
             hpBar: hpBarSprite 
@@ -140,9 +85,9 @@ export async function loadEnemies(scene) {
             state: CACODEMON_STATE.WANDERING,
             hasShot: false,
             
-            // HP Bar specific properties
-            hp: 100,
-            maxHp: 100,
+            // HP Bar
+            hp: 20,
+            maxHp: 20,
             context: context,
             texture: texture,
             hpBar: hpBarSprite 
@@ -168,6 +113,28 @@ export async function loadEnemies(scene) {
     return { skulls, cacodemons }; // Return the loaded enemies
 }
 
+async function loadCacodemon() {
+    try {
+        let cacodemon = await initCacodemon();
+
+        cacodemon = normalizeAndRescale(cacodemon, ENEMIES_SCALE);
+        cacodemon = fixPosition(cacodemon);
+        return cacodemon;
+    } catch (error) {
+        console.error('Error loading cacodemon: ', error);
+    }
+}
+
+async function loadSkull() {
+    try {
+        let skull = await initSkull();
+        skull = normalizeAndRescale(skull, ENEMIES_SCALE);
+        skull = fixPosition(skull);
+        return skull;
+    } catch(error) {
+        console.error('Error loading skull: ', error);
+    }
+}
 
 function initCacodemon() {
     let glbLoader = new GLTFLoader();
@@ -188,7 +155,6 @@ function initCacodemon() {
 }
 
 function initSkull(){
-
     let mtlloader = new MTLLoader();
     let objloader = new OBJLoader();
     return new Promise((resolve, reject) => {
@@ -210,6 +176,8 @@ function initSkull(){
     });
 }
 
+// ## FUNÇOES AUXILIARES ##
+
 export function getCollisionObjects(scenario) {
     const LEFTMOST_BOX = scenario.objects[0];
     const UPPER_MIDDLE_BOX = scenario.objects[1];
@@ -223,6 +191,40 @@ export function getCollisionObjects(scenario) {
     const collisionObjects = [PLANE, LEFTMOST_BOX, UPPER_MIDDLE_BOX, RIGHTMOST_BOX, LOWER_MIDDLE_BOX, NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL];
     return collisionObjects;
 }
+
+function normalizeAndRescale(obj, newScale)
+{
+  var scale = getMaxSize(obj); 
+  obj.scale.set(newScale * (1.0/scale),
+                newScale * (1.0/scale),
+                newScale * (1.0/scale));
+  return obj;
+}
+
+function fixPosition(obj)
+{
+  var box = new THREE.Box3().setFromObject( obj );
+  if(box.min.y > 0)
+    obj.translateY(-box.min.y);
+  else
+    obj.translateY(-1*box.min.y);
+  return obj;
+}
+
+function placeEnemyRandomStartPos(enemy, areaDimension, areasZ, areasY, upperLeftAreaX) {
+    enemy.translateZ(areasZ);
+    enemy.translateY(areasY);
+    enemy.translateX(upperLeftAreaX);
+
+    const deltaX = Math.random() * areaDimension - (areaDimension / 2);
+    const deltaZ = Math.random() * areaDimension - (areaDimension / 2);
+    enemy.translateZ(deltaZ);
+    enemy.translateX(deltaX);
+
+    return enemy;
+}
+
+// ## FUNÇÕES DE HP BAR ##
 
 function createHpBar() {
     const canvas = document.createElement('canvas');
