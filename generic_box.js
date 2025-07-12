@@ -42,7 +42,10 @@ export function genBox(width,height,length,stair_w,stair_l,materialForBox,stair_
     center.meshes.push(center.leftBox);
     center.meshes.push(center.upperBox);
     center.meshes.push(center.rightBox);
-
+    for (let mesh of center.meshes) {
+        mesh.receiveShadow = true;
+        mesh.castShadow = true;
+    }
 
     return center;
 
