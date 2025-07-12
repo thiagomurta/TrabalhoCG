@@ -52,6 +52,7 @@ export async function loadEnemies(scene) {
         hpBarSprite.position.y = 5; 
         enemyGroup.add(hpBarSprite); 
         const skullData = {
+            name: 'skull',
             obj: enemyGroup, 
             id: i++, 
             boundingBox: new THREE.Box3().setFromObject(skull),
@@ -78,6 +79,7 @@ export async function loadEnemies(scene) {
         hpBarSprite.position.y = 5; 
         enemyGroup.add(hpBarSprite);
         const cacodemonData = {
+            name: 'cacodemon',
             obj: enemyGroup,
             id: i++,
             lookAtFrames: 0,

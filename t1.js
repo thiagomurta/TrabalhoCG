@@ -67,15 +67,18 @@ instructions.addEventListener('click', function () {
 
 let isMouseDown = false; // Track whether the mouse button is held down
 
-renderer.domElement.addEventListener('mousedown', function (event) {
-    if (event.button === 2 || (event.button === 0 && crosshair.style.display === 'block')) { // Right mouse button or left mouse button when crosshair is visible
+window.addEventListener('mousedown', function (event) {
+    if (!controls.isLocked) return; 
+
+    //check for either left or right mouse button, either work
+    if (event.button === 0 || event.button === 2) {
         isMouseDown = true; 
     }
 }, false);
 
-renderer.domElement.addEventListener('mouseup', function (event) {
-    if (event.button === 2 || event.button === 0) { // Right or left mouse button
-        isMouseDown = false; // Set the flag to false
+window.addEventListener('mouseup', function (event) {
+    if (event.button === 0) { 
+        isMouseDown = false; 
     }
 }, false);
 
@@ -182,27 +185,31 @@ let moveRight = false;
 
 function movementControls(key, value) { // if xabu , go back here
     switch (key) {
-        case KEY_W || KEY_ARROW_UP: // W
+        case KEY_ARROW_UP:
+        case KEY_W:
             moveForward = value;
             break;
-        case KEY_S || KEY_ARROW_DOWN: // S
+        case KEY_ARROW_DOWN:
+        case KEY_S:
             moveBackward = value;
             break;
-        case KEY_A || KEY_ARROW_LEFT: // A
+        case KEY_ARROW_RIGHT:
+        case KEY_A:
             moveLeft = value;
             break;
-        case KEY_D || KEY_ARROW_RIGHT: // D
+        case KEY_ARROW_LEFT:
+        case KEY_D:
             moveRight = value;
             break;
-        case KEY_SPACE: // Space
+        case KEY_SPACE:
             console.log("Player position: ", player.position);
             break;
-        case KEY_1: // 1 key
+        case KEY_1:
             if (currentGun === GUNTYPE.lancador) {
                 toggleGun(); // Switch to chaingun
             }
             break;
-        case KEY_2: // 2 key
+        case KEY_2:
             if (currentGun === GUNTYPE.chaingun) {
                 toggleGun(); // Switch to ball launcher
             }
@@ -301,10 +308,11 @@ function toggleGun() {
 }
 
 function shootWhileHolding(scene, camera) {
+    
     if (isMouseDown) {
         switch (currentGun) {
             case GUNTYPE.chaingun:
-                startShootingChaingun(); // Call the chaingun shooting function
+                startShootingChaingun(enemies, camera); // Call the chaingun shooting function
                 break;
             case GUNTYPE.lancador:
                 initShootBall(scenario, scene, camera); // Call the shooting function
