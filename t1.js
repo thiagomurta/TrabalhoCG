@@ -149,6 +149,7 @@ let enemies = await loadEnemies(scene);
 // ------------ CONTROLES DO TECLADO --------------
 
 const speed = 20;
+const fall = 10; // speed of falling
 const KEY_S = 83;
 const KEY_W = 87;
 const KEY_A = 65;
