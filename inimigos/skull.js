@@ -74,7 +74,14 @@ function handleWanderingState(skullData, player) {
     const skull = skullData.obj;
     const currentPosition = skull.position;
 
-    if (!skullData.targetPoint || currentPosition.distanceTo(skullData.targetPoint) < PROXIMITY_THRESHOLD) {
+        const horizontalPosition = currentPosition.clone();
+    horizontalPosition.y = 0;
+    const horizontalTarget = skullData.targetPoint ? skullData.targetPoint.clone() : null;
+    if (horizontalTarget) {
+        horizontalTarget.y = 0;
+    }
+
+    if (!skullData.targetPoint || horizontalPosition.distanceTo(horizontalTarget) < PROXIMITY_THRESHOLD) {
         skullData.targetPoint = getNewWanderTarget(currentPosition);
     }
 
