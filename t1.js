@@ -47,6 +47,14 @@ let scenario=S0.Scene0();
 scene.add(scenario); // Add the scenario to the scene
 scenario.translateY(-0.15);
 
+let tetoGeometry = new THREE.PlaneGeometry(500, 500);
+let tetoMaterial = new THREE.MeshLambertMaterial();
+export let teto = new THREE.Mesh(tetoGeometry, tetoMaterial);
+teto.rotation.x = Math.PI / 2;
+teto.position.set(0,40,0);
+teto.visible = false;
+scene.add(teto);
+
 //initGun(camera);
 loadChaingun(camera);
 let player = new THREE.Mesh(new THREE.BoxGeometry(1,2,1), new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"}));
