@@ -63,27 +63,24 @@ export function fall(caster,objects,controls,distance)
     {
         if(i<4)
         {
-            for(let j=0;j<objects[j].vaultedBox.meshes.length && fall==true;j++)
+            for(let j=0;j<objects[i].vaultedBox.meshes.length && fall==true;j++)
             {
                 fall=(caster.intersectObject(objects[i].vaultedBox.meshes[j]).length>0)?false:true;
-                if(fall==false) console.log(); //TODO delete
-                    //console.log(fall," ",i," ",j," 0:1");
+               
                 
                 
             }
             if(fall==true)
             {
                 fall=(caster.intersectObject(objects[i].stair.plane).length>0)?false:true;
-                if(fall==false) console.log(); //TODO delete
-                    //console.log(fall," ",i," 0:2");
+                
             }
 
         }
         if(i==4 && fall==true)
         {
             fall=(caster.intersectObject(objects[i]).length>0)?false:true;
-            if(fall==false) console.log(); //TODO delete
-                //console.log(fall," 1:1");
+            
         }
     }
     if(fall==true)
