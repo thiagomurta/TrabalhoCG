@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { damageCacodemon, damageSkull } from '../inimigos/inimigos.js';
+import { teto } from '../t1.js';
 // --------------------- ARMA ---------------------
 // MACROS 
 const GUN_COLOR = 'rgb(100,255,100)';
@@ -54,7 +55,7 @@ export function shootBall(scenario, scene, camera) {
   const LEFT_WALL = scenario.objects[6];
   const RIGHT_WALL = scenario.objects[7];
   const PLANE = scene.children[0];
-  const intersects = raycaster.intersectObjects([PLANE,
+  const intersects = raycaster.intersectObjects([teto, PLANE,
     LEFTMOST_BOX, UPPER_MIDDLE_BOX, RIGHTMOST_BOX, LOWER_MIDDLE_BOX,
     NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL]); // true for recursive intersection
 
@@ -107,7 +108,7 @@ export function moveBullet(scene, camera, enemies) {
         if (bulletBox.intersectsBox(enemyBox)) {
           console.log("Hit an enemy!");
           removeBullet(scene, bullet, ball, ballArray, i, camera);
-          damageCacodemon(enemy, 10);
+          damageCacodemon(enemies.cacodemons, enemy, 10);
           continue;
         }
       }
@@ -116,7 +117,7 @@ export function moveBullet(scene, camera, enemies) {
         if (bulletBox.intersectsBox(enemyBox)) {
           console.log("Hit an enemy!");
           removeBullet(scene, bullet, ball, ballArray, i, camera);
-          damageSkull(enemy, 10);
+          damageSkull(enemies.skulls, enemy, 10);
           continue;
         }
       }

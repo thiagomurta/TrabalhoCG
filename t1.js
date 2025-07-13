@@ -7,12 +7,13 @@ import {initRenderer,
         createGroundPlaneXZ } from "../libs/util/util.js";
 import * as S0 from "./scene0.js";
 import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
-import {initGun, moveBullet, initShootBall} from "./arma/armaLancador.js";
+import {initGun, moveBullet, initShootBall, removeGun} from "./arma/armaLancador.js";
+import {loadChaingun, removeChaingun, startShootingChaingun, stopShootingChaingun} from "./arma/chaingun.js";
 import * as CHAVE from './chave.js';
 import * as LOOK from './lookers.js'
 import * as INTER from './intersecter.js'
 import * as SCLIMB from './stairClimb.js'
-import { loadEnemies, moveEnemies } from './inimigos/inimigos.js';
+import { loadEnemies, moveEnemies, updateAnimations } from './inimigos/inimigos.js';
 import * as EL from './elevador.js'
 
 // ---------------------Configuração inicial---------------------
@@ -49,7 +50,16 @@ let scenario=S0.Scene0();
 scene.add(scenario); // Add the scenario to the scene
 scenario.translateY(-0.15);
 
-initGun(camera);
+let tetoGeometry = new THREE.PlaneGeometry(500, 500);
+let tetoMaterial = new THREE.MeshLambertMaterial();
+export let teto = new THREE.Mesh(tetoGeometry, tetoMaterial);
+teto.rotation.x = Math.PI / 2;
+teto.position.set(0,40,0);
+teto.visible = false;
+scene.add(teto);
+
+//initGun(camera);
+loadChaingun(camera);
 let player = new THREE.Mesh(new THREE.BoxGeometry(1,2,1), new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"}));
 scene.add(player);
 player.translateY(1);
@@ -68,23 +78,33 @@ instructions.addEventListener('click', function () {
 
 let isMouseDown = false; // Track whether the mouse button is held down
 
-renderer.domElement.addEventListener('mousedown', function (event) {
-    if (event.button === 2 || (event.button === 0 && crosshair.style.display === 'block')) { // Right mouse button or left mouse button when crosshair is visible
+window.addEventListener('mousedown', function (event) {
+    if (!controls.isLocked) return; 
+
+    //check for either left or right mouse button, either work
+    if (event.button === 0 || event.button === 2) {
         isMouseDown = true; 
     }
 }, false);
 
-renderer.domElement.addEventListener('mouseup', function (event) {
-    if (event.button === 2 || event.button === 0) { // Right or left mouse button
-        isMouseDown = false; // Set the flag to false
+window.addEventListener('mouseup', function (event) {
+    if (event.button === 0) { 
+        isMouseDown = false; 
     }
 }, false);
 
-function shootWhileHolding(scene, camera) {
-    if (isMouseDown) {
-        initShootBall(scenario, scene, camera); // Call the shooting function
+//scrolling up and down calls toggleGun()
+let isCoolingDown = false;
+
+renderer.domElement.addEventListener('wheel', function (event) {
+    if (event.deltaY !== 0 && !isCoolingDown) {
+        toggleGun(); 
+        isCoolingDown = true;
+        setTimeout(() => {
+            isCoolingDown = false;
+        }, 500); //delayzinho dos cria
     }
-}
+}, false);
 
 controls.addEventListener('lock', function () {
     crosshair.style.display = 'block'
@@ -138,6 +158,7 @@ window.addEventListener('keydown', (event) => movementControls(event.keyCode, tr
 window.addEventListener('keyup', (event) => movementControls(event.keyCode, false));
 
 
+
 scene.add(controls.getObject());
 // ---------------------Criando a Mesh que vai ser usada---------------------
 
@@ -164,6 +185,8 @@ const KEY_ARROW_UP = 38;
 const KEY_ARROW_RIGHT = 39;
 const KEY_ARROW_DOWN = 40;
 const KEY_SPACE = 32;
+const KEY_1 = 49; // 1 key
+const KEY_2 = 50; // 2 key
 const elSpeedo=10;
 // const SHOOT = ;
 let moveForward = false;
@@ -174,24 +197,35 @@ let moveRight = false;
 
 function movementControls(key, value) { // if xabu , go back here
     switch (key) {
-        case KEY_W || KEY_ARROW_UP: // W
+        case KEY_ARROW_UP:
+        case KEY_W:
             moveForward = value;
             break;
-        case KEY_S || KEY_ARROW_DOWN: // S
+        case KEY_ARROW_DOWN:
+        case KEY_S:
             moveBackward = value;
             break;
-        case KEY_A || KEY_ARROW_LEFT: // A
+        case KEY_ARROW_RIGHT:
+        case KEY_A:
             moveLeft = value;
             break;
-        case KEY_D || KEY_ARROW_RIGHT: // D
+        case KEY_ARROW_LEFT:
+        case KEY_D:
             moveRight = value;
             break;
-        case KEY_SPACE: // Space
+        case KEY_SPACE:
             console.log("Player position: ", player.position);
             break;
-        // case SHOOT:
-        //     shoot = value;
-        //     break;
+        case KEY_1:
+            if (currentGun === GUNTYPE.lancador) {
+                toggleGun(); // Switch to chaingun
+            }
+            break;
+        case KEY_2:
+            if (currentGun === GUNTYPE.chaingun) {
+                toggleGun(); // Switch to ball launcher
+            }
+            break;
     }
 }
 
@@ -273,11 +307,52 @@ const clock = new THREE.Clock();
 render();
 
 let playerHasEnteredFirstArea = true;
+export let fadingObjects = [];
+const GUNTYPE = {
+    chaingun: 'chaingun',
+    lancador: 'lancador'
+};
+let currentGun = GUNTYPE.chaingun;
+
+function toggleGun() {
+    if (currentGun === GUNTYPE.chaingun) {
+        currentGun = GUNTYPE.lancador;
+        removeChaingun(camera); // Remove the chaingun from the camera
+        initGun(camera); // Initialize the ball launcher
+    } else {
+        currentGun = GUNTYPE.chaingun;
+        removeGun(camera); 
+        loadChaingun(camera); 
+    }
+}
+
+function shootWhileHolding(scene, camera) {
+    
+    if (isMouseDown) {
+        switch (currentGun) {
+            case GUNTYPE.chaingun:
+                startShootingChaingun(enemies, camera); // Call the chaingun shooting function
+                break;
+            case GUNTYPE.lancador:
+                initShootBall(scenario, scene, camera); // Call the shooting function
+                break;
+            default:
+                console.warn("Error with gun type:", currentGun);
+                break;
+        }
+    }
+
+    else {
+        stopShootingChaingun();
+    }
+
+}
 
 function render() {
     stats.update();
     shootWhileHolding(scene, camera); // will shoot if mouse is down
     if (controls.isLocked) {
+        updateAnimations();
         moveAnimate(clock.getDelta());
         if (enemies && playerHasEnteredFirstArea) moveEnemies(scene, scenario, enemies, player); // will move enemies
         moveBullet(scene, camera, enemies); // will move bullet if its isShooting attribute is truthy

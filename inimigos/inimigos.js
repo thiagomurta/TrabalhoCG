@@ -7,6 +7,7 @@ import {moveSkull} from './skull.js';
 import {moveCacodemon} from './cacodemon.js';
 import { SKULL_STATE } from './skull.js';
 import { CACODEMON_STATE } from './cacodemon.js';
+import { fadingObjects } from '../t1.js';
 
 export const AREA_DIMENSION = 100;
 export const AREAS_Z = -150;
@@ -14,6 +15,7 @@ export const AREAS_Y = 6;
 export const UPPER_LEFT_AREA_X = -125;
 export const ENEMIES_SCALE = 5;
 const MIDDLE_AREA_X = 0;
+
 
 
 
@@ -52,6 +54,7 @@ export async function loadEnemies(scene) {
         hpBarSprite.position.y = 5; 
         enemyGroup.add(hpBarSprite); 
         const skullData = {
+            name: 'skull',
             obj: enemyGroup, 
             id: i++, 
             boundingBox: new THREE.Box3().setFromObject(skull),
@@ -78,6 +81,7 @@ export async function loadEnemies(scene) {
         hpBarSprite.position.y = 5; 
         enemyGroup.add(hpBarSprite);
         const cacodemonData = {
+            name: 'cacodemon',
             obj: enemyGroup,
             id: i++,
             lookAtFrames: 0,
@@ -163,7 +167,18 @@ function initSkull(){
             //objloader.setPath(modelPath);
             objloader.load('./2025.1_T2_Assets/skull.obj', function     ( obj ) {
                 obj.traverse ( function(child){
-                    if (child) child.castShadow = true;
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        if (Array.isArray(child.material)) {  // If the mesh has multiple materials
+                            child.material.forEach(material => {
+                                material.transparent = true;
+                            });
+                        } 
+                        else if (child.material) { // If the mesh has a single material
+                            child.material.transparent = true;
+                        }
+
+                    }
                 });
 
                 resolve(obj);
@@ -267,22 +282,89 @@ function updateHpBar(cacodemonData) {
     texture.needsUpdate = true;
 }
 
-export function damageCacodemon(cacodemonData, damage) {
+export function damageCacodemon(enemiesCacodemons, cacodemonData, damage) {
     cacodemonData.hp -= damage;
     if (cacodemonData.hp <= 0) {
         cacodemonData.hp = 0;
-        cacodemonData.state = CACODEMON_STATE.DEAD; 
-        cacodemonData.obj.visible = false; 
+        startFadingAnimation(cacodemonData);
+
+        const index = enemiesCacodemons.indexOf(cacodemonData);
+        if (index > -1) {
+            enemiesCacodemons.splice(index, 1);
+        }
     }
     updateHpBar(cacodemonData);
 }
 
-export function damageSkull(skullData, damage) {
+export function damageSkull(enemiesSkulls, skullData, damage) {
     skullData.hp -= damage;
     if (skullData.hp <= 0) {
-        skullData.hp = 0;
-        skullData.state = SKULL_STATE.DEAD; 
-        skullData.obj.visible = false; 
+        skullData.hp = 0; 
+        startFadingAnimation(skullData);
+
+        const index = enemiesSkulls.indexOf(skullData);
+        if (index > -1) {
+            enemiesSkulls.splice(index, 1);
+        }
     }
     updateHpBar(skullData);
+}
+
+export function updateAnimations() {
+    const now = performance.now();
+    
+    for (let i = fadingObjects.length - 1; i >= 0; i--) {
+        const enemy = fadingObjects[i];
+        const enemyObj = enemy.obj;
+        const elapsedTime = (now - enemy.fadeStartTime) / 1000;
+        const fadeDuration = enemy.fadeDuration;
+        let opacity = 1.0 - (elapsedTime / fadeDuration);
+
+        if (opacity <= 0) {
+            opacity = 0;
+            if (enemyObj.parent) {
+                enemyObj.parent.remove(enemyObj);
+            }
+            enemyObj.traverse(function (child) {
+                if (child.isMesh) {
+                    if (child.geometry) child.geometry.dispose();
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(material => material.dispose());
+                    } else if (child.material) {
+                        child.material.dispose();
+                    }
+                }
+            });
+            fadingObjects.splice(i, 1);
+        }
+
+        enemyObj.traverse(function (child) {
+            if (child.isMesh && child.material) {
+                if (Array.isArray(child.material)) {
+                    child.material.forEach(material => material.opacity = opacity);
+                } else {
+                    child.material.opacity = opacity;
+                }
+            }
+        });
+    }
+}
+
+
+function startFadingAnimation(enemyData) {
+    enemyData.isFading = true;
+    enemyData.fadeStartTime = performance.now();
+    enemyData.fadeDuration = 1.0; 
+
+    enemyData.obj.traverse(function (child) {
+        if (child.isMesh) {
+            if (Array.isArray(child.material)) {
+                child.material.forEach(material => material.transparent = true);
+            } else {
+                child.material.transparent = true;
+            }
+        }
+    });
+
+    fadingObjects.push(enemyData);
 }
