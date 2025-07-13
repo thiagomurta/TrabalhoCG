@@ -14,6 +14,7 @@ import * as LOOK from './lookers.js'
 import * as INTER from './intersecter.js'
 import * as SCLIMB from './stairClimb.js'
 import { loadEnemies, moveEnemies, updateAnimations } from './inimigos/inimigos.js';
+import * as EL from './elevador.js'
 
 // ---------------------Configuração inicial---------------------
 let scene, renderer;
@@ -34,7 +35,9 @@ const crosshair = document.querySelector('.crosshair');
 const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0).normalize(), 0.01, 2);
 const horizontalCaster = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(0,0,-1).normalize(),0.01,2);
 const verticalCaster= new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0).normalize(), 0.01, 2);
-
+let atElevador=false;
+let elevadorCanMove=true;
+let isAttached=false;
 
 // ---------------------Ambiente---------------------
 
@@ -184,6 +187,7 @@ const KEY_ARROW_DOWN = 40;
 const KEY_SPACE = 32;
 const KEY_1 = 49; // 1 key
 const KEY_2 = 50; // 2 key
+const elSpeedo=10;
 // const SHOOT = ;
 let moveForward = false;
 let moveBackward = false;
@@ -239,14 +243,20 @@ function moveAnimate(delta) {
     const RIGHT_WALL = scenario.objects[7];
 
     const isIntersectingWall = raycaster.intersectObjects([NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL]).length > 0;
+
     
+    //ELEVADOR
+    verticalCaster.ray.direction.copy(LOOK.Down(controls)).normalize();
+    atElevador=EL.elevadorLogic(verticalCaster,scenario.objects[1],controls,elevadorCanMove,isAttached);
 
     //FALL logic
-    verticalCaster.ray.direction.copy(LOOK.Down(controls)).normalize();
-    INTER.fall(verticalCaster,[LEFTMOST_BOX,UPPER_MIDDLE_BOX,RIGHTMOST_BOX,LOWER_MIDDLE_BOX,plane],controls,fall*delta);
-
+    if(!atElevador){
+        
+        verticalCaster.ray.direction.copy(LOOK.Down(controls)).normalize();
+        INTER.fall(verticalCaster,[LEFTMOST_BOX,UPPER_MIDDLE_BOX,RIGHTMOST_BOX,LOWER_MIDDLE_BOX,plane,UPPER_MIDDLE_BOX.elevador],controls,fall*delta);
+     }
     //STAIR LOGIC
-    SCLIMB.stairclimb(verticalCaster,[LEFTMOST_BOX,UPPER_MIDDLE_BOX,RIGHTMOST_BOX,LOWER_MIDDLE_BOX],controls);
+    SCLIMB.stairclimb(verticalCaster,[LEFTMOST_BOX,RIGHTMOST_BOX,LOWER_MIDDLE_BOX],controls);
     
     if (moveForward) {
         horizontalCaster.ray.direction.copy(LOOK.Foward(controls)).normalize();

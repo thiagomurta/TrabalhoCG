@@ -33,6 +33,13 @@ export function area2(staired_level,material)
                     box.recieveShadow=true;
                     
                     staired_level.vaultedBox.meshes.push(boxCol);
+                    let boxGeometryFlag= new THREE.BoxGeometry(staired_level.s_w,1,2);
+                    let boxFlag = new THREE.Mesh(boxGeometryFlag,material);
+                    staired_level.add(boxFlag);
+                    boxFlag.translateY(+staired_level.height);
+                    boxFlag.translateZ(staired_level.width/2-staired_level.s_l -0.5);
+                    boxFlag.visible=false;
+                    staired_level.enemyActivateBox=boxFlag;
             }
 
            
