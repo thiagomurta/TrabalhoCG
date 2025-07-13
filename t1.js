@@ -257,6 +257,8 @@ function moveAnimate(delta) {
      }
     //STAIR LOGIC
     SCLIMB.stairclimb(verticalCaster,[LEFTMOST_BOX,RIGHTMOST_BOX,LOWER_MIDDLE_BOX],controls);
+
+    INTER.activateAi(verticalCaster,[scenario.objects[0].enemyActivateBox,scenario.objects[1].enemyActivateBox],playerHasEnteredFirstArea,playerHasEnteredSceondArea,controls)
     
     if (moveForward) {
         horizontalCaster.ray.direction.copy(LOOK.Foward(controls)).normalize();
@@ -306,7 +308,8 @@ window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)},
 const clock = new THREE.Clock();
 render();
 
-let playerHasEnteredFirstArea = true;
+let playerHasEnteredFirstArea = false;
+let playerHasEnteredSceondArea = false;
 export let fadingObjects = [];
 const GUNTYPE = {
     chaingun: 'chaingun',

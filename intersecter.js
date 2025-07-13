@@ -88,3 +88,17 @@ export function fall(caster,objects,controls,distance)
         controls.camera.position.addScaledVector(caster.ray.direction,distance);
     }
 }
+export function activateAi(caster,objects,enter1,enter2,controls)
+{
+        if(!enter1)
+        {
+            let enterAux=caster.intersectObject(objects[0])>0;
+            enter1=true;
+        }
+         if(!enter2)
+        {
+            let enterAux=caster.intersectObject(objects[1])>0;
+            enter2=true;
+        }
+    
+}
