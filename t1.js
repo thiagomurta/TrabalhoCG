@@ -88,7 +88,7 @@ window.addEventListener('mousedown', function (event) {
 }, false);
 
 window.addEventListener('mouseup', function (event) {
-    if (event.button === 0) { 
+    if (event.button === 0 || event.button === 2) { 
         isMouseDown = false; 
     }
 }, false);
@@ -308,8 +308,8 @@ window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)},
 const clock = new THREE.Clock();
 render();
 
-let playerHasEnteredFirstArea = false;
-let playerHasEnteredSceondArea = false;
+let playerHasEnteredFirstArea = true;
+let playerHasEnteredSceondArea = true;
 export let fadingObjects = [];
 const GUNTYPE = {
     chaingun: 'chaingun',
