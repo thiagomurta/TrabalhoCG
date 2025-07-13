@@ -79,8 +79,21 @@ export function Scene0()
     box.translateZ(-98);
     box.translateX(20);
     box.translateY(0.75);
+    let materialBox = new THREE.MeshLambertMaterial({color: "rgb(86, 202, 19)"});
+    let box2 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox);
+    center.add(box2);
+    box2.translateX(-130);
+    box2.translateY(6.5);
+    box2.translateZ(-160);
 
-    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL,box];
+    let materialBox3 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
+    let box3 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox3);
+    center.add(box3);
+    box3.translateX(0);
+    box3.translateY(6.5);
+    box3.translateZ(-160);
+
+    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL,box, box2, box3];
     
     
     
