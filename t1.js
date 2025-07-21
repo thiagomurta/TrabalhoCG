@@ -88,7 +88,7 @@ window.addEventListener('mousedown', function (event) {
 }, false);
 
 window.addEventListener('mouseup', function (event) {
-    if (event.button === 0 || event.button === 2) { 
+    if (event.button === 0) { 
         isMouseDown = false; 
     }
 }, false);
