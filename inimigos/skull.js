@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getCollisionObjects } from './inimigos.js';
+import { getCollisionObjects, smoothEnemyRotation } from './inimigos.js';
 
 export const SKULL_STATE = {
     WANDERING: 'WANDERING',
@@ -111,6 +111,9 @@ function handleChargingState(skullData, player) {
             skullData.targetPoint = null;
         }
     );
+
+    
+    if (skullData.targetPoint) smoothEnemyRotation(skull, skullData.targetPoint);
 }
 
 function moveTowardsTarget(skullData, speed, onBlockCallback) {
@@ -130,9 +133,7 @@ function moveTowardsTarget(skullData, speed, onBlockCallback) {
     if (intersects.length > 0) {
         onBlockCallback();
     } else {
-        const lookAtTarget = skullData.targetPoint.clone();
-        lookAtTarget.y = currentPosition.y;
-        skull.lookAt(lookAtTarget);
+        smoothEnemyRotation(skull, skullData.targetPoint);
         currentPosition.add(direction.multiplyScalar(speed));
         //check if new currentPosition is outside boundaries, if so, reset targetPoint
     }

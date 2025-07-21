@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getCollisionObjects } from './inimigos.js';
+import { getCollisionObjects, smoothEnemyRotation } from './inimigos.js';
 
 export const CACODEMON_STATE = {
     WANDERING: 'WANDERING',
@@ -68,9 +68,8 @@ function handleWanderingState(cacodemonData, player) {
 
     if (cacodemonData.lookAtFrames < 0) cacodemonData.lookAtFrames++;
     if (cacodemonData.targetPoint){
-    const lookAtTarget = cacodemonData.targetPoint.clone();
-    lookAtTarget.y = currentPosition.y; 
-    cacodemon.lookAt(lookAtTarget);}
+        smoothEnemyRotation(cacodemon, cacodemonData.targetPoint);
+    }
 }
 
  

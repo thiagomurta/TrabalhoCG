@@ -306,8 +306,6 @@ window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)},
 
 
 const clock = new THREE.Clock();
-render();
-
 let playerHasEnteredFirstArea = true;
 let playerHasEnteredSceondArea = true;
 export let fadingObjects = [];
@@ -350,6 +348,8 @@ function shootWhileHolding(scene, camera) {
     }
 
 }
+
+render();
 
 function render() {
     stats.update();

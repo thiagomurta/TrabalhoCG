@@ -368,3 +368,19 @@ function startFadingAnimation(enemyData) {
 
     fadingObjects.push(enemyData);
 }
+
+export function smoothEnemyRotation(enemy, targetPoint) {
+    let lookAtTarget = targetPoint.clone();
+    lookAtTarget.y = enemy.position.y; // only rotate on 2d
+
+
+    // tempMatrix of the new angle and set the quaternion 
+    const targetQuaternion = new THREE.Quaternion();
+    const tempMatrix = new THREE.Matrix4();
+    tempMatrix.lookAt(lookAtTarget, enemy.position, enemy.up);
+    targetQuaternion.setFromRotationMatrix(tempMatrix);
+
+    // interpolate the rotation using quaternion's slerp
+    const rotationSpeed = 0.1;
+    enemy.quaternion.slerp(targetQuaternion, rotationSpeed);
+}
