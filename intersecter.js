@@ -90,15 +90,18 @@ export function fall(caster,objects,controls,distance)
 }
 export function activateAi(caster,objects,enter1,enter2,controls)
 {
-        if(!enter1)
+        if(enter1.value==false)
         {
-            let enterAux=caster.intersectObject(objects[0])>0;
-            enter1=true;
+            let enterAux=caster.intersectObject(objects[0]).length>0;
+            if(enterAux==true)
+                enter1.value=enterAux;
+            //console.log(enter1.name);
+            
         }
-         if(!enter2)
+         if(enter2.value==false)
         {
-            let enterAux=caster.intersectObject(objects[1])>0;
-            enter2=true;
+            let enterAux2=caster.intersectObject(objects[1]).length>0;
+            enter2.value=enterAux2;
         }
     
 }

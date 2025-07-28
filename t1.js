@@ -38,6 +38,9 @@ const verticalCaster= new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3
 let atElevador=false;
 let elevadorCanMove=true;
 let isAttached=false;
+let playerHasEnteredFirstArea = {value:false,name:"playerHasEnteredFirstArea"};
+
+let playerHasEnteredSceondArea = {value:false,name:"playerHasEnteredSecondArea"}
 
 // ---------------------Ambiente---------------------
 
@@ -257,8 +260,7 @@ function moveAnimate(delta) {
      }
     //STAIR LOGIC
     SCLIMB.stairclimb(verticalCaster,[LEFTMOST_BOX,RIGHTMOST_BOX,LOWER_MIDDLE_BOX],controls);
-
-    INTER.activateAi(verticalCaster,[scenario.objects[0].enemyActivateBox,scenario.objects[1].enemyActivateBox],playerHasEnteredFirstArea,playerHasEnteredSceondArea,controls)
+    INTER.activateAi(verticalCaster,[scenario.objects[0].enemyActivateBox,scenario.objects[1].enemyActivateBox],playerHasEnteredFirstArea,playerHasEnteredSceondArea,controls);
     
     if (moveForward) {
         horizontalCaster.ray.direction.copy(LOOK.Foward(controls)).normalize();
@@ -306,8 +308,7 @@ window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)},
 
 
 const clock = new THREE.Clock();
-let playerHasEnteredFirstArea = true;
-let playerHasEnteredSceondArea = true;
+
 export let fadingObjects = [];
 const GUNTYPE = {
     chaingun: 'chaingun',
@@ -357,7 +358,8 @@ function render() {
     if (controls.isLocked) {
         updateAnimations();
         moveAnimate(clock.getDelta());
-        if (enemies && playerHasEnteredFirstArea) moveEnemies(scene, scenario, enemies, player); // will move enemies
+        //console.log(playerHasEnteredFirstArea);
+        if (enemies && playerHasEnteredFirstArea.value==true) moveEnemies(scene, scenario, enemies, player); // will move enemies
         moveBullet(scene, camera, enemies); // will move bullet if its isShooting attribute is truthy
     }
     renderer.shadowMap.enabled=true;
