@@ -7,12 +7,12 @@ export const SKULL_STATE = {
 };
 
 const PLAYER_DETECT_DISTANCE = {
-        INSTA: 6,
+        INSTA: 20,
         MIN: 25,
         MAX: 35
     };
 const MAX_WANDER_DISTANCE = 20;
-const DETECTION_ANGLE_THRESHOLD = Math.PI / 4; 
+const DETECTION_ANGLE_THRESHOLD = Math.PI / 3; 
 const CHARGE_TARGET_DISTANCE = 1000; 
 const CHARGE_SPEED = 0.5;
 const WANDER_SPEED = 0.1;

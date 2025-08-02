@@ -81,6 +81,8 @@ function damageEnemies(enemies, camera) {
 
     const intersects = raycaster.intersectObjects(allEnemyMeshes);
     if (intersects.length > 0) {
+        if (intersects[0].distance > 10) return;
+
         const closestHitObject = intersects[0].object; 
         const cacodemonData = enemies.cacodemons.find(enemy => {
             let parent = closestHitObject;

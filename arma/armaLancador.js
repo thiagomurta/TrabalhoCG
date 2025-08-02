@@ -6,8 +6,8 @@ import { teto } from '../t1.js';
 const GUN_COLOR = 'rgb(100,255,100)';
 const BALL_COLOR = 'rgb(100, 193, 255)';
 const GUN_SIZE = { radius: 0.1, height: 2, segments: 32};
-const BALL_SIZE = { radius: 0.05, widthSegments: 20, heightSegments: 20 };
-const BALL_SPEED = 0.8;
+const BALL_SIZE = { radius: 0.1, widthSegments: 20, heightSegments: 20 };
+const BALL_SPEED = 2.0;
 const BULLET_ORIGIN_POS = {x: 0.0, y: -0.0, z: 0.0};
 //{x: 0.0, y: -0.35, z: -1.3}; muzzle
 

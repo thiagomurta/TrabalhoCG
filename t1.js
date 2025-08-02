@@ -7,14 +7,14 @@ import {initRenderer,
         createGroundPlaneXZ } from "../libs/util/util.js";
 import * as S0 from "./scene0.js";
 import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
-import {initGun, moveBullet, initShootBall, removeGun} from "./arma/armaLancador.js";
-import {loadChaingun, removeChaingun, startShootingChaingun, stopShootingChaingun} from "./arma/chaingun.js";
+import {moveBullet} from "./arma/armaLancador.js";
 import * as CHAVE from './chave.js';
 import * as LOOK from './lookers.js'
 import * as INTER from './intersecter.js'
 import * as SCLIMB from './stairClimb.js'
 import { loadEnemies, moveEnemies, updateAnimations } from './inimigos/inimigos.js';
 import * as EL from './elevador.js'
+import { initWeaponSystem, updateWeapons, currentGun, GUNTYPE } from './arma/armaController.js';
 
 // ---------------------Configuração inicial---------------------
 let scene, renderer;
@@ -38,6 +38,7 @@ const verticalCaster= new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3
 let atElevador=false;
 let elevadorCanMove=true;
 let isAttached=false;
+let isMouseDown = false;
 
 // ---------------------Ambiente---------------------
 
@@ -58,8 +59,6 @@ teto.position.set(0,40,0);
 teto.visible = false;
 scene.add(teto);
 
-//initGun(camera);
-loadChaingun(camera);
 let player = new THREE.Mesh(new THREE.BoxGeometry(1,2,1), new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"}));
 scene.add(player);
 player.translateY(1);
@@ -76,8 +75,6 @@ instructions.addEventListener('click', function () {
     controls.lock();
 }, false);
 
-let isMouseDown = false; // Track whether the mouse button is held down
-
 window.addEventListener('mousedown', function (event) {
     if (!controls.isLocked) return; 
 
@@ -90,19 +87,6 @@ window.addEventListener('mousedown', function (event) {
 window.addEventListener('mouseup', function (event) {
     if (event.button === 0) { 
         isMouseDown = false; 
-    }
-}, false);
-
-//scrolling up and down calls toggleGun()
-let isCoolingDown = false;
-
-renderer.domElement.addEventListener('wheel', function (event) {
-    if (event.deltaY !== 0 && !isCoolingDown) {
-        toggleGun(); 
-        isCoolingDown = true;
-        setTimeout(() => {
-            isCoolingDown = false;
-        }, 500); //delayzinho dos cria
     }
 }, false);
 
@@ -174,6 +158,8 @@ let enemies = await loadEnemies(scene);
 
 // ------------ CONTROLES DO TECLADO --------------
 
+
+
 const speed = 20;
 const fall = 10; // speed of falling
 const KEY_S = 83;
@@ -195,6 +181,8 @@ let moveLeft = false;
 let moveRight = false;
 // let shoot = false;
 
+
+
 function movementControls(key, value) { // if xabu , go back here
     switch (key) {
         case KEY_ARROW_UP:
@@ -205,11 +193,11 @@ function movementControls(key, value) { // if xabu , go back here
         case KEY_S:
             moveBackward = value;
             break;
-        case KEY_ARROW_RIGHT:
+        case KEY_ARROW_LEFT:
         case KEY_A:
             moveLeft = value;
             break;
-        case KEY_ARROW_LEFT:
+        case KEY_ARROW_RIGHT:
         case KEY_D:
             moveRight = value;
             break;
@@ -218,16 +206,18 @@ function movementControls(key, value) { // if xabu , go back here
             break;
         case KEY_1:
             if (currentGun === GUNTYPE.lancador) {
-                toggleGun(); // Switch to chaingun
+                toggleGun(camera); // Switch to chaingun
             }
             break;
         case KEY_2:
             if (currentGun === GUNTYPE.chaingun) {
-                toggleGun(); // Switch to ball launcher
+                toggleGun(camera); // Switch to ball launcher
             }
             break;
     }
 }
+
+
 
 function moveAnimate(delta) {
     raycaster.ray.origin.copy(controls.getObject().position);
@@ -303,59 +293,19 @@ function moveAnimate(delta) {
 }
 
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
-
+initWeaponSystem(camera, renderer);
 
 const clock = new THREE.Clock();
 let playerHasEnteredFirstArea = true;
 let playerHasEnteredSceondArea = true;
 export let fadingObjects = [];
-const GUNTYPE = {
-    chaingun: 'chaingun',
-    lancador: 'lancador'
-};
-let currentGun = GUNTYPE.chaingun;
-
-function toggleGun() {
-    if (currentGun === GUNTYPE.chaingun) {
-        currentGun = GUNTYPE.lancador;
-        removeChaingun(camera); // Remove the chaingun from the camera
-        initGun(camera); // Initialize the ball launcher
-    } else {
-        currentGun = GUNTYPE.chaingun;
-        removeGun(camera); 
-        loadChaingun(camera); 
-    }
-}
-
-function shootWhileHolding(scene, camera) {
-    
-    if (isMouseDown) {
-        switch (currentGun) {
-            case GUNTYPE.chaingun:
-                startShootingChaingun(enemies, camera); // Call the chaingun shooting function
-                break;
-            case GUNTYPE.lancador:
-                initShootBall(scenario, scene, camera); // Call the shooting function
-                break;
-            default:
-                console.warn("Error with gun type:", currentGun);
-                break;
-        }
-    }
-
-    else {
-        stopShootingChaingun();
-    }
-
-}
-
 render();
 
 function render() {
     stats.update();
-    shootWhileHolding(scene, camera); // will shoot if mouse is down
     if (controls.isLocked) {
         updateAnimations();
+        updateWeapons(scene, camera, enemies);
         moveAnimate(clock.getDelta());
         if (enemies && playerHasEnteredFirstArea) moveEnemies(scene, scenario, enemies, player); // will move enemies
         moveBullet(scene, camera, enemies); // will move bullet if its isShooting attribute is truthy
