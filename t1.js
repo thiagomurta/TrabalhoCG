@@ -39,6 +39,9 @@ let atElevador=false;
 let elevadorCanMove=true;
 let isAttached=false;
 let isMouseDown = false;
+let playerHasEnteredFirstArea = {value:false,name:"playerHasEnteredFirstArea"};
+
+let playerHasEnteredSceondArea = {value:false,name:"playerHasEnteredSecondArea"}
 
 // ---------------------Ambiente---------------------
 
@@ -147,12 +150,37 @@ scene.add(controls.getObject());
 // ---------------------Criando a Mesh que vai ser usada---------------------
 
 let chave1 = CHAVE.CHAVE('rgb(255, 0, 0)');
-// let chave2 = CHAVE.CHAVE('rgb(255, 255, 0)');
+let chave2 = CHAVE.CHAVE('rgb(255, 255, 0)');
+let take_key1 = false;
+let take_key2 = false;
+let drop_key1 = false;
 // chave2.translateX(2);
 scene.add(chave1);
 // scene.add(chave2);
 
+
 let enemies = await loadEnemies(scene);
+
+if (take_key1){
+    scene.remove(chave1);
+}
+if (drop_key1){
+    scenario.objects[8].add(chave1);
+}
+if (take_key2){
+    scene.remove(chave2);
+} 
+// Adicionar a chave após a eliminação das skulls
+if (enemies.skulls.length === 0){
+    console.log("matou as caveiras");
+    scenario.objects[9].add(chave1);
+    scenario.objects[9].translateY(1.5);
+}
+// Adicionar a chave após a eliminação dos cacodemons
+if (enemies.cacodemons.length === 0){
+    scenario.objects[10].add(chave2);
+    scenario.objects[10].translateY(1.5);
+}
 
 
 
@@ -247,8 +275,7 @@ function moveAnimate(delta) {
      }
     //STAIR LOGIC
     SCLIMB.stairclimb(verticalCaster,[LEFTMOST_BOX,RIGHTMOST_BOX,LOWER_MIDDLE_BOX],controls);
-
-    INTER.activateAi(verticalCaster,[scenario.objects[0].enemyActivateBox,scenario.objects[1].enemyActivateBox],playerHasEnteredFirstArea,playerHasEnteredSceondArea,controls)
+    INTER.activateAi(verticalCaster,[scenario.objects[0].enemyActivateBox,scenario.objects[1].enemyActivateBox],playerHasEnteredFirstArea,playerHasEnteredSceondArea,controls);
     
     if (moveForward) {
         horizontalCaster.ray.direction.copy(LOOK.Foward(controls)).normalize();
@@ -296,8 +323,7 @@ window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)},
 initWeaponSystem(camera, renderer);
 
 const clock = new THREE.Clock();
-let playerHasEnteredFirstArea = true;
-let playerHasEnteredSceondArea = true;
+
 export let fadingObjects = [];
 render();
 
@@ -307,11 +333,12 @@ function render() {
         updateAnimations();
         updateWeapons(scene, camera, enemies);
         moveAnimate(clock.getDelta());
-        if (enemies && playerHasEnteredFirstArea) moveEnemies(scene, scenario, enemies, player); // will move enemies
+        //console.log(playerHasEnteredFirstArea);
+        if (enemies && playerHasEnteredFirstArea.value==true) moveEnemies(scene, scenario, enemies, player); // will move enemies
         moveBullet(scene, camera, enemies); // will move bullet if its isShooting attribute is truthy
     }
     renderer.shadowMap.enabled=true;
-    renderer.shadowMap.type=THREE.VSMShadowMap;
+    renderer.shadowMap.type=THREE.PCFShadowMap;
     renderer.render(scene, camera) // Render scene
     requestAnimationFrame(render);
 }
