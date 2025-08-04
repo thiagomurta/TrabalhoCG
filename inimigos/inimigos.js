@@ -8,6 +8,7 @@ import {moveCacodemon} from './cacodemon.js';
 import { SKULL_STATE } from './skull.js';
 import { CACODEMON_STATE } from './cacodemon.js';
 import { fadingObjects } from '../t1.js';
+import { PAINELEMENTAL_STATE } from './painelemental.js';
 
 export const AREA_DIMENSION = 100;
 export const AREAS_Z = -150;
@@ -27,7 +28,7 @@ const CACODEMON_SPAWN_POINTS = [
 
 // ## FUNÇÕES DE MOVIMENTAÇÃO DOS INIMIGOS ##
 
-export function moveEnemies(scene, scenario, enemies, player, playerHasEnteredFirstArea = true, playerHasEnteredSecondArea = true) {
+export function moveEnemies(scene, scenario, enemies, player, playerHasEnteredFirstArea = true, playerHasEnteredSecondArea = false) {
     if (!enemies || !Array.isArray(enemies.cacodemons) || !Array.isArray(enemies.skulls)) {
         console.log("No enemies to move or enemies data is not in the expected format.");
         console.log(enemies);
@@ -37,9 +38,11 @@ export function moveEnemies(scene, scenario, enemies, player, playerHasEnteredFi
     const cacodemons = enemies.cacodemons;
     const skulls = enemies.skulls;
 
-    if (playerHasEnteredSecondArea) for (let cacodemonData of cacodemons) moveCacodemon(cacodemonData, scenario, player, scene);
+    if (playerHasEnteredSecondArea) 
+        for (let cacodemonData of cacodemons) moveCacodemon(cacodemonData, scenario, player, scene);
 
-    if (playerHasEnteredFirstArea) for (let skullData of skulls) moveSkull(skullData, scenario, player);
+    if (playerHasEnteredFirstArea) 
+        for (let skullData of skulls) moveSkull(skullData, scenario, player);
 }
 
 
@@ -48,6 +51,7 @@ export function moveEnemies(scene, scenario, enemies, player, playerHasEnteredFi
 export async function loadEnemies(scene) {
     let skulls = [];
     let cacodemons = [];
+    let painElementals = [];
     let i = 0;
 
     for (let j = 0; j < 5; j++) {
@@ -110,15 +114,43 @@ export async function loadEnemies(scene) {
         console.log("Added cacodemon at ", enemyGroup.position);
     }
 
+    for (const spawnPoint of PAINELEMENTAL_SPAWN_POINTS) {
+        const painElemental = await loadPainElemental();
+        const { hpBarSprite, context, texture } = createHpBar();
+        const enemyGroup = new THREE.Group();
+        enemyGroup.add(painElemental);
+        hpBarSprite.position.y = 5;
+        enemyGroup.add(hpBarSprite);
+
+        enemyGroup.position.copy(spawnPoint);
+
+        const painElementalData = {
+            name: 'painElemental',
+            obj: enemyGroup,
+            id: i++,
+            lookAtFrames: 0,
+            targetPoint: null,
+            state: PAINELEMENTAL_STATE.WANDERING,
+            hasShot: false,
+
+            // HP Bar
+            hp: 50,
+            maxHp: 50,
+            context: context,
+            texture: texture,
+            hpBar: hpBarSprite
+        };
+
+        painElementals.push(painElementalData);
+        updateHpBar(painElementalData); // Initialize the HP bar
+        scene.add(enemyGroup);
+        console.log("Added painElemental at ", enemyGroup.position);
+    }
+
 
     for (let skull of skulls){
         placeEnemyRandomStartPos(skull.obj, AREA_DIMENSION, AREAS_Z, AREAS_Y, 
                             UPPER_LEFT_AREA_X);
-    }
-
-    for (let cacodemon of cacodemons){
-        placeEnemyRandomStartPos(cacodemon.obj, AREA_DIMENSION, AREAS_Z, AREAS_Y,
-                            MIDDLE_AREA_X);
     }
 
     return { skulls, cacodemons }; // Return the loaded enemies
@@ -147,6 +179,17 @@ async function loadSkull() {
     }
 }
 
+async function loadPainElemental() {
+    try {
+        let painElemental = await initPainElemental();
+        painElemental = normalizeAndRescale(painElemental, ENEMIES_SCALE);
+        painElemental = fixPosition(painElemental);
+        return painElemental;
+    } catch(error) {
+        console.error('Error loading painElemental: ', error);
+    }
+}
+
 function initCacodemon() {
     let glbLoader = new GLTFLoader();
 
@@ -163,6 +206,10 @@ function initCacodemon() {
             reject(error); 
         });
     });
+}
+
+function initPainElemental() {
+    let glbLoader = new GLTFLoader();
 }
 
 function initSkull(){

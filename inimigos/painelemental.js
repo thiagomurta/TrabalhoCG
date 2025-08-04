@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { getCollisionObjects, smoothEnemyRotation } from './inimigos.js';
 
-export const CACODEMON_STATE = {
+export const PAINELEMENTAL_STATE = {
     WANDERING: 'WANDERING',
     LOOKING_AT_PLAYER: 'LOOKING_AT_PLAYER',
 };
@@ -13,104 +13,104 @@ const MAX_WANDER_DISTANCE = 25;
 const WANDER_SPEED = 0.05;
 const PROXIMITY_THRESHOLD = 1.0;
 const COLLISION_CHECK_DISTANCE = 1.0;
-const CACODEMON_VERTICAL_OFFSET = 2.0;
+const PAINELEMENTAL_VERTICAL_OFFSET = 2.0;
 const VERTICAL_SMOOTHING_FACTOR = 0.02;
 
  
-export function moveCacodemon(cacodemonData, scenario, player, scene) {
+export function movePainElemental(painElementalData, scenario, player, scene) {
 
-    if (!cacodemonData.collisionObjects) {
-        cacodemonData.collisionObjects = getCollisionObjects(scenario);
+    if (!painElementalData.collisionObjects) {
+        painElementalData.collisionObjects = getCollisionObjects(scenario);
     }
 
-    switch (cacodemonData.state) {
-        case CACODEMON_STATE.WANDERING:
-            handleWanderingState(cacodemonData, player);
+    switch (painElementalData.state) {
+        case PAINELEMENTAL_STATE.WANDERING:
+            handleWanderingState(painElementalData, player);
             break;
-        case CACODEMON_STATE.LOOKING_AT_PLAYER:
-            handleLookingState(cacodemonData, player, scene);
+        case PAINELEMENTAL_STATE.LOOKING_AT_PLAYER:
+            handleLookingState(painElementalData, player, scene);
             break;
     }
 
-    moveFireball(cacodemonData, scene);
+    moveFireball(painElementalData, scene);
 
-    applyVerticalCollision(cacodemonData);
+    applyVerticalCollision(painElementalData);
 
 }
 
  
-function handleWanderingState(cacodemonData, player) {
-    if (tryDetectPlayer(cacodemonData, player) && cacodemonData.lookAtFrames >= 0) {
-        console.log("Cacodemon detected player, switching to LOOKING_AT_PLAYER state");
-        cacodemonData.hasShot = false;
-        cacodemonData.state = CACODEMON_STATE.LOOKING_AT_PLAYER;
-        cacodemonData.lookAtFrames = LOOK_AT_PLAYER_DURATION_FRAMES;
+function handleWanderingState(painElementalData, player) {
+    if (tryDetectPlayer(painElementalData, player) && painElementalData.lookAtFrames >= 0) {
+        console.log("PainElemental detected player, switching to LOOKING_AT_PLAYER state");
+        painElementalData.hasShot = false;
+        painElementalData.state = PAINELEMENTAL_STATE.LOOKING_AT_PLAYER;
+        painElementalData.lookAtFrames = LOOK_AT_PLAYER_DURATION_FRAMES;
         return;
     }
 
-    const cacodemon = cacodemonData.obj;
-    const currentPosition = cacodemon.position;
+    const painElemental = painElementalData.obj;
+    const currentPosition = painElemental.position;
 
     // Create horizontal-only vectors for distance comparison
     const horizontalPosition = currentPosition.clone();
     horizontalPosition.y = 0;
-    const horizontalTarget = cacodemonData.targetPoint ? cacodemonData.targetPoint.clone() : null;
+    const horizontalTarget = painElementalData.targetPoint ? painElementalData.targetPoint.clone() : null;
     if (horizontalTarget) {
         horizontalTarget.y = 0;
     }
     
-    if (!cacodemonData.targetPoint || horizontalPosition.distanceTo(horizontalTarget) < PROXIMITY_THRESHOLD) {
-        cacodemonData.targetPoint = getNewWanderTarget(currentPosition);
+    if (!painElementalData.targetPoint || horizontalPosition.distanceTo(horizontalTarget) < PROXIMITY_THRESHOLD) {
+        painElementalData.targetPoint = getNewWanderTarget(currentPosition);
     }
 
-    moveTowardsTarget(cacodemonData, WANDER_SPEED, () => {
-        cacodemonData.targetPoint = null;
+    moveTowardsTarget(painElementalData, WANDER_SPEED, () => {
+        painElementalData.targetPoint = null;
     });
 
-    if (cacodemonData.lookAtFrames < 0) cacodemonData.lookAtFrames++;
-    if (cacodemonData.targetPoint){
-        smoothEnemyRotation(cacodemon, cacodemonData.targetPoint);
+    if (painElementalData.lookAtFrames < 0) painElementalData.lookAtFrames++;
+    if (painElementalData.targetPoint){
+        smoothEnemyRotation(painElemental, painElementalData.targetPoint);
     }
 }
 
  
-function handleLookingState(cacodemonData, player, scene) {
-    const cacodemon = cacodemonData.obj;
+function handleLookingState(painElementalData, player, scene) {
+    const painElemental = painElementalData.obj;
 
-    moveTowardsTarget(cacodemonData, WANDER_SPEED, () => {
-        cacodemonData.targetPoint = null; 
-        cacodemonData.state = CACODEMON_STATE.WANDERING; 
+    moveTowardsTarget(painElementalData, WANDER_SPEED, () => {
+        painElementalData.targetPoint = null; 
+        painElementalData.state = PAINELEMENTAL_STATE.WANDERING; 
     });
 
     const playerPosition = player.position.clone();
-    playerPosition.y = cacodemon.position.y; 
-    cacodemon.lookAt(playerPosition);
+    playerPosition.y = painElemental.position.y; 
+    painElemental.lookAt(playerPosition);
 
-    if (cacodemonData.lookAtFrames === Math.floor(LOOK_AT_PLAYER_DURATION_FRAMES / 2) && !cacodemonData.hasShot) {
-        initFireball(cacodemonData);
-        shootFireball(cacodemonData, scene, player);
+    if (painElementalData.lookAtFrames === Math.floor(LOOK_AT_PLAYER_DURATION_FRAMES / 2) && !painElementalData.hasShot) {
+        initFireball(painElementalData);
+        shootFireball(painElementalData, scene, player);
     }
     
-    cacodemonData.lookAtFrames--;
-    if (cacodemonData.lookAtFrames <= 0) {
-        cacodemonData.state = CACODEMON_STATE.WANDERING;
-        cacodemonData.lookAtFrames = LOOK_AT_PLAYER_COOLDOWN_FRAMES;
+    painElementalData.lookAtFrames--;
+    if (painElementalData.lookAtFrames <= 0) {
+        painElementalData.state = PAINELEMENTAL_STATE.WANDERING;
+        painElementalData.lookAtFrames = LOOK_AT_PLAYER_COOLDOWN_FRAMES;
     }
 }
 
  
-function moveTowardsTarget(cacodemonData, speed, onBlockCallback) {
-    const cacodemon = cacodemonData.obj;
-    const currentPosition = cacodemon.position;
+function moveTowardsTarget(painElementalData, speed, onBlockCallback) {
+    const painElemental = painElementalData.obj;
+    const currentPosition = painElemental.position;
 
-    if (!cacodemonData.targetPoint) return;
+    if (!painElementalData.targetPoint) return;
 
-    const horizontalTarget = cacodemonData.targetPoint.clone();
+    const horizontalTarget = painElementalData.targetPoint.clone();
     horizontalTarget.y = currentPosition.y;
 
     const direction = horizontalTarget.sub(currentPosition).normalize();
     const raycaster = new THREE.Raycaster(currentPosition, direction, 0, COLLISION_CHECK_DISTANCE);
-    const intersects = raycaster.intersectObjects(cacodemonData.collisionObjects);
+    const intersects = raycaster.intersectObjects(painElementalData.collisionObjects);
 
     if (intersects.length > 0) onBlockCallback(); 
 
@@ -118,16 +118,16 @@ function moveTowardsTarget(cacodemonData, speed, onBlockCallback) {
 }
 
  
-function tryDetectPlayer(cacodemonData, player) {
-    const distanceToPlayer = cacodemonData.obj.position.distanceTo(player.position);
+function tryDetectPlayer(painElementalData, player) {
+    const distanceToPlayer = painElementalData.obj.position.distanceTo(player.position);
     return distanceToPlayer < PLAYER_DETECT_DISTANCE;
 }
 
  
-function applyVerticalCollision(cacodemonData) {
-    const cacodemon = cacodemonData.obj;
-    const currentPosition = cacodemon.position;
-    const collisionObjects = cacodemonData.collisionObjects;
+function applyVerticalCollision(painElementalData) {
+    const painElemental = painElementalData.obj;
+    const currentPosition = painElemental.position;
+    const collisionObjects = painElementalData.collisionObjects;
     const gravity = 0.005;
     const groundCheckOffset = 0.1;
 
@@ -141,11 +141,11 @@ function applyVerticalCollision(cacodemonData) {
     if (intersects.length > 0) {
         // If ground is detected, smoothly interpolate to the target height above the ground.
         const groundY = intersects[0].point.y;
-        const targetY = groundY + CACODEMON_VERTICAL_OFFSET;
-        cacodemon.position.y = THREE.MathUtils.lerp(currentPosition.y, targetY, VERTICAL_SMOOTHING_FACTOR);
+        const targetY = groundY + PAINELEMENTAL_VERTICAL_OFFSET;
+        painElemental.position.y = THREE.MathUtils.lerp(currentPosition.y, targetY, VERTICAL_SMOOTHING_FACTOR);
     } else {
         // If no ground is detected, apply gravity to make it fall smoothly.
-        cacodemon.position.y -= gravity;
+        painElemental.position.y -= gravity;
     }
 }
 
@@ -170,11 +170,11 @@ const FIREBALL = {
     zOrigin: -2
 };
 
-function initFireball(cacodemonData) {
-    if (!cacodemonData.fireballArray) {
-        cacodemonData.fireballArray = [];
+function initFireball(painElementalData) {
+    if (!painElementalData.fireballArray) {
+        painElementalData.fireballArray = [];
     }
-    const fireballArray = cacodemonData.fireballArray;
+    const fireballArray = painElementalData.fireballArray;
 
     const sphereGeometry = new THREE.SphereGeometry(
       FIREBALL.radius,
@@ -190,11 +190,11 @@ function initFireball(cacodemonData) {
       velocity: new THREE.Vector3(),
       targetPoint: new THREE.Vector3() 
     }); //set when shot 
-    cacodemonData.obj.add(fireball);
+    painElementalData.obj.add(fireball);
 }
 
-function moveFireball(cacodemonData, scene) {
-    const fireballArray = cacodemonData.fireballArray;
+function moveFireball(painElementalData, scene) {
+    const fireballArray = painElementalData.fireballArray;
     if (!fireballArray || fireballArray.length === 0) return; // No fireballs to move
 
     for (let i = fireballArray.length - 1; i >= 0; i--) {
@@ -217,21 +217,21 @@ function moveFireball(cacodemonData, scene) {
 
 }
 
-function shootFireball(cacodemonData, scene, player) {
-    const fireballArray = cacodemonData.fireballArray;
+function shootFireball(painElementalData, scene, player) {
+    const fireballArray = painElementalData.fireballArray;
     if (!fireballArray || fireballArray.length === 0) return;
 
     // Find the last fireball that was initialized (it should be the one we want to shoot)
     const fireballData = fireballArray[fireballArray.length - 1];
     const fireballMesh = fireballData.fireball;
 
-    // we manually get the fireball's world position, then move it from the cacodemon to the scene
+    // we manually get the fireball's world position, then move it from the painElemental to the scene
     // trying to do it automatically with scene.attach is messy idk why
 
     const startPosition = new THREE.Vector3();
     console.log(fireballData);
     fireballMesh.getWorldPosition(startPosition);
-    cacodemonData.obj.remove(fireballMesh);
+    painElementalData.obj.remove(fireballMesh);
     scene.add(fireballMesh);
 
     fireballMesh.position.copy(startPosition);
@@ -243,5 +243,5 @@ function shootFireball(cacodemonData, scene, player) {
     fireballData.velocity.copy(direction).multiplyScalar(FIREBALL.speed);
     fireballData.targetPoint.copy(targetPosition);
 
-    cacodemonData.hasShot = true; //cacodemon wont immediately shoot again
+    painElementalData.hasShot = true; //painElemental wont immediately shoot again
 }
