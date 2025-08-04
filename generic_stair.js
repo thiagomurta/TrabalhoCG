@@ -1,8 +1,9 @@
 import * as THREE from  'three';
+import * as TF from './texturingfuncs.js'
 
-export function genStair(width,height,length,number_of_steps,materialForStair)
+export function genStair(width,height,length,number_of_steps,path)
 {
-    
+    let materialForStair=TF.boxTexture(path,width,height/number_of_steps,length/number_of_steps);
     let centerGeometry=new THREE.BoxGeometry(0.1,0.1,0.1);
     let center=new THREE.Mesh(centerGeometry,materialForStair); // center: is on ground level, under the topmost step and at left  of the lowest step (using a vertical profile obtained by a cut with y - vertical - and z -horizontal .)
                                                                 // at the 3d space(representation), center would be under the topmost step and on an z line with the lowest. x is on the exact middle of width;  

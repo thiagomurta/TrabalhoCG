@@ -23,10 +23,10 @@ export function Scene0()
     EL.elevador(bu1,material1);
     
     let material2 = new THREE.MeshLambertMaterial({color: "rgb(7, 255, 214)"});
-    let bu2=SL.genStairedLevel(100,6,100,33,10,16,material2,0.25);
+    let bu2=SL.genStairedLevel(100,6,100,33,10,16,"../assets/textures/stonewall.jpg",0.25);
 
     let material3 = new THREE.MeshLambertMaterial({color: "rgb(156, 165, 37)"});
-    let bd0=SL.genStairedLevel(300,6,100,33,10,16, material3,0);
+    let bd0=SL.genStairedLevel(300,6,100,33,10,16, "../assets/textures/stonewall.jpg",0);
     bd0.rotateYC(Math.PI);
     
     let material4 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
