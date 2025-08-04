@@ -74,14 +74,16 @@ function damageEnemies(enemies, camera) {
     }
 
     raycaster.setFromCamera(screenCenter, camera);
-    const allEnemyMeshes = [
+    console.log(enemies);
+    let allEnemyMeshes = [
         ...enemies.cacodemons.map(e => e.obj),
         ...enemies.skulls.map(e => e.obj)
     ];
+    allEnemyMeshes.push(enemies.painElementals[0].obj);
 
     const intersects = raycaster.intersectObjects(allEnemyMeshes);
     if (intersects.length > 0) {
-        if (intersects[0].distance > 10) return;
+        // if (intersects[0].distance > 10) return;
 
         const closestHitObject = intersects[0].object; 
         const cacodemonData = enemies.cacodemons.find(enemy => {
@@ -97,6 +99,27 @@ function damageEnemies(enemies, camera) {
 
         if (cacodemonData) {
             damageCacodemon(enemies.cacodemons, cacodemonData, 2);
+            return; 
+        }
+        
+        
+        const singlePainElemental = enemies.painElementals[0];
+        let painElementalData = undefined; 
+
+        if (singlePainElemental) {
+            let parent = closestHitObject;
+    
+            while (parent) {
+                if (parent === singlePainElemental.obj) {
+                    painElementalData = singlePainElemental;
+                    break; 
+                }
+                parent = parent.parent;
+            }
+        }
+
+        if (painElementalData) {
+            damageCacodemon(enemies.painElementals, painElementalData, 2);
             return; 
         }
 

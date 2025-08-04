@@ -122,6 +122,16 @@ export function moveBullet(scene, camera, enemies) {
         }
       }
 
+      for (const enemy of enemies.painelementals) {
+        const enemyBox = new THREE.Box3().setFromObject(enemy.obj.children[0]);
+        if (bulletBox.intersectsBox(enemyBox)) {
+          console.log("Hit an enemy!");
+          removeBullet(scene, bullet, ball, ballArray, i, camera);
+          damagePainElemental(enemies.painelementals, enemy, 10);
+          continue;
+        }
+      }
+
     }
   }
 
