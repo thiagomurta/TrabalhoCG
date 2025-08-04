@@ -1,7 +1,7 @@
 import * as THREE from  'three';
 
 import * as SL from './staired_level.js';
-
+import * as TF from './texturingfuncs.js'
 export function area2(staired_level,material)
 {
     let sl_width=staired_level.width;
@@ -45,4 +45,13 @@ export function area2(staired_level,material)
            
         }
     }
+    let gateG=new THREE.BoxGeometry(staired_level.s_w,staired_level.height,1);
+    let gate=new THREE.Mesh(gateG,TF.boxTexture('./T3_assets/indCrate.jpg',staired_level.s_w,staired_level.height,1));
+    gate.width=staired_level.s_w;
+    staired_level.add(gate);
+    gate.translateY(staired_level.height/2);
+    gate.translateZ(staired_level.length/2 - 0.49);
+    staired_level.gate=gate;
+    staired_level.vaultedBox.meshes.push(gate);
+
 }

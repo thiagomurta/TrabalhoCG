@@ -15,6 +15,7 @@ import * as SCLIMB from './stairClimb.js'
 import { loadEnemies, moveEnemies, updateAnimations } from './inimigos/inimigos.js';
 import * as EL from './elevador.js'
 import { initWeaponSystem, updateWeapons, currentGun, GUNTYPE } from './arma/armaController.js';
+import * as GATE from './gateAnim.js'
 
 // ---------------------Configuração inicial---------------------
 let scene, renderer;
@@ -61,6 +62,7 @@ teto.rotation.x = Math.PI / 2;
 teto.position.set(0,40,0);
 teto.visible = false;
 scene.add(teto);
+let gateMove={value:true};
 
 let player = new THREE.Mesh(new THREE.BoxGeometry(1,2,1), new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"}));
 scene.add(player);
@@ -261,8 +263,7 @@ function moveAnimate(delta) {
     const RIGHT_WALL = scenario.objects[7];
 
     const isIntersectingWall = raycaster.intersectObjects([NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL]).length > 0;
-
-    
+    GATE.gateAnim(scenario.objects[1],gateMove);
     //ELEVADOR
     verticalCaster.ray.direction.copy(LOOK.Down(controls)).normalize();
     atElevador=EL.elevadorLogic(verticalCaster,scenario.objects[1],controls,elevadorCanMove,isAttached);

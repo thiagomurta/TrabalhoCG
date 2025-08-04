@@ -8,24 +8,25 @@ import * as EL from './elevador.js'
 import {
         setDefaultMaterial,
         createGroundPlaneXZ} from "../libs/util/util.js";
-        
+import * as TF from './texturingfuncs.js'      
 
 export function Scene0()
 {
-    let material0 = new THREE.MeshLambertMaterial({color: "rgb(86, 202, 19)"});
-    let bu0=SL.genStairedLevel(100,6,100,33,10,16,material0,-0.25);
+    let material0 = new THREE.MeshLambertMaterial({color: "rgba(129, 125, 125, 0.43)"});
+    let bu0=SL.genStairedLevel(100,6,100,33,10,16,"../assets/textures/stonewall.jpg",-0.25);
+    
     A1.area1(bu0,material0);
     
     let material1 = new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"});
-    let bu1=SL.genStairedLevel(100,6,100,33,10,16,material1,0);
+    let bu1=SL.genStairedLevel(100,6,100,33,10,16,"./T3_assets/mb.jpg",0);
     A2.area2(bu1,material1);
     EL.elevador(bu1,material1);
     
     let material2 = new THREE.MeshLambertMaterial({color: "rgb(7, 255, 214)"});
-    let bu2=SL.genStairedLevel(100,6,100,33,10,16,material2,0.25);
+    let bu2=SL.genStairedLevel(100,6,100,33,10,16,"../assets/textures/stonewall.jpg",0.25);
 
     let material3 = new THREE.MeshLambertMaterial({color: "rgb(156, 165, 37)"});
-    let bd0=SL.genStairedLevel(300,6,100,33,10,16, material3,0);
+    let bd0=SL.genStairedLevel(300,6,100,33,10,16, "../assets/textures/stonewall.jpg",0);
     bd0.rotateYC(Math.PI);
     
     let material4 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
