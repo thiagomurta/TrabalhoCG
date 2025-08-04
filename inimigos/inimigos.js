@@ -16,14 +16,18 @@ export const UPPER_LEFT_AREA_X = -125;
 export const ENEMIES_SCALE = 5;
 const MIDDLE_AREA_X = 0;
 
-
+const CACODEMON_SPAWN_POINTS = [
+    new THREE.Vector3(-16, 15, -150),
+    new THREE.Vector3(16, 15, -150),
+    new THREE.Vector3(16, 15, -175),
+];
 
 
 // ----------------------- INIMIGOS -------------------------
 
 // ## FUNÇÕES DE MOVIMENTAÇÃO DOS INIMIGOS ##
 
-export function moveEnemies(scene, scenario, enemies, player) {
+export function moveEnemies(scene, scenario, enemies, player, playerHasEnteredFirstArea = true, playerHasEnteredSecondArea = true) {
     if (!enemies || !Array.isArray(enemies.cacodemons) || !Array.isArray(enemies.skulls)) {
         console.log("No enemies to move or enemies data is not in the expected format.");
         console.log(enemies);
@@ -33,9 +37,9 @@ export function moveEnemies(scene, scenario, enemies, player) {
     const cacodemons = enemies.cacodemons;
     const skulls = enemies.skulls;
 
-    for (let cacodemonData of cacodemons) moveCacodemon(cacodemonData, scenario, player, scene);
+    if (playerHasEnteredSecondArea) for (let cacodemonData of cacodemons) moveCacodemon(cacodemonData, scenario, player, scene);
 
-    for (let skullData of skulls) moveSkull(skullData, scenario, player);
+    if (playerHasEnteredFirstArea) for (let skullData of skulls) moveSkull(skullData, scenario, player);
 }
 
 
@@ -73,13 +77,16 @@ export async function loadEnemies(scene) {
         scene.add(enemyGroup); 
     }
 
-    for (let j = 0; j < 3; j++) {
-        const cacodemon = await loadCacodemon(); 
+    for (const spawnPoint of CACODEMON_SPAWN_POINTS) {
+        const cacodemon = await loadCacodemon();
         const { hpBarSprite, context, texture } = createHpBar();
         const enemyGroup = new THREE.Group();
         enemyGroup.add(cacodemon);
-        hpBarSprite.position.y = 5; 
+        hpBarSprite.position.y = 5;
         enemyGroup.add(hpBarSprite);
+
+        enemyGroup.position.copy(spawnPoint);
+
         const cacodemonData = {
             name: 'cacodemon',
             obj: enemyGroup,
@@ -88,19 +95,21 @@ export async function loadEnemies(scene) {
             targetPoint: null,
             state: CACODEMON_STATE.WANDERING,
             hasShot: false,
-            
+
             // HP Bar
             hp: 50,
             maxHp: 50,
             context: context,
             texture: texture,
-            hpBar: hpBarSprite 
+            hpBar: hpBarSprite
         };
 
         cacodemons.push(cacodemonData);
         updateHpBar(cacodemonData); // Initialize the HP bar
         scene.add(enemyGroup);
+        console.log("Added cacodemon at ", enemyGroup.position);
     }
+
 
     for (let skull of skulls){
         placeEnemyRandomStartPos(skull.obj, AREA_DIMENSION, AREAS_Z, AREAS_Y, 

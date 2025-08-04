@@ -42,7 +42,7 @@ let isAttached=false;
 let isMouseDown = false;
 let playerHasEnteredFirstArea = {value:false,name:"playerHasEnteredFirstArea"};
 
-let playerHasEnteredSceondArea = {value:false,name:"playerHasEnteredSecondArea"}
+let playerHasEnteredSecondArea = {value:false,name:"playerHasEnteredSecondArea"}
 
 // ---------------------Ambiente---------------------
 
@@ -83,14 +83,14 @@ instructions.addEventListener('click', function () {
 window.addEventListener('mousedown', function (event) {
     if (!controls.isLocked) return; 
 
-    //check for either left or right mouse button, either work
     if (event.button === 0 || event.button === 2) {
         isMouseDown = true; 
     }
 }, false);
 
 window.addEventListener('mouseup', function (event) {
-    if (event.button === 0) { 
+    if (!controls.isLocked) return;
+    if (event.button === 0 || event.button === 2) {
         isMouseDown = false; 
     }
 }, false);
@@ -276,7 +276,7 @@ function moveAnimate(delta) {
      }
     //STAIR LOGIC
     SCLIMB.stairclimb(verticalCaster,[LEFTMOST_BOX,RIGHTMOST_BOX,LOWER_MIDDLE_BOX],controls);
-    INTER.activateAi(verticalCaster,[scenario.objects[0].enemyActivateBox,scenario.objects[1].enemyActivateBox],playerHasEnteredFirstArea,playerHasEnteredSceondArea,controls);
+    INTER.activateAi(verticalCaster,[scenario.objects[0].enemyActivateBox,scenario.objects[1].enemyActivateBox],playerHasEnteredFirstArea,playerHasEnteredSecondArea,controls);
     
     if (moveForward) {
         horizontalCaster.ray.direction.copy(LOOK.Foward(controls)).normalize();
@@ -335,7 +335,7 @@ function render() {
         updateWeapons(scene, camera, enemies);
         moveAnimate(clock.getDelta());
         //console.log(playerHasEnteredFirstArea);
-        if (enemies && playerHasEnteredFirstArea.value==true) moveEnemies(scene, scenario, enemies, player); // will move enemies
+        if (enemies) moveEnemies(scene, scenario, enemies, player, playerHasEnteredFirstArea, playerHasEnteredSecondArea); // will move enemies
         moveBullet(scene, camera, enemies); // will move bullet if its isShooting attribute is truthy
     }
     renderer.shadowMap.enabled=true;
