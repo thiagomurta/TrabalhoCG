@@ -14,7 +14,7 @@ import * as INTER from './intersecter.js'
 import * as SCLIMB from './stairClimb.js'
 import { loadEnemies, moveEnemies, updateAnimations } from './inimigos/inimigos.js';
 import * as EL from './elevador.js'
-import { initWeaponSystem, updateWeapons, currentGun, GUNTYPE } from './arma/armaController.js';
+import { toggleGun, initWeaponSystem, updateWeapons, currentGun, GUNTYPE } from './arma/armaController.js';
 import * as GATE from './gateAnim.js'
 
 // ---------------------Configuração inicial---------------------
@@ -332,7 +332,7 @@ function render() {
     stats.update();
     if (controls.isLocked) {
         updateAnimations();
-        updateWeapons(scene, camera, enemies);
+        updateWeapons(scenario, scene, camera, enemies);
         moveAnimate(clock.getDelta());
         //console.log(playerHasEnteredFirstArea);
         if (enemies) moveEnemies(scene, scenario, enemies, player, playerHasEnteredFirstArea, playerHasEnteredSecondArea); // will move enemies

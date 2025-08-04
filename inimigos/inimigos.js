@@ -14,14 +14,29 @@ export const AREA_DIMENSION = 100;
 export const AREAS_Z = -150;
 export const AREAS_Y = 6;
 export const UPPER_LEFT_AREA_X = -125;
+
+export const LOWER_AREA_X_DIMENSION = 300;
+export const LOWER_AREA_Y_DIMENSION = 100;
+export const LOWER_AREA_Z = 100;
+export const LOWER_AREA_X = 0;
+
 export const ENEMIES_SCALE = 5;
-const MIDDLE_AREA_X = 0;
 
 const CACODEMON_SPAWN_POINTS = [
     new THREE.Vector3(-16, 15, -150),
     new THREE.Vector3(16, 15, -150),
     new THREE.Vector3(16, 15, -175),
+
+    new THREE.Vector3(-140, 7, 105),
+    new THREE.Vector3(-70, 7, 125),
+    new THREE.Vector3(70, 7, 145),
+    new THREE.Vector3(140, 7, 165)
 ];
+
+const PAINELEMENTAL_SPAWN_POINTS = [
+    new THREE.Vector3(0, 7, 150),
+];
+
 
 
 // ----------------------- INIMIGOS -------------------------
@@ -182,13 +197,34 @@ async function loadSkull() {
 async function loadPainElemental() {
     try {
         let painElemental = await initPainElemental();
-        painElemental = normalizeAndRescale(painElemental, ENEMIES_SCALE);
+        painElemental = normalizeAndRescale(painElemental, ENEMIES_SCALE * 1.5);
         painElemental = fixPosition(painElemental);
         return painElemental;
     } catch(error) {
         console.error('Error loading painElemental: ', error);
     }
 }
+
+
+async function initPainElemental() {
+    let glbLoader = new GLTFLoader();
+
+    return new Promise((resolve, reject) => {
+        glbLoader.load( '../../0_AssetsT3/objects/pain/painElemental.glb', function (gltf) {
+            const obj = gltf.scene;
+            obj.traverse(function (child) {
+                if (child) {
+                    child.castShadow = true;
+                }
+            });
+            resolve(obj);
+        }, undefined, function (error) {
+            reject(error); 
+        });
+    });
+}
+
+
 
 function initCacodemon() {
     let glbLoader = new GLTFLoader();
@@ -206,10 +242,6 @@ function initCacodemon() {
             reject(error); 
         });
     });
-}
-
-function initPainElemental() {
-    let glbLoader = new GLTFLoader();
 }
 
 function initSkull(){
