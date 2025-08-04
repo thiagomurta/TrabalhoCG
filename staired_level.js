@@ -9,7 +9,7 @@ import {initRenderer,
 
 export function genStairedLevel(width, height, length, stair_w, stair_l, number_of_steps, path,stair_displacement) {
     // Main container
-    let center = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1),setDefaultMaterial('red'));
+    let center = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1),setDefaultMaterial());
     center.offset=5;
     // Visible geometry
     let vaultedBox = GB.genBox(width, height, length, stair_w, stair_l, path,stair_displacement);

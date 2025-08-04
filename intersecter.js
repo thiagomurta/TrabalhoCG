@@ -93,10 +93,10 @@ export function activateAi(caster,objects,enter1,enter2,controls)
         if(enter1.value==false)
         {
             let enterAux=caster.intersectObject(objects[0]).length>0;
-            if(enterAux==true)
+            if(enterAux==true){
                 enter1.value=enterAux;
-            //console.log(enter1.name);
-            
+                console.log(enter1.value);
+            }
         }
          if(enter2.value==false)
         {

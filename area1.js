@@ -59,15 +59,15 @@ export function area1(staired_level,material)
         collumn.add(collumnCol);
         collumnCol.visible=false;
         staired_level.vaultedBox.meshes.push(collumnCol);
-        let boxGeometryFlag= new THREE.BoxGeometry(staired_level.s_w,1,2);
+       
+
+        
+    }
+    }
+     let boxGeometryFlag= new THREE.BoxGeometry(staired_level.s_w,1,2);
         let boxFlag = new THREE.Mesh(boxGeometryFlag,material);
         staired_level.stair.add(boxFlag);
         boxFlag.translateY(0.5+staired_level.height);
         boxFlag.visible=false;
         staired_level.enemyActivateBox=boxFlag;
-
-        
-    }
-    
-    }  
 }
