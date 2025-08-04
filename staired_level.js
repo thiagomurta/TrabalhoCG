@@ -7,17 +7,17 @@ import {initRenderer,
         onWindowResize,
         createGroundPlaneXZ                } from "../libs/util/util.js";
 
-export function genStairedLevel(width, height, length, stair_w, stair_l, number_of_steps, material,stair_displacement) {
+export function genStairedLevel(width, height, length, stair_w, stair_l, number_of_steps, path,stair_displacement) {
     // Main container
-    let center = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1), material);
+    let center = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1),setDefaultMaterial('red'));
     center.offset=5;
     // Visible geometry
-    let vaultedBox = GB.genBox(width, height, length, stair_w, stair_l, material,stair_displacement);
+    let vaultedBox = GB.genBox(width, height, length, stair_w, stair_l, path,stair_displacement);
     center.add(vaultedBox);
     vaultedBox.translateY(-0.05);
 
     // Stair creation
-    let stair = GS.genStair(stair_w, height, stair_l, number_of_steps, material);
+    let stair = GS.genStair(stair_w, height, stair_l, number_of_steps,path);
     center.add(stair);
     stair.translateZ(+(length/2 - stair_l));
     stair.translateY(-0.05);
@@ -25,16 +25,6 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
     center.vaultedBox=vaultedBox;
     center.stair=stair;
 
-    // Collision phantom box (invisible)
-    let phantomBox = new THREE.Mesh(new THREE.BoxGeometry(width, height, length), material);
-    center.add(phantomBox);
-    phantomBox.visible = false;
-    phantomBox.translateY(-0.05 + height/2);
-    
-    // Initialize bounding box
-    center.updateMatrixWorld(true);
-    center.bb = new THREE.Box3().setFromObject(phantomBox);
-    center.phBx = phantomBox;
 
     // Stair collider setup
     const stairCollider = new THREE.Mesh(
@@ -121,9 +111,6 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
 
     // Unified BB update method
     center.updateBB = function() {
-        this.updateMatrixWorld(true);
-        this.bb.setFromObject(this.phBx);
-        this.stairBB.setFromObject(stairCollider);
     };
     center.width=width;
     center.height=height;

@@ -8,16 +8,17 @@ import * as EL from './elevador.js'
 import {
         setDefaultMaterial,
         createGroundPlaneXZ} from "../libs/util/util.js";
-        
+import * as TF from './texturingfuncs.js'      
 
 export function Scene0()
 {
-    let material0 = new THREE.MeshLambertMaterial({color: "rgb(86, 202, 19)"});
-    let bu0=SL.genStairedLevel(100,6,100,33,10,16,material0,-0.25);
+    let material0 = new THREE.MeshLambertMaterial({color: "rgba(129, 125, 125, 0.43)"});
+    let bu0=SL.genStairedLevel(100,6,100,33,10,16,"../assets/textures/stonewall.jpg",-0.25);
+    
     A1.area1(bu0,material0);
     
     let material1 = new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"});
-    let bu1=SL.genStairedLevel(100,6,100,33,10,16,material1,0);
+    let bu1=SL.genStairedLevel(100,6,100,33,10,16,"./T3_assets/mb.jpg",0);
     A2.area2(bu1,material1);
     EL.elevador(bu1,material1);
     

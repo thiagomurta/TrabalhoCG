@@ -1,15 +1,21 @@
 import * as THREE from  'three';
-
-export function genBox(width,height,length,stair_w,stair_l,materialForBox,stair_displacement,/*material_right*/) // uncomment so see the diference between right box and the rest (would need to pass an aditional material at the end)
+import * as TF from './texturingfuncs.js'
+export function genBox(width,height,length,stair_w,stair_l,path,stair_displacement,) 
 {
     let BoxGeometryLeft=new THREE.BoxGeometry((width-stair_w)/2 + (stair_displacement*width),height,length);
     let BoxGeometryRight=new THREE.BoxGeometry((width-stair_w)/2 - (stair_displacement*width),height,length);
 
     let BoxGeometryUp=new THREE.BoxGeometry(stair_w,height,length-stair_l);
-    let subBox1=new THREE.Mesh(BoxGeometryLeft,materialForBox);
-    let subBox2=new THREE.Mesh(BoxGeometryRight,materialForBox/*material_right*/);
-    let subBox0=new THREE.Mesh(BoxGeometryUp,materialForBox);
-    let center=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.1),materialForBox);
+    
+    let mat1=TF.boxTexture(path,((width-stair_w)/2 + (stair_displacement*width)),height,length);
+    let subBox1=new THREE.Mesh(BoxGeometryLeft,mat1);
+    let mat2=TF.boxTexture(path,((width-stair_w)/2 - (stair_displacement*width)),height,length);
+    let subBox2=new THREE.Mesh(BoxGeometryRight,mat2);
+    
+    let mat3=TF.boxTexture(path,stair_w,height,length-stair_l);
+    let subBox0=new THREE.Mesh(BoxGeometryUp,mat3);
+    
+    let center=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.1),mat1);
     center.upperBox=subBox0;
     center.upperBox.name="upper";
     center.leftBox=subBox1;
