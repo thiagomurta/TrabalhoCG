@@ -8,7 +8,7 @@ import {moveCacodemon} from './cacodemon.js';
 import { SKULL_STATE } from './skull.js';
 import { CACODEMON_STATE } from './cacodemon.js';
 import { fadingObjects } from '../t1.js';
-import { PAINELEMENTAL_STATE } from './painelemental.js';
+import { movePainElemental, PAINELEMENTAL_STATE } from './painelemental.js';
 
 export const AREA_DIMENSION = 100;
 export const AREAS_Z = -150;
@@ -43,7 +43,7 @@ const PAINELEMENTAL_SPAWN_POINTS = [
 
 // ## FUNÇÕES DE MOVIMENTAÇÃO DOS INIMIGOS ##
 
-export function moveEnemies(scene, scenario, enemies, player, playerHasEnteredFirstArea = true, playerHasEnteredSecondArea = false) {
+export function moveEnemies(scene, scenario, player, enemies, playerHasEnteredFirstArea = true, playerHasEnteredSecondArea = false) {
     if (!enemies || !Array.isArray(enemies.cacodemons) || !Array.isArray(enemies.skulls)) {
         console.log("No enemies to move or enemies data is not in the expected format.");
         console.log(enemies);
@@ -52,12 +52,15 @@ export function moveEnemies(scene, scenario, enemies, player, playerHasEnteredFi
 
     const cacodemons = enemies.cacodemons;
     const skulls = enemies.skulls;
+    const painElementals = enemies.painElementals;
 
     if (playerHasEnteredSecondArea) 
         for (let cacodemonData of cacodemons) moveCacodemon(cacodemonData, scenario, player, scene);
 
     if (playerHasEnteredFirstArea) 
         for (let skullData of skulls) moveSkull(skullData, scenario, player);
+
+    for (let painElementalData of painElementals) movePainElemental(painElementalData, scenario, player, scene, enemies);
 }
 
 
@@ -123,6 +126,8 @@ export async function loadEnemies(scene) {
             hpBar: hpBarSprite
         };
 
+        if (spawnPoint.z > 0) cacodemonData.name = 'cacodemonLower';
+
         cacodemons.push(cacodemonData);
         updateHpBar(cacodemonData); // Initialize the HP bar
         scene.add(enemyGroup);
@@ -168,7 +173,7 @@ export async function loadEnemies(scene) {
                             UPPER_LEFT_AREA_X);
     }
 
-    return { skulls, cacodemons }; // Return the loaded enemies
+    return { skulls, cacodemons, painElementals}; // Return the loaded enemies
 }
 
 async function loadCacodemon() {
@@ -183,7 +188,7 @@ async function loadCacodemon() {
     }
 }
 
-async function loadSkull() {
+export async function loadSkull() {
     try {
         let skull = await initSkull();
         skull = normalizeAndRescale(skull, ENEMIES_SCALE);
@@ -199,6 +204,7 @@ async function loadPainElemental() {
         let painElemental = await initPainElemental();
         painElemental = normalizeAndRescale(painElemental, ENEMIES_SCALE * 1.5);
         painElemental = fixPosition(painElemental);
+        painElemental.rotateY(THREE.MathUtils.degToRad(-90));
         return painElemental;
     } catch(error) {
         console.error('Error loading painElemental: ', error);
@@ -327,7 +333,7 @@ function placeEnemyRandomStartPos(enemy, areaDimension, areasZ, areasY, upperLef
 
 // ## FUNÇÕES DE HP BAR ##
 
-function createHpBar() {
+export function createHpBar() {
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 64;
@@ -347,7 +353,7 @@ function createHpBar() {
     return { hpBarSprite, context, texture };
 }
 
-function updateHpBar(cacodemonData) {
+export function updateHpBar(cacodemonData) {
     const { context, texture, hp, maxHp } = cacodemonData;
     const canvas = context.canvas;
 

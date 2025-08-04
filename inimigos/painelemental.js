@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { getCollisionObjects, smoothEnemyRotation } from './inimigos.js';
+import { getCollisionObjects, smoothEnemyRotation, loadSkull, createHpBar, updateHpBar } from './inimigos.js';
+import { SKULL_STATE, CHARGE_TARGET_DISTANCE } from './skull.js';
 
 export const PAINELEMENTAL_STATE = {
     WANDERING: 'WANDERING',
@@ -17,7 +18,7 @@ const PAINELEMENTAL_VERTICAL_OFFSET = 2.0;
 const VERTICAL_SMOOTHING_FACTOR = 0.02;
 
  
-export function movePainElemental(painElementalData, scenario, player, scene) {
+export function movePainElemental(painElementalData, scenario, player, scene, enemies) {
 
     if (!painElementalData.collisionObjects) {
         painElementalData.collisionObjects = getCollisionObjects(scenario);
@@ -28,11 +29,10 @@ export function movePainElemental(painElementalData, scenario, player, scene) {
             handleWanderingState(painElementalData, player);
             break;
         case PAINELEMENTAL_STATE.LOOKING_AT_PLAYER:
-            handleLookingState(painElementalData, player, scene);
+            handleLookingState(painElementalData, player, scene, enemies, scenario);
             break;
     }
 
-    moveFireball(painElementalData, scene);
 
     applyVerticalCollision(painElementalData);
 
@@ -74,7 +74,7 @@ function handleWanderingState(painElementalData, player) {
 }
 
  
-function handleLookingState(painElementalData, player, scene) {
+function handleLookingState(painElementalData, player, scene, enemies, scenario) {
     const painElemental = painElementalData.obj;
 
     moveTowardsTarget(painElementalData, WANDER_SPEED, () => {
@@ -87,8 +87,7 @@ function handleLookingState(painElementalData, player, scene) {
     painElemental.lookAt(playerPosition);
 
     if (painElementalData.lookAtFrames === Math.floor(LOOK_AT_PLAYER_DURATION_FRAMES / 2) && !painElementalData.hasShot) {
-        initFireball(painElementalData);
-        shootFireball(painElementalData, scene, player);
+        shootSkull(painElementalData, scene, player, enemies, scenario);
     }
     
     painElementalData.lookAtFrames--;
@@ -157,91 +156,53 @@ function getNewWanderTarget(currentPosition) {
     return new THREE.Vector3(targetX, currentPosition.y, targetZ);
 }
 
-// FIREBALL FUNCTIONS
+async function shootSkull(painElementalData, scene, player, enemies, scenario) {
+    if (painElementalData.skullsShot === undefined) painElementalData.skullsShot = 1;
+    else painElementalData.skullsShot++;
 
-const FIREBALL = {
-    speed: 0.5, // Speed of the fireball
-    radius: 0.4,
-    widthSegments: 16,
-    heightSegments: 16,
-    color: 0xffff00, //YELLOW
-    xOrigin: 0,
-    yOrigin: 3,
-    zOrigin: -2
-};
+    if (painElementalData.skullsShot > 5) return;
+    painElementalData.hasShot = true;
 
-function initFireball(painElementalData) {
-    if (!painElementalData.fireballArray) {
-        painElementalData.fireballArray = [];
-    }
-    const fireballArray = painElementalData.fireballArray;
+    const painElemental = painElementalData.obj;
+    const spawnPosition = new THREE.Vector3();
+    painElemental.getWorldPosition(spawnPosition);
+    spawnPosition.y += 1; 
 
-    const sphereGeometry = new THREE.SphereGeometry(
-      FIREBALL.radius,
-      FIREBALL.widthSegments,
-      FIREBALL.heightSegments
-    )   
-    const fireballMaterial = new THREE.MeshLambertMaterial({color:FIREBALL.color});
-    const fireball = new THREE.Mesh(sphereGeometry, fireballMaterial);
-    fireball.position.set(FIREBALL.xOrigin, FIREBALL.yOrigin, FIREBALL.zOrigin);    
-    fireballArray.push({
-      fireball: fireball, 
-      isShooting: false,
-      velocity: new THREE.Vector3(),
-      targetPoint: new THREE.Vector3() 
-    }); //set when shot 
-    painElementalData.obj.add(fireball);
-}
+    // skull object creation
+    const skullModel = await loadSkull();
+    const { hpBarSprite, context, texture } = createHpBar();
+    const enemyGroup = new THREE.Group();
+    enemyGroup.add(skullModel);
+    hpBarSprite.position.y = 5;
+    enemyGroup.add(hpBarSprite);
 
-function moveFireball(painElementalData, scene) {
-    const fireballArray = painElementalData.fireballArray;
-    if (!fireballArray || fireballArray.length === 0) return; // No fireballs to move
+    enemyGroup.position.copy(spawnPosition);
 
-    for (let i = fireballArray.length - 1; i >= 0; i--) {
-        const fireballData = fireballArray[i];
+    const skullData = {
+        name: 'skull',
+        obj: enemyGroup,
+        id: Date.now() + Math.random(), // Unique ID
+        boundingBox: new THREE.Box3().setFromObject(skullModel),
+        targetPoint: null,
+        state: SKULL_STATE.CHARGING,
+        collisionObjects: getCollisionObjects(scenario),
+        hp: 20,
+        maxHp: 20,
+        context: context,
+        texture: texture,
+        hpBar: hpBarSprite
+    };
 
-        if (fireballData.isShooting) {
-            const fireballMesh = fireballData.fireball;
-            fireballMesh.position.add(fireballData.velocity);
+    // Set the charge target for the new skull
+    const directionToPlayer = player.position.clone().sub(spawnPosition).normalize();
+    const chargeDirection = new THREE.Vector3(directionToPlayer.x, 0, directionToPlayer.z).normalize();
+    const targetOffset = chargeDirection.multiplyScalar(CHARGE_TARGET_DISTANCE);
+    const targetPoint = spawnPosition.clone().add(targetOffset);
+    targetPoint.y = spawnPosition.y;
+    skullData.targetPoint = targetPoint;
 
-            const distanceToTarget = fireballMesh.position.distanceTo(fireballData.targetPoint);
-            if (distanceToTarget <= FIREBALL.speed) {
-                // The fireball has arrived. Remove it.
-                scene.remove(fireballMesh); 
-                fireballMesh.geometry.dispose(); 
-                fireballMesh.material.dispose();
-                fireballArray.splice(i, 1); 
-            }
-        }
-    }
-
-}
-
-function shootFireball(painElementalData, scene, player) {
-    const fireballArray = painElementalData.fireballArray;
-    if (!fireballArray || fireballArray.length === 0) return;
-
-    // Find the last fireball that was initialized (it should be the one we want to shoot)
-    const fireballData = fireballArray[fireballArray.length - 1];
-    const fireballMesh = fireballData.fireball;
-
-    // we manually get the fireball's world position, then move it from the painElemental to the scene
-    // trying to do it automatically with scene.attach is messy idk why
-
-    const startPosition = new THREE.Vector3();
-    console.log(fireballData);
-    fireballMesh.getWorldPosition(startPosition);
-    painElementalData.obj.remove(fireballMesh);
-    scene.add(fireballMesh);
-
-    fireballMesh.position.copy(startPosition);
-
-    // Set its state to 'shooting' so the moveFireball function will update it.
-    fireballData.isShooting = true;
-    const targetPosition = player.position.clone();
-    const direction = new THREE.Vector3().subVectors(targetPosition, startPosition).normalize();
-    fireballData.velocity.copy(direction).multiplyScalar(FIREBALL.speed);
-    fireballData.targetPoint.copy(targetPosition);
-
-    painElementalData.hasShot = true; //painElemental wont immediately shoot again
+    // Add the new skull to the game
+    enemies.skulls.push(skullData);
+    scene.add(enemyGroup);
+    updateHpBar(skullData);
 }

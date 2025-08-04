@@ -335,7 +335,7 @@ function render() {
         updateWeapons(scenario, scene, camera, enemies);
         moveAnimate(clock.getDelta());
         //console.log(playerHasEnteredFirstArea);
-        if (enemies) moveEnemies(scene, scenario, enemies, player, playerHasEnteredFirstArea, playerHasEnteredSecondArea); // will move enemies
+        if (enemies) moveEnemies(scene, scenario, player, enemies, playerHasEnteredFirstArea, playerHasEnteredSecondArea); // will move enemies
         moveBullet(scene, camera, enemies); // will move bullet if its isShooting attribute is truthy
     }
     renderer.shadowMap.enabled=true;
