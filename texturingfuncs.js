@@ -43,7 +43,7 @@ export function boxMultipleTexture(path,width,height,length)
         ]
         return material;
 }
-function setMaterial(file, repeatU = 1, repeatV = 1, color = 'rgb(255,255,255)'){
+export function setMaterial(file, repeatU = 1, repeatV = 1, color = 'rgb(255,255,255)'){
     let loader = new THREE.TextureLoader();
     let mat = new THREE.MeshBasicMaterial({ map: loader.load(file), color:color});
       mat.map.colorSpace = THREE.SRGBColorSpace;

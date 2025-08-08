@@ -4,6 +4,7 @@ import * as SL from './staired_level.js';
 import * as A1 from './area1.js'
 import * as A2 from './area2.js'
 import * as EL from './elevador.js'
+import * as HANGAR from './hangar.js'
 
 import {
         setDefaultMaterial,
@@ -95,7 +96,9 @@ export function Scene0()
     box3.translateY(6.5);
     box3.translateZ(-160);
 
-    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL,box, box2, box3];
+    let hangar = HANGAR.HANGARTeto(30, 29/*47.5*/, 0.7);
+
+    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL,box, box2, box3, hangar];
     
     
     
