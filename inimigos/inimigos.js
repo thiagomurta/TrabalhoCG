@@ -131,7 +131,7 @@ export async function loadEnemies(scene) {
         cacodemons.push(cacodemonData);
         updateHpBar(cacodemonData); // Initialize the HP bar
         scene.add(enemyGroup);
-        console.log("Added cacodemon at ", enemyGroup.position);
+        // console.log("Added cacodemon at ", enemyGroup.position);
     }
 
     for (const spawnPoint of PAINELEMENTAL_SPAWN_POINTS) {
@@ -164,7 +164,7 @@ export async function loadEnemies(scene) {
         painElementals.push(painElementalData);
         updateHpBar(painElementalData); // Initialize the HP bar
         scene.add(enemyGroup);
-        console.log("Added painElemental at ", enemyGroup.position);
+        // console.log("Added painElemental at ", enemyGroup.position);
     }
 
 
@@ -402,6 +402,20 @@ export function damageSkull(enemiesSkulls, skullData, damage) {
         }
     }
     updateHpBar(skullData);
+}
+
+export function damagePainElemental(enemiesPainElementals, painElementalData, damage) {
+    painElementalData.hp -= damage;
+    if (painElementalData.hp <= 0) {
+        painElementalData.hp = 0;
+        startFadingAnimation(painElementalData);
+
+        const index = enemiesPainElementals.indexOf(painElementalData);
+        if (index > -1) {
+            enemiesPainElementals.splice(index, 1);
+        }
+    }
+    updateHpBar(painElementalData);
 }
 
 export function updateAnimations() {

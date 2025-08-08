@@ -64,7 +64,7 @@ teto.visible = false;
 scene.add(teto);
 let gateMove={value:true};
 
-let player = new THREE.Mesh(new THREE.BoxGeometry(1,2,1), new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"}));
+let player = new THREE.Mesh(new THREE.BoxGeometry(1,5,1), new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"}));
 scene.add(player);
 player.translateY(1);
 player.add(camera)
