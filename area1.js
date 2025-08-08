@@ -1,7 +1,7 @@
 import * as THREE from  'three';
 
 import * as SL from './staired_level.js';
-
+import * as TF from './texturingfuncs.js'
 export function area1(staired_level,material)
 {
   let radius=0.75;
@@ -65,9 +65,41 @@ export function area1(staired_level,material)
     }
     }
      let boxGeometryFlag= new THREE.BoxGeometry(staired_level.s_w,1,2);
+       
+        
         let boxFlag = new THREE.Mesh(boxGeometryFlag,material);
-        staired_level.stair.add(boxFlag);
-        boxFlag.translateY(0.5+staired_level.height);
+        staired_level.add(boxFlag);
+        boxFlag.position.copy(staired_level.stair.position);
+        boxFlag.translateY(staired_level.height+0.5);
+        staired_level.bf=boxFlag;
         boxFlag.visible=false;
         staired_level.enemyActivateBox=boxFlag;
+        for(let i=0;i<4;i++){
+            let blockGeo=new THREE.BoxGeometry(50,2,4);
+            let block=new THREE.Mesh(blockGeo,TF.boxTexture(['../assets/textures/stonewall.jpg'],50,2,4));
+            staired_level.add(block);
+            if(i==0)
+            {
+                block.translateX(0);
+                block.translateY(staired_level.height + 1 + height);
+                block.translateZ(-(staired_level.length/2));
+                block.translateX(25);
+            }else if(i==1)
+            {
+                block.rotateY(Math.PI/2);
+                block.translateY(staired_level.height + 1 + height);
+                block.translateZ(-(staired_level.length/2));
+                block.translateX(-25);
+            }else if(i==2){
+                block.rotateY(Math.PI/2);
+                block.translateY(staired_level.height + 1 + height);
+                block.translateZ((staired_level.length/2));
+                block.translateX(25);
+            }else{
+                block.translateX(0);
+                block.translateY(staired_level.height + 1 + height);
+                block.translateZ((staired_level.length/2));
+                block.translateX(5);
+            }
+        }
 }

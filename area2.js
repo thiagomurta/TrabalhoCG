@@ -2,14 +2,15 @@ import * as THREE from  'three';
 
 import * as SL from './staired_level.js';
 import * as TF from './texturingfuncs.js'
-export function area2(staired_level,material)
+
+export function area2(staired_level,path)
 {
     let sl_width=staired_level.width;
     let sl_height=staired_level.height;
     let b_w=4;
     let numLines=5;
     let numCollumns=4;
-
+    
     let displacement_z= (sl_width-((numLines)*b_w))/(numLines-1);
     let displacement_x= (sl_width-((numCollumns)*b_w))/(numCollumns-1);
     for(let i=0;i<numLines;i++)   
@@ -17,6 +18,9 @@ export function area2(staired_level,material)
         for(let j=0;j<numCollumns;j++)
         {
             let boxGeometry=new THREE.BoxGeometry(b_w,(i)+(j)+4,b_w);
+            
+            var material = TF.boxTextureCust(path,b_w,i+j+4,b_w,4,4);
+            
             let box= new THREE.Mesh(boxGeometry,material);
             staired_level.vaultedBox.add(box);
             box.translateY(sl_height+((i)+(j)+4)/2);
@@ -46,7 +50,7 @@ export function area2(staired_level,material)
         }
     }
     let gateG=new THREE.BoxGeometry(staired_level.s_w,staired_level.height,1);
-    let gate=new THREE.Mesh(gateG,TF.boxTexture('./T3_assets/indCrate.jpg',staired_level.s_w,staired_level.height,1));
+    let gate=new THREE.Mesh(gateG,TF.boxTextureCust(['./T3_assets/gate.png'],staired_level.s_w,staired_level.height,1,staired_level.s_w/2,staired_level.height));
     gate.width=staired_level.s_w;
     staired_level.add(gate);
     gate.translateY(staired_level.height/2);
