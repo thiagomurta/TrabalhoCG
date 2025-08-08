@@ -7,14 +7,14 @@ export const SKULL_STATE = {
 };
 
 const PLAYER_DETECT_DISTANCE = {
-        INSTA: 20,
-        MIN: 25,
-        MAX: 35
+        INSTA: 25,
+        MIN: 20,
+        MAX: 60
     };
 const MAX_WANDER_DISTANCE = 20;
 const DETECTION_ANGLE_THRESHOLD = Math.PI / 3; 
 export const CHARGE_TARGET_DISTANCE = 1000; 
-const CHARGE_SPEED = 0.5;
+const CHARGE_SPEED = 0.8;
 const WANDER_SPEED = 0.1;
 const PROXIMITY_THRESHOLD = 0.5;
 const COLLISION_CHECK_DISTANCE = 0.5;
@@ -152,7 +152,7 @@ function tryDetectPlayer(skullData, player) {
     const lookDirection = skull.getWorldDirection(new THREE.Vector3());
     const angleToPlayer = lookDirection.angleTo(directionToPlayer);
 
-    if (angleToPlayer < DETECTION_ANGLE_THRESHOLD || distanceToPlayer < PLAYER_DETECT_DISTANCE.INSTA) {
+    if (angleToPlayer < DETECTION_ANGLE_THRESHOLD || distanceToPlayer <= PLAYER_DETECT_DISTANCE.INSTA) {
         console.log("PLAYER DETECTED");
         const chargeDirection = new THREE.Vector3(directionToPlayer.x, 0, directionToPlayer.z).normalize();
         const targetOffset = chargeDirection.multiplyScalar(CHARGE_TARGET_DISTANCE);
@@ -173,11 +173,6 @@ function getNewWanderTarget(currentPosition) {
 }
 
 function isPlayerTooFar(distanceToPlayer, state) {
-    if (distanceToPlayer > PLAYER_DETECT_DISTANCE.MIN) {
-        if (state == SKULL_STATE.WANDERING) return true;
-        
-        if (distanceToPlayer > PLAYER_DETECT_DISTANCE.MAX) return true;
-    }
-
+    if (distanceToPlayer > PLAYER_DETECT_DISTANCE.MAX) return true;
     return false;
 }
