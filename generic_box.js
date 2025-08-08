@@ -6,14 +6,27 @@ export function genBox(width,height,length,stair_w,stair_l,path,stair_displaceme
     let BoxGeometryRight=new THREE.BoxGeometry((width-stair_w)/2 - (stair_displacement*width),height,length);
 
     let BoxGeometryUp=new THREE.BoxGeometry(stair_w,height,length-stair_l);
-    
-    let mat1=TF.boxTexture(path,((width-stair_w)/2 + (stair_displacement*width)),height,length);
+    var mat1;
+    if(path.length==1)
+         mat1=TF.boxTexture(path,((width-stair_w)/2 + (stair_displacement*width)),height,length);
+    else 
+         mat1=TF.boxMultipleTexture(path,((width-stair_w)/2 + (stair_displacement*width)),height,length);
     let subBox1=new THREE.Mesh(BoxGeometryLeft,mat1);
-    let mat2=TF.boxTexture(path,((width-stair_w)/2 - (stair_displacement*width)),height,length);
+    
+    var mat2;
+    if(path.length==1)
+        mat2=TF.boxTexture(path,((width-stair_w)/2 - (stair_displacement*width)),height,length);
+    else
+         mat2=TF.boxMultipleTexture(path,((width-stair_w)/2 - (stair_displacement*width)),height,length);
     let subBox2=new THREE.Mesh(BoxGeometryRight,mat2);
     
-    let mat3=TF.boxTexture(path,stair_w,height,length-stair_l);
-    let subBox0=new THREE.Mesh(BoxGeometryUp,mat3);
+    var mat3
+    if(path.length==1)
+         mat3=TF.boxTexture(path,stair_w,height,length-stair_l);
+    else
+        mat3=TF.boxMultipleTexture(path,stair_w,height,length-stair_l);
+    
+        let subBox0=new THREE.Mesh(BoxGeometryUp,mat3);
     
     let center=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,0.1),mat1);
     center.upperBox=subBox0;
