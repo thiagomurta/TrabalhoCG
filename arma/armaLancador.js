@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { damageCacodemon, damageSkull } from '../inimigos/inimigos.js';
+import { damageCacodemon, damageSkull, damagePainElemental } from '../inimigos/inimigos.js';
 import { teto } from '../t1.js';
 // --------------------- ARMA ---------------------
 // MACROS 
@@ -7,7 +7,7 @@ const GUN_COLOR = 'rgb(100,255,100)';
 const BALL_COLOR = 'rgb(100, 193, 255)';
 const GUN_SIZE = { radius: 0.1, height: 2, segments: 32};
 const BALL_SIZE = { radius: 0.1, widthSegments: 20, heightSegments: 20 };
-const BALL_SPEED = 2.0;
+const BALL_SPEED = 3.0;
 const BULLET_ORIGIN_POS = {x: 0.0, y: -0.0, z: 0.0};
 //{x: 0.0, y: -0.35, z: -1.3}; muzzle
 
@@ -118,6 +118,17 @@ export function moveBullet(scene, camera, enemies) {
           console.log("Hit an enemy!");
           removeBullet(scene, bullet, ball, ballArray, i, camera);
           damageSkull(enemies.skulls, enemy, 10);
+          continue;
+        }
+      }
+
+      const enemy = enemies.painElementals[0];
+      if (enemy) {
+        const enemyBox = new THREE.Box3().setFromObject(enemy.obj.children[0]);
+        if (bulletBox.intersectsBox(enemyBox)) {
+          console.log("Hit an enemy!");
+          removeBullet(scene, bullet, ball, ballArray, i, camera);
+          damagePainElemental(enemies.painElementals, enemy, 10);
           continue;
         }
       }
