@@ -1,16 +1,45 @@
 import * as THREE from  'three';
 
+export function boxTextureCust(path,width,height,length,fu,fv)
+{
+        let fineTuneU=fu;
+        let fineTuneV=fv;
+        let material=[
+            setMaterial(path[0],length/fineTuneU,height/fineTuneV),
+            setMaterial(path[0],length/fineTuneU,height/fineTuneV),
+            setMaterial(path[0],width/fineTuneU,length/fineTuneU),
+            setMaterial(path[0],width/fineTuneU,length/fineTuneU),
+            setMaterial(path[0],width/fineTuneU,height/fineTuneV),
+            setMaterial(path[0],width/fineTuneU,height/fineTuneV)
+        ]
+        return material;
+}
+
 export function boxTexture(path,width,height,length)
+{
+        let fineTuneU=20;
+        let fineTuneV=8;
+        let material=[
+            setMaterial(path[0],length/fineTuneU,height/fineTuneV),
+            setMaterial(path[0],length/fineTuneU,height/fineTuneV),
+            setMaterial(path[0],width/fineTuneU,length/fineTuneU),
+            setMaterial(path[0],width/fineTuneU,length/fineTuneU),
+            setMaterial(path[0],width/fineTuneU,height/fineTuneV),
+            setMaterial(path[0],width/fineTuneU,height/fineTuneV)
+        ]
+        return material;
+}
+export function boxMultipleTexture(path,width,height,length)
 {
         let fineTuneU=5;
         let fineTuneV=2;
         let material=[
-            setMaterial(path,length/fineTuneU,height/fineTuneV),
-            setMaterial(path,length/fineTuneU,height/fineTuneV),
-            setMaterial(path,width/fineTuneU,length/fineTuneU),
-            setMaterial(path,width/fineTuneU,length/fineTuneU),
-            setMaterial(path,width/fineTuneU,height/fineTuneV),
-            setMaterial(path,width/fineTuneU,height/fineTuneV)
+            setMaterial(path[0],length/fineTuneU,height/fineTuneV),
+            setMaterial(path[1],length/fineTuneU,height/fineTuneV),
+            setMaterial(path[2],width/fineTuneU,length/fineTuneU),
+            setMaterial(path[3],width/fineTuneU,length/fineTuneU),
+            setMaterial(path[4],width/fineTuneU,height/fineTuneV),
+            setMaterial(path[5],width/fineTuneU,height/fineTuneV)
         ]
         return material;
 }
