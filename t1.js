@@ -159,6 +159,7 @@ let drop_key1 = false;
 // chave2.translateX(2);
 scene.add(chave1);
 // scene.add(chave2);
+scene.add(scenario.objects[11]);
 
 
 let enemies = await loadEnemies(scene);
