@@ -4,11 +4,15 @@ import { CSG } from '../libs/other/CSGMesh.js';
 
 export function HANGARTeto(raio1, raio2, altura){
 
-    let cubeMesh = new THREE.Mesh(new THREE.BoxGeometry(2 * raio1, 10, 2 * raio1));
-    let cubeMesh2 = new THREE.Mesh(new THREE.BoxGeometry((2 * raio1)-1, 10, (2 * raio1)-1));
-    let cubeMesh3 = new THREE.Mesh(new THREE.BoxGeometry(2 * raio1, raio1, 2 * raio1));
-    let cubeMesh4 = new THREE.Mesh(new THREE.BoxGeometry((2 * raio1)-1, 10, (2 * raio1)-1));
-    let cubeMesh5 = new THREE.Mesh(new THREE.BoxGeometry((2 * raio1)-1, 10, (2 * raio1)-1));
+    let cubeMaterial = new THREE.MeshLambertMaterial({color:'rgb(255, 255, 255)'});
+
+    let centro    = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1),cubeMaterial);
+    let cubeMesh  = new THREE.Mesh(new THREE.BoxGeometry(1, altura, 2*raio1), cubeMaterial);
+    let cubeMesh2 = new THREE.Mesh(new THREE.BoxGeometry(1, altura, 2*raio1), cubeMaterial);
+    let cubeMesh3 = new THREE.Mesh(new THREE.BoxGeometry(2*raio1, altura, 1), cubeMaterial);
+    let cubeMesh4 = new THREE.Mesh(new THREE.BoxGeometry(raio1/2, altura, 1), cubeMaterial);
+    let cubeMesh5 = new THREE.Mesh(new THREE.BoxGeometry(raio1/2, altura, 1), cubeMaterial);
+
 
     let cylinderGeometry = new THREE.CylinderGeometry(raio1, raio1, 2*raio1, 32, true, undefined, Math.PI, Math.PI);
     var cylinderGeometry2 = new THREE.CylinderGeometry(raio2, raio2, 2*raio1, 32, true, undefined, Math.PI, Math.PI);
@@ -29,41 +33,46 @@ export function HANGARTeto(raio1, raio2, altura){
 
     cylinderMesh.position.set(0, 0, 0);
     cylinderMesh2.position.set(0, 0, 1);
-    cubeMesh.position.set(raio1/2, 0, raio1/2);
-    cubeMesh2.position.set(raio1/2, 0, -raio1/2);
-    cubeMesh3.position.set(raio1/2, 0, -raio1/2);
-    cubeMesh4.position.set(-raio1/2, 0, -raio1/2);
+    cubeMesh.position.set(raio1, 0, 0);
+    cubeMesh2.position.set(-raio1, 0, 0);
+    cubeMesh3.position.set(0, 0, -raio1);
+    cubeMesh4.position.set(raio1-(raio1/4)+0.5, 0, raio1);
+    cubeMesh5.position.set(-raio1+(raio1/4)-0.5, 0, raio1);
 
     cylinderMesh.matrixAutoUpdate = false;
     cylinderMesh.updateMatrix();
     cylinderMesh2.matrixAutoUpdate = false;
     cylinderMesh2.updateMatrix();
-    // cubeMesh.matrixAutoUpdate = false;
-    // cubeMesh.updateMatrix();
-    // cubeMesh2.matrixAutoUpdate = false;
-    // cubeMesh2.updateMatrix();
-    // cubeMesh3.matrixAutoUpdate = false;
-    // cubeMesh3.updateMatrix();
-    // cubeMesh4.matrixAutoUpdate = false;
-    // cubeMesh4.updateMatrix();
+    cubeMesh.matrixAutoUpdate = false;
+    cubeMesh.updateMatrix();
+    cubeMesh2.matrixAutoUpdate = false;
+    cubeMesh2.updateMatrix();
+    cubeMesh3.matrixAutoUpdate = false;
+    cubeMesh3.updateMatrix();
+    cubeMesh4.matrixAutoUpdate = false;
+    cubeMesh4.updateMatrix();
+    cubeMesh5.matrixAutoUpdate = false;
+    cubeMesh5.updateMatrix();
 
-    let cubeCSG      = CSG.fromMesh(cubeMesh);
-    let cubeCSG2     = CSG.fromMesh(cubeMesh2);
-    let cubeCSG3     = CSG.fromMesh(cubeMesh3);
-    let cubeCSG4     = CSG.fromMesh(cubeMesh4);
-    let cylinderCSG  = CSG.fromMesh(cylinderMesh);
-    let cylinderCSG2 = CSG.fromMesh(cylinderMesh2);
 
-    let cylinderM   = cylinderCSG.subtract(cylinderCSG2);
-    let cylinderCut = cylinderM.subtract(cubeCSG3);
-    let cubeObject  = cubeCSG.subtract(cubeCSG4);
-    let cubeObject2 = cubeObject.subtract(cubeCSG2);
-    let csgObject   = cubeObject2.union(cylinderCut);
+    let cylinderCSG  = CSG.fromMesh(cylinderMesh); // cilindro maior
+    let cylinderCSG2 = CSG.fromMesh(cylinderMesh2); // cilindro menor
+    let cylinderM   = cylinderCSG.subtract(cylinderCSG2); // cilindro pronto
 
-    let csgFinal = CSG.toMesh(cylinderM, new THREE.Matrix4());
-    csgFinal.material = new THREE.MeshLambertMaterial( {color:'rgba(156, 52, 52, 1)'});
-    // csgFinal.translateY(5);
-    csgFinal.material = TF.setMaterial('./T3_assets/elevador.jpg', 4, 4);
+    let tetoFinal = CSG.toMesh(cylinderM, new THREE.Matrix4());
+    tetoFinal.material = new THREE.MeshLambertMaterial( {color:'rgba(156, 52, 52, 1)'});
+    // tetoFinal.translateY(altura);
+    tetoFinal.material = TF.setMaterial('./T3_assets/elevador.jpg', 4, 4);
+    centro.teto = tetoFinal;
+    centro.add(centro.teto);
+    centro.paredes = [cubeMesh, cubeMesh2, cubeMesh3, cubeMesh4, cubeMesh5];
+    for (let i = 0; i < centro.paredes.length; i++){
+        centro.add(centro.paredes[i]);
+    }
 
-    return csgFinal;
+    /// translates
+    /// translate em z para parede fundo e frente
+    /// translate em x para parede fundo e frente
+
+    return centro;
 }
