@@ -86,7 +86,7 @@ export function Scene0()
     let box2 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox);
     center.add(box2);
     box2.translateX(-130);
-    box2.translateY(6.5);
+    box2.translateY(5);
     box2.translateZ(-160);
 
     let materialBox3 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
@@ -96,10 +96,10 @@ export function Scene0()
     box3.translateY(6.5);
     box3.translateZ(-160);
 
-    let hangar = HANGAR.HANGARTeto(30, 29/*47.5*/, 0.7);
+    let hangar = HANGAR.HANGARTeto(20, 19, 12);
 
     center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL,box, box2, box3, hangar];
-    
+    center.add(hangar);
     
     
     

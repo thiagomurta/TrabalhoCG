@@ -157,32 +157,49 @@ let take_key1 = false;
 let take_key2 = false;
 let drop_key1 = false;
 // chave2.translateX(2);
-scene.add(chave1);
+// scene.add(chave1);
 // scene.add(chave2);
 scene.add(scenario.objects[11]);
 
 
 let enemies = await loadEnemies(scene);
 
-if (take_key1){
-    scene.remove(chave1);
-}
-if (drop_key1){
-    scenario.objects[8].add(chave1);
-}
-if (take_key2){
-    scene.remove(chave2);
-} 
-// Adicionar a chave após a eliminação das skulls
-if (enemies.skulls.length === 0){
-    console.log("matou as caveiras");
-    scenario.objects[9].add(chave1);
-    scenario.objects[9].translateY(1.5);
-}
-// Adicionar a chave após a eliminação dos cacodemons
-if (enemies.cacodemons.length === 0){
-    scenario.objects[10].add(chave2);
-    scenario.objects[10].translateY(1.5);
+const posFinalBox1 = scenario.objects[9].position.y + 1.5;
+// const posFinalBox2 = scenario.scenario.objects[10].position.y + 1.5;
+function operationKeys(){
+    
+    if (take_key1){
+        scene.remove(chave1);
+    }
+    if (drop_key1){
+        scenario.objects[8].add(chave1);
+    }
+    if (take_key2){
+        scene.remove(chave2);
+    } 
+    // Adicionar a chave após a eliminação das skulls
+    if (enemies.skulls.length === 0/*true*/){
+        console.log("matou as caveiras");
+        scenario.objects[9].add(chave1);
+        if(scenario.objects[9].position.y < posFinalBox1){
+            //if(scenario.objects[9].position.y < scenario.scenario.objects[0].height){
+                scenario.objects[9].position.y += 0.1;
+                console.log("bugou aqui");
+
+            //}
+            // scenario.objects[9].translateY(1.5);
+        }
+    }
+    // Adicionar a chave após a eliminação dos cacodemons
+    if (enemies.cacodemons.length === 0){
+        scenario.objects[10].add(chave2);
+        scenario.objects[10].translateY(1.5);
+        while(scenario.objects[10].position.y < scenario.objects[10].position.y + 1.5){
+            while(scenario.objects[10].position.y < scenario.objects[0].height){
+                scenario.objects[10].position.y += 0.1;
+            }
+        }
+    }
 }
 
 
@@ -334,6 +351,7 @@ function render() {
     if (controls.isLocked) {
         updateAnimations();
         updateWeapons(scenario, scene, camera, enemies);
+        operationKeys();
         moveAnimate(clock.getDelta());
         //console.log(playerHasEnteredFirstArea);
         if (enemies) moveEnemies(scene, scenario, player, enemies, playerHasEnteredFirstArea.value, playerHasEnteredSecondArea.value); // will move enemies
