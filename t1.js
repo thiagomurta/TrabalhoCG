@@ -16,6 +16,7 @@ import { loadEnemies, moveEnemies, updateAnimations } from './inimigos/inimigos.
 import * as EL from './elevador.js'
 import { toggleGun, initWeaponSystem, updateWeapons, currentGun, GUNTYPE } from './arma/armaController.js';
 import * as GATE from './gateAnim.js'
+import * as HANGAR from './hangar.js'
 
 // ---------------------Configuração inicial---------------------
 let scene, renderer;
@@ -136,6 +137,23 @@ scene.add(dirLight.target);
 scene.add(dirLight2.target);
 
 const ambiente = new THREE.AmbientLight(lightColor, 0.5);
+// ---------------------Iluminação Hangar---------------------
+let lightPositionHangar = new THREE.Vector3(0, 3, 0);
+let lightColorHangar = 'rgb(255, 255, 255)'
+let dirLightHangar = new THREE.DirectionalLight(lightColorHangar, 2);
+dirLightHangar.position.copy(lightPositionHangar);
+dirLightHangar.castShadow = true;
+
+dirLightHangar.shadow.mapSize.width = 512;
+dirLightHangar.shadow.mapSize.height = 512;
+dirLightHangar.shadow.camera.left = -50;
+dirLightHangar.shadow.camera.right = 50;
+dirLightHangar.shadow.camera.top = 50;
+dirLightHangar.shadow.camera.bottom = -50;
+dirLightHangar.shadow.camera.near = 1;
+dirLightHangar.shadow.camera.far = 10;
+scene.add(dirLightHangar);
+// ---------------------Iluminação Hangar---------------------
 scene.add(ambiente);
 
 scene.add(dirLight);
@@ -165,7 +183,7 @@ scene.add(scenario.objects[11]);
 let enemies = await loadEnemies(scene);
 
 const posFinalBox1 = scenario.objects[9].position.y + 1.5;
-// const posFinalBox2 = scenario.scenario.objects[10].position.y + 1.5;
+const posFinalBox2 = scenario.objects[10].position.y + 1.5;
 function operationKeys(){
     
     if (take_key1){
@@ -178,26 +196,20 @@ function operationKeys(){
         scene.remove(chave2);
     } 
     // Adicionar a chave após a eliminação das skulls
-    if (enemies.skulls.length === 0/*true*/){
+    if (enemies.skulls.length === 0){
         console.log("matou as caveiras");
         scenario.objects[9].add(chave1);
         if(scenario.objects[9].position.y < posFinalBox1){
-            //if(scenario.objects[9].position.y < scenario.scenario.objects[0].height){
-                scenario.objects[9].position.y += 0.1;
-                console.log("bugou aqui");
-
-            //}
-            // scenario.objects[9].translateY(1.5);
+            scenario.objects[9].position.y += 0.1;
         }
     }
     // Adicionar a chave após a eliminação dos cacodemons
     if (enemies.cacodemons.length === 0){
         scenario.objects[10].add(chave2);
-        scenario.objects[10].translateY(1.5);
-        while(scenario.objects[10].position.y < scenario.objects[10].position.y + 1.5){
-            while(scenario.objects[10].position.y < scenario.objects[0].height){
+        if(scenario.objects[10].position.y < posFinalBox2){
+            // if(scenario.objects[10].position.y < scenario.objects[0].height){
                 scenario.objects[10].position.y += 0.1;
-            }
+            // }
         }
     }
 }
