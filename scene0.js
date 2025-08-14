@@ -96,9 +96,13 @@ export function Scene0()
     box3.translateY(6.5);
     box3.translateZ(-160);
 
-    let hangar = HANGAR.HANGARTeto(20, 19, 12);
+    let materialBoundingBox = new THREE.MeshLambertMaterial();
+    let boundingBoxPlane = new THREE.Mesh(new THREE.BoxGeometry(12,10,18), materialBoundingBox);
+    boundingBoxPlane.visible = false;
 
-    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL,box, box2, box3, hangar];
+    let hangar = HANGAR.HANGAR(20, 19, 12);
+
+    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL,box, box2, box3, hangar, boundingBoxPlane];
     center.add(hangar);
     
     

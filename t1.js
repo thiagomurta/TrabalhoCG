@@ -17,6 +17,10 @@ import * as EL from './elevador.js'
 import { toggleGun, initWeaponSystem, updateWeapons, currentGun, GUNTYPE } from './arma/armaController.js';
 import * as GATE from './gateAnim.js'
 import * as HANGAR from './hangar.js'
+import {OBJLoader} from '../build/jsm/loaders/OBJLoader.js';
+import {MTLLoader} from '../build/jsm/loaders/MTLLoader.js';
+import { Plane } from './plane.js';
+
 
 // ---------------------Configuração inicial---------------------
 let scene, renderer;
@@ -52,7 +56,7 @@ let plane = createGroundPlaneXZ(500, 500, 10, 10, "rgb(153, 148, 148)");
  plane.receiveShadow=true;
    // center.plane.translateY(+0.15);
 
-let scenario=S0.Scene0();
+let scenario= S0.Scene0();
 scene.add(scenario); // Add the scenario to the scene
 scenario.translateY(-0.15);
 
@@ -171,6 +175,7 @@ scene.add(controls.getObject());
 
 let chave1 = CHAVE.CHAVE('rgb(255, 0, 0)');
 let chave2 = CHAVE.CHAVE('rgb(255, 255, 0)');
+let chave3 = CHAVE.CHAVE('rgb(0, 0, 255)');
 let take_key1 = false;
 let take_key2 = false;
 let drop_key1 = false;
@@ -214,6 +219,14 @@ function operationKeys(){
     }
 }
 
+// ------------ ASSET DO AVIÃO --------------
+
+async function init(){
+    const planeAsset = await Plane();
+    scene.add(planeAsset);
+    scene.add(boundingBoxPlane);
+}
+init();
 
 
 // ------------ CONTROLES DO TECLADO --------------

@@ -2,7 +2,7 @@ import * as THREE from  'three';
 import * as TF from './texturingfuncs.js'
 import { CSG } from '../libs/other/CSGMesh.js';
 
-export function HANGARTeto(raio1, raio2, altura){
+export function HANGAR(raio1, raio2, altura){
 
     let thickness = 1;
     let cubeMaterial = new THREE.MeshLambertMaterial({color:'rgb(255, 255, 255)'});
