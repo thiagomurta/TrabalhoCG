@@ -19,9 +19,9 @@ export function Scene0()
     A1.area1(bu0,material0);
     
     let material1 = new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"});
-    let bu1_paths=["./T3_assets/MetalBoxSide.jpg","./T3_assets/MetalBoxSide.jpg","./T3_assets/mb.jpg","./T3_assets/mb.jpg","./T3_assets/MetalBoxSide.jpg","./T3_assets/MetalBoxSide.jpg"]
+    let bu1_paths=["./T3_assets/metalBoxSide.jpeg","./T3_assets/metalBoxSide.jpeg","./T3_assets/mb.jpg","./T3_assets/mb.jpg","./T3_assets/metalBoxSide.jpeg","./T3_assets/metalBoxSide.jpeg"]
     let bu1=SL.genStairedLevel(100,6,100,33,10,16,bu1_paths,0);
-    A2.area2(bu1,["./T3_assets/mb_pillar.png"]);
+    A2.area2(bu1,["./T3_assets/mb_pillar.jpg"]);
     EL.elevador(bu1,['./T3_assets/elevador.jpg']);
     
     let material2 = new THREE.MeshLambertMaterial({color: "rgb(7, 255, 214)"});
@@ -102,7 +102,7 @@ export function Scene0()
 
     let hangar = HANGAR.HANGAR(20, 19, 12);
 
-    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL,box, box2, box3, hangar, boundingBoxPlane];
+    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL,box, box2, box3, /*hangar,*/ boundingBoxPlane];
     center.add(hangar);
     
     
