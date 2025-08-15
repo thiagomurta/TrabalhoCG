@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { damageCacodemon, damageSkull, damagePainElemental } from '../inimigos/inimigos.js';
+import { handleProjectileCollision } from '../inimigos/damageHandler.js'; 
 import { teto } from '../t1.js';
 // --------------------- ARMA ---------------------
 // MACROS
@@ -86,58 +86,32 @@ function removeBullet(scene, bullet, ball, ballArray, i, camera){
 
 // PARA CADA BALA NA CENA, TRANSLADA O Z SE MOVIMENTAÇÃO HABILITADA
 export function moveBullet(scene, camera, enemies) {
-  for (let i = 0; i < ballArray.length; i++) {
+  // É mais seguro iterar de trás para frente ao remover itens de um array
+  for (let i = ballArray.length - 1; i >= 0; i--) {
     const bullet = ballArray[i];
     const ball = bullet.ball; 
     if (bullet.isShooting) {
-      const distanceToTarget = ball.position.distanceTo(bullet.targetPoint);
+      
+      // 1. Mova o projétil
+      bullet.ball.position.add(bullet.velocity);
+      
+      // 2. Verifique a colisão
+      const hasCollided = handleProjectileCollision(bullet, enemies);
 
+      if (hasCollided) {
+        removeBullet(scene, bullet, ball, ballArray, i, camera);
+        continue; 
+      }
+
+      // 3. Verifique se o projétil atingiu seu alvo ou distância máxima
+      const distanceToTarget = ball.position.distanceTo(bullet.targetPoint);
       if (distanceToTarget <= BALL_SPEED) {
         removeBullet(scene, bullet, ball, ballArray, i, camera);
-        continue; // Skip further processing for this bullet
+        continue;
       }
-
-      bullet.ball.position.add(bullet.velocity);
-      if (!enemies || !Array.isArray(enemies.cacodemons) || !Array.isArray(enemies.skulls)) {
-        console.log("No enemies to move or enemies data is not in the expected format.");
-        console.log(enemies);
-        return;
-      }
-      const bulletBox = new THREE.Box3().setFromObject(bullet.ball);
       
-      for (const enemy of enemies.cacodemons) {
-        const enemyBox = new THREE.Box3().setFromObject(enemy.obj.children[0]);
-        if (bulletBox.intersectsBox(enemyBox)) {
-          console.log("Hit an enemy!");
-          removeBullet(scene, bullet, ball, ballArray, i, camera);
-          damageCacodemon(enemies.cacodemons, enemy, 10);
-          continue;
-        }
-      }
-      for (const enemy of enemies.skulls) {
-        const enemyBox = new THREE.Box3().setFromObject(enemy.obj.children[0]);
-        if (bulletBox.intersectsBox(enemyBox)) {
-          console.log("Hit an enemy!");
-          removeBullet(scene, bullet, ball, ballArray, i, camera);
-          damageSkull(enemies.skulls, enemy, 10);
-          continue;
-        }
-      }
-
-      const enemy = enemies.painElementals[0];
-      if (enemy) {
-        const enemyBox = new THREE.Box3().setFromObject(enemy.obj.children[0]);
-        if (bulletBox.intersectsBox(enemyBox)) {
-          console.log("Hit an enemy!");
-          removeBullet(scene, bullet, ball, ballArray, i, camera);
-          damagePainElemental(enemies.painElementals, enemy, 10);
-          continue;
-        }
-      }
-
     }
   }
-
 }
 
 // CRIA GEOMETRIA DA BALA, ESCONDE NA FRENTE DA ARMA
