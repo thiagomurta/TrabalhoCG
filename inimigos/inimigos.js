@@ -41,14 +41,14 @@ const PAINELEMENTAL_SPAWN_POINTS = [
 ];
 
 const SOLDIER_SPAWN_POINTS = [
-    new THREE.Vector3(-100, 7, 100),
-    new THREE.Vector3(-50, 7, 110),
-    new THREE.Vector3(0, 7, 120),
-    new THREE.Vector3(50, 7, 110),
-    new THREE.Vector3(100, 7, 100),
-    new THREE.Vector3(-25, 15, -160),
-    new THREE.Vector3(0, 15, -170),
-    new THREE.Vector3(25, 15, -160),
+    new THREE.Vector3(-100, 10, 100),
+    new THREE.Vector3(-50, 10, 110),
+    new THREE.Vector3(0, 10, 120),
+    new THREE.Vector3(50, 10, 110),
+    new THREE.Vector3(100, 10, 100),
+    new THREE.Vector3(-25, 18, -160),
+    new THREE.Vector3(0, 18, -170),
+    new THREE.Vector3(25, 18, -160),
 ];
 
 
@@ -193,7 +193,7 @@ export async function loadEnemies(scene) {
         const { hpBarSprite, context, texture } = createHpBar();
         const enemyGroup = new THREE.Group();
         enemyGroup.add(soldierResources.actionSprite); 
-        hpBarSprite.position.y = 2.5; 
+        hpBarSprite.position.y = 5; 
         enemyGroup.add(hpBarSprite);
 
         enemyGroup.position.copy(spawnPoint);
@@ -279,7 +279,7 @@ async function loadSoldierSprite() {
             texture.colorSpace = THREE.SRGBColorSpace;
             const actionSprite = spriteMixer.ActionSprite(texture, 8, 8);
             actionSprite.position.y = 0;
-            actionSprite.scale.set(2, 2, 2);
+             actionSprite.scale.set(4.5, 4.5, 4.5);
 
             const actions = {
                 runDown: spriteMixer.Action(actionSprite, 100, 0, 0, 3, 0),
