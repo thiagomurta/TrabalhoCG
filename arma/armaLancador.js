@@ -3,7 +3,7 @@ import { damageCacodemon, damageSkull, damagePainElemental } from '../inimigos/i
 import { teto } from '../t1.js';
 // --------------------- ARMA ---------------------
 // MACROS
-const ROCKET_LAUNCHER_LOCATION = "../T3_assets/rocketlauncher.png";
+const ROCKET_LAUNCHER_LOCATION = "./T3_assets/rocketlauncher.png";
 const BALL_COLOR = 'rgb(100, 193, 255)';
 const BALL_SIZE = { radius: 0.1, widthSegments: 20, heightSegments: 20 };
 const BALL_SPEED = 3.0;
@@ -167,21 +167,18 @@ function initBullet(camera) {
 function animateRocketShot() {
     if (!rocketLauncherTexture) return;
 
-    // Go to Frame 2 (index 1) - Small flash
-    rocketLauncherTexture.offset.x = 1 / 4;
+    rocketLauncherTexture.offset.x = 1 / 3;
 
-    // After 100ms, go to Frame 3 (index 2) - Large flash
     animationTimer = setTimeout(() => {
         if (rocketLauncherTexture) {
-            rocketLauncherTexture.offset.x = 2 / 4;
+            rocketLauncherTexture.offset.x = 2 / 3;
         }
     }, 100);
 
-    // After another 100ms, go back to Frame 1 (index 0) - Idle
     animationTimer = setTimeout(() => {
         if (rocketLauncherTexture) {
-            // Frames 0 and 3 are identical idle frames
-            rocketLauncherTexture.offset.x = 0 / 4; 
+
+            rocketLauncherTexture.offset.x = 0 / 3; 
         }
     }, 200);
 }
@@ -192,25 +189,32 @@ export function initGun(camera) {
     if (rocketLauncherSprite) {
         removeGun(camera);
     }
-    rocketLauncherTexture = new THREE.TextureLoader().load(ROCKET_LAUNCHER_LOCATION, (texture) => {
-        texture.needsUpdate = true; 
-    });
-
-    rocketLauncherTexture.repeat.set(1 / 4, 1); 
 
     const rocketLauncherMaterial = new THREE.SpriteMaterial({
-        map: rocketLauncherTexture,
         transparent: true
     });
-    rocketLauncherSprite = new THREE.Sprite(rocketLauncherMaterial);
 
-    const aspectRatio = 111 / 112;
-    rocketLauncherSprite.scale.set(aspectRatio * 0.9, 0.9, 1);
-    rocketLauncherSprite.position.set(0, -0.35, -1.2);
+    rocketLauncherTexture = new THREE.TextureLoader().load(
+        ROCKET_LAUNCHER_LOCATION, 
+        (texture) => { 
+            
+            texture.repeat.set(1 / 3, 1);
+            texture.wrapS = THREE.ClampToEdgeWrapping; // Prevents wrapping
 
-    rocketLauncherSprite.name = 'rocketLauncher';
-    camera.add(rocketLauncherSprite);
-    rocketLauncherSprite.raycast = () => {}; // Prevent raycaster from hitting the weapon sprite
+            rocketLauncherMaterial.map = texture;
+
+            rocketLauncherMaterial.needsUpdate = true; 
+
+            rocketLauncherSprite = new THREE.Sprite(rocketLauncherMaterial);
+            const aspectRatio = (261/3) / 135; 
+            rocketLauncherSprite.scale.set(aspectRatio * 0.9, 0.9, 1);
+            rocketLauncherSprite.position.set(0, -0.35, -1.2);
+
+            rocketLauncherSprite.name = 'rocketLauncher';
+            camera.add(rocketLauncherSprite);
+            rocketLauncherSprite.raycast = () => {};
+        }
+    );
 
     initBullet(camera);
 }
