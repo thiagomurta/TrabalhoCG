@@ -17,8 +17,8 @@ export function boxTextureCust(path,width,height,length,fu,fv)
 
 export function boxTexture(path,width,height,length)
 {
-        let fineTuneU=20;
-        let fineTuneV=8;
+         let fineTuneU=5;
+        let fineTuneV=2;
         let material=[
             setMaterial(path[0],length/fineTuneU,height/fineTuneV),
             setMaterial(path[0],length/fineTuneU,height/fineTuneV),

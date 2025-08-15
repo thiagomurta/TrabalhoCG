@@ -76,7 +76,7 @@ export function area1(staired_level,material)
         staired_level.enemyActivateBox=boxFlag;
         for(let i=0;i<4;i++){
             let blockGeo=new THREE.BoxGeometry(50,2,4);
-            let block=new THREE.Mesh(blockGeo,TF.boxTexture(['../assets/textures/stonewall.jpg'],50,2,4));
+            let block=new THREE.Mesh(blockGeo,TF.boxTexture(["./T3_assets/romanWall.jpg"],50,2,4));
             staired_level.add(block);
             if(i==0)
             {
