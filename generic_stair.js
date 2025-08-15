@@ -16,7 +16,9 @@ export function genStair(width,height,length,number_of_steps,path)
     
     for(let i=0;i<number_of_steps;i++)
     {
-        let aux_buff=new THREE.Mesh(step_geometry,materialForStair);
+        let materialForStairAux=TF.boxTexture(path,width,height/number_of_steps,length/number_of_steps);
+        let aux_buff=new THREE.Mesh(step_geometry,materialForStairAux);
+        aux_buff.material[4].map.offset.y=(1/number_of_steps)*i;
         center.add(aux_buff);
         aux_buff.castShadow=true;
         aux_buff.recieveShadow=true;

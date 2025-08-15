@@ -43,12 +43,40 @@ export function boxMultipleTexture(path,width,height,length)
         ]
         return material;
 }
-export function setMaterial(file, repeatU = 1, repeatV = 1, color = 'rgb(255,255,255)'){
+export function planeTex(path)
+{
+    var material=setMaterial(path[0],10,10,);
+    console.log(material)
+    return material;
+}
+function setMaterial(file, repeatU = 1, repeatV = 1, color ){
+
     let loader = new THREE.TextureLoader();
-    let mat = new THREE.MeshBasicMaterial({ map: loader.load(file), color:color});
+    let mat = new THREE.MeshBasicMaterial({ map: loader.load(file)});
       mat.map.colorSpace = THREE.SRGBColorSpace;
    mat.map.wrapS = mat.map.wrapT = THREE.RepeatWrapping;
    mat.map.minFilter = mat.map.magFilter = THREE.LinearFilter;
    mat.map.repeat.set(repeatU,repeatV); 
    return mat;
+}
+export function createGroundPlaneXZCust(width, height, widthSegments = 10, heightSegments = 10, material) {
+   
+   let planeGeometry = new THREE.PlaneGeometry(width, height, widthSegments, heightSegments);
+   let planeMaterial = material;
+
+   let mat4 = new THREE.Matrix4(); // Aux mat4 matrix   
+   let plane = new THREE.Mesh(planeGeometry, planeMaterial);
+   plane.receiveShadow = true;
+   // Rotate 90 in X and perform a small translation in Y
+   plane.matrixAutoUpdate = false;
+   plane.matrix.identity();    // resetting matrices
+   // Will execute R1 and then T1
+   plane.matrix.multiply(mat4.makeTranslation(0.0, -0.1, 0.0)); // T1   
+   plane.matrix.multiply(mat4.makeRotationX(degreesToRadians(-90))); // R1   
+
+   return plane;
+}
+export function degreesToRadians(degrees) {
+   var pi = Math.PI;
+   return degrees * (pi / 180);
 }
