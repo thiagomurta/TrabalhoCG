@@ -9,6 +9,7 @@ import { SKULL_STATE } from './skull.js';
 import { CACODEMON_STATE } from './cacodemon.js';
 import { fadingObjects } from '../t1.js';
 import { movePainElemental, PAINELEMENTAL_STATE } from './painelemental.js';
+import { markEnemyGroup } from './damageHandler.js';
 
 export const AREA_DIMENSION = 100;
 export const AREAS_Z = -150;
@@ -96,6 +97,7 @@ export async function loadEnemies(scene) {
         };
         skulls.push(skullData);
         updateHpBar(skullData); // Initialize the HP bar
+        markEnemyGroup(skullData);
         scene.add(enemyGroup); 
     }
 
@@ -130,6 +132,7 @@ export async function loadEnemies(scene) {
 
         cacodemons.push(cacodemonData);
         updateHpBar(cacodemonData); // Initialize the HP bar
+        markEnemyGroup(cacodemonData);
         scene.add(enemyGroup);
         // console.log("Added cacodemon at ", enemyGroup.position);
     }
@@ -163,6 +166,7 @@ export async function loadEnemies(scene) {
 
         painElementals.push(painElementalData);
         updateHpBar(painElementalData); // Initialize the HP bar
+        markEnemyGroup(painElementalData);
         scene.add(enemyGroup);
         // console.log("Added painElemental at ", enemyGroup.position);
     }
@@ -376,46 +380,30 @@ export function updateHpBar(cacodemonData) {
     texture.needsUpdate = true;
 }
 
-export function damageCacodemon(enemiesCacodemons, cacodemonData, damage) {
-    cacodemonData.hp -= damage;
-    if (cacodemonData.hp <= 0) {
-        cacodemonData.hp = 0;
-        startFadingAnimation(cacodemonData);
+export function applyDamageToEnemy(enemyData, damage, enemies) {
+    enemyData.hp -= damage;
+    if (enemyData.hp <= 0) {
+        enemyData.hp = 0;
+        startFadingAnimation(enemyData); // Inicia a animação de desaparecimento
 
-        const index = enemiesCacodemons.indexOf(cacodemonData);
-        if (index > -1) {
-            enemiesCacodemons.splice(index, 1);
+        let enemyArray;
+        // Determina de qual array o inimigo deve ser removido
+        if (enemyData.name.startsWith('cacodemon')) {
+            enemyArray = enemies.cacodemons;
+        } else if (enemyData.name === 'skull') {
+            enemyArray = enemies.skulls;
+        } else if (enemyData.name === 'painElemental') {
+            enemyArray = enemies.painElementals;
+        }
+
+        if (enemyArray) {
+            const index = enemyArray.indexOf(enemyData);
+            if (index > -1) {
+                enemyArray.splice(index, 1);
+            }
         }
     }
-    updateHpBar(cacodemonData);
-}
-
-export function damageSkull(enemiesSkulls, skullData, damage) {
-    skullData.hp -= damage;
-    if (skullData.hp <= 0) {
-        skullData.hp = 0; 
-        startFadingAnimation(skullData);
-
-        const index = enemiesSkulls.indexOf(skullData);
-        if (index > -1) {
-            enemiesSkulls.splice(index, 1);
-        }
-    }
-    updateHpBar(skullData);
-}
-
-export function damagePainElemental(enemiesPainElementals, painElementalData, damage) {
-    painElementalData.hp -= damage;
-    if (painElementalData.hp <= 0) {
-        painElementalData.hp = 0;
-        startFadingAnimation(painElementalData);
-
-        const index = enemiesPainElementals.indexOf(painElementalData);
-        if (index > -1) {
-            enemiesPainElementals.splice(index, 1);
-        }
-    }
-    updateHpBar(painElementalData);
+    updateHpBar(enemyData); // Atualiza a barra de vida (seja qual for o dano)
 }
 
 export function updateAnimations() {
