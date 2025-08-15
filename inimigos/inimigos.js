@@ -10,6 +10,8 @@ import { CACODEMON_STATE } from './cacodemon.js';
 import { fadingObjects } from '../t1.js';
 import { movePainElemental, PAINELEMENTAL_STATE } from './painelemental.js';
 import { markEnemyGroup } from './damageHandler.js';
+import { SpriteMixer } from '../../libs/sprites/SpriteMixer.js'; // Importar o SpriteMixer
+import { moveSoldier, SOLDIER_STATE } from './soldier.js'; // Importar o soldado
 
 export const AREA_DIMENSION = 100;
 export const AREAS_Z = -150;
@@ -38,13 +40,24 @@ const PAINELEMENTAL_SPAWN_POINTS = [
     new THREE.Vector3(0, 7, 150),
 ];
 
+const SOLDIER_SPAWN_POINTS = [
+    new THREE.Vector3(-100, 7, 100),
+    new THREE.Vector3(-50, 7, 110),
+    new THREE.Vector3(0, 7, 120),
+    new THREE.Vector3(50, 7, 110),
+    new THREE.Vector3(100, 7, 100),
+    new THREE.Vector3(-25, 15, -160),
+    new THREE.Vector3(0, 15, -170),
+    new THREE.Vector3(25, 15, -160),
+];
+
 
 
 // ----------------------- INIMIGOS -------------------------
 
 // ## FUNÇÕES DE MOVIMENTAÇÃO DOS INIMIGOS ##
 
-export function moveEnemies(scene, scenario, player, enemies, playerHasEnteredFirstArea = true, playerHasEnteredSecondArea = false) {
+export function moveEnemies(scene, scenario, player, enemies, playerHasEnteredFirstArea = true, playerHasEnteredSecondArea = false, camera) {
     if (!enemies || !Array.isArray(enemies.cacodemons) || !Array.isArray(enemies.skulls)) {
         console.log("No enemies to move or enemies data is not in the expected format.");
         console.log(enemies);
@@ -54,6 +67,7 @@ export function moveEnemies(scene, scenario, player, enemies, playerHasEnteredFi
     const cacodemons = enemies.cacodemons;
     const skulls = enemies.skulls;
     const painElementals = enemies.painElementals;
+    const soldiers = enemies.soldiers;
 
     if (playerHasEnteredSecondArea) 
         for (let cacodemonData of cacodemons) moveCacodemon(cacodemonData, scenario, player, scene);
@@ -62,6 +76,8 @@ export function moveEnemies(scene, scenario, player, enemies, playerHasEnteredFi
         for (let skullData of skulls) moveSkull(skullData, scenario, player);
 
     for (let painElementalData of painElementals) movePainElemental(painElementalData, scenario, player, scene, enemies);
+
+    for (let soldierData of soldiers) moveSoldier(soldierData, scenario, player, scene, camera);
 }
 
 
@@ -71,6 +87,7 @@ export async function loadEnemies(scene) {
     let skulls = [];
     let cacodemons = [];
     let painElementals = [];
+    let soldiers = [];
     let i = 0;
 
     for (let j = 0; j < 5; j++) {
@@ -171,13 +188,52 @@ export async function loadEnemies(scene) {
         // console.log("Added painElemental at ", enemyGroup.position);
     }
 
+    for (const spawnPoint of SOLDIER_SPAWN_POINTS) {
+        const soldierResources = await loadSoldierSprite();
+        const { hpBarSprite, context, texture } = createHpBar();
+        const enemyGroup = new THREE.Group();
+        enemyGroup.add(soldierResources.actionSprite); 
+        hpBarSprite.position.y = 2.5; 
+        enemyGroup.add(hpBarSprite);
+
+        enemyGroup.position.copy(spawnPoint);
+
+        const soldierData = {
+            name: 'soldier',
+            obj: enemyGroup,
+            id: i++,
+            lookAtFrames: 0,
+            targetPoint: null,
+            state: SOLDIER_STATE.WANDERING,
+            hasShot: false,
+            lastDirection: 'runDown',
+
+            // Recursos do sprite
+            spriteMixer: soldierResources.spriteMixer,
+            actionSprite: soldierResources.actionSprite,
+            actions: soldierResources.actions,
+            clock: new THREE.Clock(),
+
+            // HP Bar
+            hp: 30,
+            maxHp: 30,
+            context: context,
+            texture: texture,
+            hpBar: hpBarSprite
+        };
+        soldiers.push(soldierData);
+        updateHpBar(soldierData);
+        markEnemyGroup(soldierData);
+        scene.add(enemyGroup);
+    }
+
 
     for (let skull of skulls){
         placeEnemyRandomStartPos(skull.obj, AREA_DIMENSION, AREAS_Z, AREAS_Y, 
                             UPPER_LEFT_AREA_X);
     }
 
-    return { skulls, cacodemons, painElementals}; // Return the loaded enemies
+    return { skulls, cacodemons, painElementals, soldiers}; // Return the loaded enemies
 }
 
 async function loadCacodemon() {
@@ -213,6 +269,43 @@ async function loadPainElemental() {
     } catch(error) {
         console.error('Error loading painElemental: ', error);
     }
+}
+
+async function loadSoldierSprite() {
+    return new Promise((resolve) => {
+        const spriteMixer = SpriteMixer();
+        const loader = new THREE.TextureLoader();
+        loader.load("../assets/textures/sprites/zombieman.png", (texture) => {
+            texture.colorSpace = THREE.SRGBColorSpace;
+            const actionSprite = spriteMixer.ActionSprite(texture, 8, 8);
+            actionSprite.position.y = 0;
+            actionSprite.scale.set(2, 2, 2);
+
+            const actions = {
+                runDown: spriteMixer.Action(actionSprite, 100, 0, 0, 3, 0),
+                runLD: spriteMixer.Action(actionSprite, 100, 0, 1, 3, 1),
+                runLeft: spriteMixer.Action(actionSprite, 100, 0, 2, 3, 2),
+                runLU: spriteMixer.Action(actionSprite, 100, 0, 3, 3, 3),
+                runUp: spriteMixer.Action(actionSprite, 100, 0, 4, 3, 4),
+                runRU: spriteMixer.Action(actionSprite, 100, 0, 5, 3, 5),
+                runRight: spriteMixer.Action(actionSprite, 100, 0, 6, 3, 6),
+                runRD: spriteMixer.Action(actionSprite, 100, 0, 7, 3, 7),
+                ShootingDown: spriteMixer.Action(actionSprite, 100, 4, 0, 5, 0),
+                ShootingLD: spriteMixer.Action(actionSprite, 100, 4, 1, 5, 1),
+                ShootingLeft: spriteMixer.Action(actionSprite, 100, 4, 2, 5, 2),
+                ShootingLU: spriteMixer.Action(actionSprite, 100, 4, 3, 5, 3),
+                ShootingUp: spriteMixer.Action(actionSprite, 100, 4, 4, 5, 4),
+                ShootingRU: spriteMixer.Action(actionSprite, 100, 4, 5, 5, 5),
+                ShootingRight: spriteMixer.Action(actionSprite, 100, 4, 6, 5, 6),
+                ShootingRD: spriteMixer.Action(actionSprite, 100, 4, 7, 5, 7)
+            };
+            
+            // Pausa todas as animações para evitar que comecem automaticamente
+            Object.values(actions).forEach(action => action.stop());
+
+            resolve({ spriteMixer, actionSprite, actions });
+        });
+    });
 }
 
 
@@ -394,6 +487,8 @@ export function applyDamageToEnemy(enemyData, damage, enemies) {
             enemyArray = enemies.skulls;
         } else if (enemyData.name === 'painElemental') {
             enemyArray = enemies.painElementals;
+        } else if (enemyData.name === 'soldier') { 
+            enemyArray = enemies.soldiers;
         }
 
         if (enemyArray) {
