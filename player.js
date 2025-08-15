@@ -24,50 +24,75 @@ export function createPlayerHpBar() {
         position: 'fixed',
         bottom: '20px',
         left: '20px',
-        width: '250px',
-        height: '25px',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        border: '2px solid white',
-        borderRadius: '5px',
-        display: 'none', 
+        gap: '5px',      
+        height: '32px',
+        display: 'none',
         zIndex: '100'
     });
 
-    const hpBar = document.createElement('div');
-    hpBar.id = 'player-hp-bar';
-    Object.assign(hpBar.style, {
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'red',
-        borderRadius: '3px',
-        transition: 'width 0.2s ease-in-out'
-    });
+    // Cria 10 corações
+    for (let i = 0; i < 10; i++) {
+        const heartContainer = document.createElement('div');
+        Object.assign(heartContainer.style, {
+            width: '32px',
+            height: '32px',
+            position: 'relative' 
+        });
 
-    const hpText = document.createElement('div');
-    hpText.id = 'player-hp-text';
-    Object.assign(hpText.style, {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: '16px',
-        textShadow: '1px 1px 2px black'
-    });
+        // Camada de fundo (coração vazio)
+        const heartBg = document.createElement('div');
+        Object.assign(heartBg.style, {
+            width: '100%',
+            height: '100%',
+            backgroundImage: "url('./T3_assets/heart_empty.png')", 
+            backgroundSize: 'cover',
+            position: 'absolute'
+        });
 
-    hpContainer.appendChild(hpBar);
-    hpContainer.appendChild(hpText);
+        // Camada da frente (coração cheio)
+        const heartFill = document.createElement('div');
+        heartFill.id = `heart-fill-${i}`; 
+        Object.assign(heartFill.style, {
+            width: '100%', 
+            height: '100%',
+            backgroundImage: "url('./T3_assets/heart_full.png')", 
+            backgroundSize: 'cover',
+            position: 'absolute',
+            overflow: 'hidden', 
+            transition: 'width 0.2s ease-out' 
+        });
+        
+        heartContainer.appendChild(heartBg);
+        heartContainer.appendChild(heartFill);
+        hpContainer.appendChild(heartContainer);
+    }
+
     document.body.appendChild(hpContainer);
 }
 
 export function updatePlayerHpBar(player) {
-    const hpBar = document.getElementById('player-hp-bar');
-    const hpText = document.getElementById('player-hp-text');
+    const currentHp = player.userData.hp;
+    const hpPerHeart = 20; // Cada coração vale 20 HP
 
-    if (hpBar && hpText) {
-        const healthPercentage = Math.max(0, (player.userData.hp / player.userData.maxHp) * 100);
-        hpBar.style.width = `${healthPercentage}%`;
-        hpText.innerText = `HP: ${player.userData.hp} / ${player.userData.maxHp}`;
+    for (let i = 0; i < 10; i++) {
+        const heartFill = document.getElementById(`heart-fill-${i}`);
+        if (!heartFill) continue;
+
+        const hpThreshold = (i + 1) * hpPerHeart; // O HP necessário para encher este coração completamente
+        
+        let fillPercentage = 0;
+
+        if (currentHp >= hpThreshold) {
+            // Se o HP atual é suficiente para encher este coração e os anteriores, ele fica 100% cheio.
+            fillPercentage = 100;
+        } else if (currentHp < hpThreshold && currentHp > (i * hpPerHeart)) {
+            const hpInThisHeart = currentHp % hpPerHeart;
+            fillPercentage = (hpInThisHeart === 0 && currentHp > 0) ? 100 : (hpInThisHeart / hpPerHeart) * 100;
+
+        } else {
+            fillPercentage = 0;
+        }
+
+        heartFill.style.width = `${fillPercentage}%`;
     }
 }

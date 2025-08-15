@@ -112,7 +112,7 @@ controls.addEventListener('lock', function () {
     crosshair.style.display = 'block'
     instructions.style.display = 'none';
     blocker.style.display = 'none';
-    document.getElementById('player-hp-container').style.display = 'block';
+    document.getElementById('player-hp-container').style.display = 'flex';
 });
 
 controls.addEventListener('unlock', function () {
