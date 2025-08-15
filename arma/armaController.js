@@ -24,7 +24,7 @@ export function initWeaponSystem(camera, renderer) {
     });
 }
 
-function toggleGun(camera) {
+export function toggleGun(camera) {
     if (currentGun === GUNTYPE.chaingun) {
         currentGun = GUNTYPE.lancador;
         removeChaingun(camera);
@@ -36,14 +36,14 @@ function toggleGun(camera) {
     }
 }
 
-export function updateWeapons(scene, camera, enemies) {
+export function updateWeapons(scenario, scene, camera, enemies) {
     if (isMouseDown) {
         switch (currentGun) {
             case GUNTYPE.chaingun:
                 startShootingChaingun(enemies, camera);
                 break;
             case GUNTYPE.lancador:
-                initShootBall(scene, camera); // Simplified: Assumes it handles its own cooldown
+                initShootBall(scenario,scene, camera); // Simplified: Assumes it handles its own cooldown
                 break;
         }
     } else {

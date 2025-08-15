@@ -14,6 +14,7 @@ const WANDER_SPEED = 0.05;
 const PROXIMITY_THRESHOLD = 1.0;
 const COLLISION_CHECK_DISTANCE = 1.0;
 const CACODEMON_VERTICAL_OFFSET = 2.0;
+const VERTICAL_SMOOTHING_FACTOR = 0.02;
 
  
 export function moveCacodemon(cacodemonData, scenario, player, scene) {
@@ -127,8 +128,8 @@ function applyVerticalCollision(cacodemonData) {
     const cacodemon = cacodemonData.obj;
     const currentPosition = cacodemon.position;
     const collisionObjects = cacodemonData.collisionObjects;
-    const gravity = 0.08;
-    const groundCheckOffset = 0.1; 
+    const gravity = 0.005;
+    const groundCheckOffset = 0.1;
 
     const downRaycaster = new THREE.Raycaster(
         new THREE.Vector3(currentPosition.x, currentPosition.y + groundCheckOffset, currentPosition.z),
@@ -138,12 +139,12 @@ function applyVerticalCollision(cacodemonData) {
     const intersects = downRaycaster.intersectObjects(collisionObjects);
 
     if (intersects.length > 0) {
-        
+        // If ground is detected, smoothly interpolate to the target height above the ground.
         const groundY = intersects[0].point.y;
-        
-        cacodemon.position.y = groundY + CACODEMON_VERTICAL_OFFSET;
+        const targetY = groundY + CACODEMON_VERTICAL_OFFSET;
+        cacodemon.position.y = THREE.MathUtils.lerp(currentPosition.y, targetY, VERTICAL_SMOOTHING_FACTOR);
     } else {
-        
+        // If no ground is detected, apply gravity to make it fall smoothly.
         cacodemon.position.y -= gravity;
     }
 }
