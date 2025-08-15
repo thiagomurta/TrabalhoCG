@@ -7,7 +7,7 @@ import {initRenderer,
         onWindowResize,
         createGroundPlaneXZ                } from "../libs/util/util.js";
 
-export function genStairedLevel(width, height, length, stair_w, stair_l, number_of_steps, path,stair_displacement) {
+export function genStairedLevel(width, height, length, stair_w, stair_l, number_of_steps, path,stair_displacement,stair_path) {
     // Main container
     let center = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1),setDefaultMaterial());
     center.offset=5;
@@ -17,7 +17,7 @@ export function genStairedLevel(width, height, length, stair_w, stair_l, number_
     vaultedBox.translateY(-0.05);
 
     // Stair creation
-    let stair = GS.genStair(stair_w, height, stair_l, number_of_steps,path);
+    let stair = GS.genStair(stair_w, height, stair_l, number_of_steps,stair_path);
     center.add(stair);
     stair.translateZ(+(length/2 - stair_l));
     stair.translateY(-0.05);

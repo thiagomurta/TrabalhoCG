@@ -14,7 +14,7 @@ export function area1(staired_level,material)
   let stairXFinish=stairXStart+staired_level.vaultedBox.stair_w;
   for(let i=0;i<76;i++)
   {
-    let collumn = new THREE.Mesh(cylinderGeo,material);
+    let collumn = new THREE.Mesh(cylinderGeo,TF.setMaterial("./T3_assets/roman_pila.jpg",2,5));
     staired_level.vaultedBox.add(collumn);
     collumn.translateY(staired_level.vaultedBox.height + height/2);
     
@@ -76,7 +76,7 @@ export function area1(staired_level,material)
         staired_level.enemyActivateBox=boxFlag;
         for(let i=0;i<4;i++){
             let blockGeo=new THREE.BoxGeometry(50,2,4);
-            let block=new THREE.Mesh(blockGeo,TF.boxTexture(['../assets/textures/stonewall.jpg'],50,2,4));
+            let block=new THREE.Mesh(blockGeo,TF.boxTexture(["./T3_assets/romanWall.jpg"],50,2,4));
             staired_level.add(block);
             if(i==0)
             {
