@@ -16,7 +16,15 @@ import { loadEnemies, moveEnemies, updateAnimations } from './inimigos/inimigos.
 import * as EL from './elevador.js'
 import { toggleGun, initWeaponSystem, updateWeapons, currentGun, GUNTYPE } from './arma/armaController.js';
 import * as GATE from './gateAnim.js'
+
 import * as TF from './texturingfuncs.js'
+
+import * as HANGAR from './hangar.js'
+import {OBJLoader} from '../build/jsm/loaders/OBJLoader.js';
+import {MTLLoader} from '../build/jsm/loaders/MTLLoader.js';
+import { Plane } from './plane.js';
+
+
 
 // ---------------------Configuração inicial---------------------
 let scene, renderer;
@@ -52,7 +60,7 @@ let plane = TF.createGroundPlaneXZCust(500, 500, 10, 10, TF.planeTex(["../assets
  plane.receiveShadow=true;
    // center.plane.translateY(+0.15);
 
-let scenario=S0.Scene0();
+let scenario= S0.Scene0();
 scene.add(scenario); // Add the scenario to the scene
 scenario.translateY(-0.15);
 
@@ -137,6 +145,23 @@ scene.add(dirLight.target);
 scene.add(dirLight2.target);
 
 const ambiente = new THREE.AmbientLight(lightColor, 0.5);
+// ---------------------Iluminação Hangar---------------------
+let lightPositionHangar = new THREE.Vector3(0, 3, 0);
+let lightColorHangar = 'rgb(255, 255, 255)'
+let dirLightHangar = new THREE.DirectionalLight(lightColorHangar, 2);
+dirLightHangar.position.copy(lightPositionHangar);
+dirLightHangar.castShadow = true;
+
+dirLightHangar.shadow.mapSize.width = 512;
+dirLightHangar.shadow.mapSize.height = 512;
+dirLightHangar.shadow.camera.left = -50;
+dirLightHangar.shadow.camera.right = 50;
+dirLightHangar.shadow.camera.top = 50;
+dirLightHangar.shadow.camera.bottom = -50;
+dirLightHangar.shadow.camera.near = 1;
+dirLightHangar.shadow.camera.far = 10;
+scene.add(dirLightHangar);
+// ---------------------Iluminação Hangar---------------------
 scene.add(ambiente);
 
 scene.add(dirLight);
@@ -154,37 +179,58 @@ scene.add(controls.getObject());
 
 let chave1 = CHAVE.CHAVE('rgb(255, 0, 0)');
 let chave2 = CHAVE.CHAVE('rgb(255, 255, 0)');
+let chave3 = CHAVE.CHAVE('rgb(0, 0, 255)');
 let take_key1 = false;
 let take_key2 = false;
 let drop_key1 = false;
 // chave2.translateX(2);
-scene.add(chave1);
+// scene.add(chave1);
 // scene.add(chave2);
+scene.add(scenario.objects[11]);
 
 
 let enemies = await loadEnemies(scene);
 
-if (take_key1){
-    scene.remove(chave1);
-}
-if (drop_key1){
-    scenario.objects[8].add(chave1);
-}
-if (take_key2){
-    scene.remove(chave2);
-} 
-// Adicionar a chave após a eliminação das skulls
-if (enemies.skulls.length === 0){
-    console.log("matou as caveiras");
-    scenario.objects[9].add(chave1);
-    scenario.objects[9].translateY(1.5);
-}
-// Adicionar a chave após a eliminação dos cacodemons
-if (enemies.cacodemons.length === 0){
-    scenario.objects[10].add(chave2);
-    scenario.objects[10].translateY(1.5);
+const posFinalBox1 = scenario.objects[9].position.y + 1.5;
+const posFinalBox2 = scenario.objects[10].position.y + 1.5;
+function operationKeys(){
+    
+    if (take_key1){
+        scene.remove(chave1);
+    }
+    if (drop_key1){
+        scenario.objects[8].add(chave1);
+    }
+    if (take_key2){
+        scene.remove(chave2);
+    } 
+    // Adicionar a chave após a eliminação das skulls
+    if (enemies.skulls.length === 0){
+        console.log("matou as caveiras");
+        scenario.objects[9].add(chave1);
+        if(scenario.objects[9].position.y < posFinalBox1){
+            scenario.objects[9].position.y += 0.1;
+        }
+    }
+    // Adicionar a chave após a eliminação dos cacodemons
+    if (enemies.cacodemons.length === 0){
+        scenario.objects[10].add(chave2);
+        if(scenario.objects[10].position.y < posFinalBox2){
+            // if(scenario.objects[10].position.y < scenario.objects[0].height){
+                scenario.objects[10].position.y += 0.1;
+            // }
+        }
+    }
 }
 
+// ------------ ASSET DO AVIÃO --------------
+
+async function init(){
+    const planeAsset = await Plane();
+    scene.add(planeAsset);
+    scene.add(boundingBoxPlane);
+}
+init();
 
 
 // ------------ CONTROLES DO TECLADO --------------
@@ -334,9 +380,10 @@ function render() {
     if (controls.isLocked) {
         updateAnimations();
         updateWeapons(scenario, scene, camera, enemies);
+        operationKeys();
         moveAnimate(clock.getDelta());
         //console.log(playerHasEnteredFirstArea);
-        if (enemies) moveEnemies(scene, scenario, player, enemies, playerHasEnteredFirstArea, playerHasEnteredSecondArea); // will move enemies
+        if (enemies) moveEnemies(scene, scenario, player, enemies, playerHasEnteredFirstArea.value, playerHasEnteredSecondArea.value); // will move enemies
         moveBullet(scene, camera, enemies); // will move bullet if its isShooting attribute is truthy
     }
     renderer.shadowMap.enabled=true;

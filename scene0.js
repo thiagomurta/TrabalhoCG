@@ -4,6 +4,7 @@ import * as SL from './staired_level.js';
 import * as A1 from './area1.js'
 import * as A2 from './area2.js'
 import * as EL from './elevador.js'
+import * as HANGAR from './hangar.js'
 
 import {
         setDefaultMaterial,
@@ -85,7 +86,7 @@ export function Scene0()
     let box2 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox);
     center.add(box2);
     box2.translateX(-130);
-    box2.translateY(6.5);
+    box2.translateY(5);
     box2.translateZ(-160);
 
     let materialBox3 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
@@ -95,8 +96,14 @@ export function Scene0()
     box3.translateY(6.5);
     box3.translateZ(-160);
 
-    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL,box, box2, box3];
-    
+    let materialBoundingBox = new THREE.MeshLambertMaterial();
+    let boundingBoxPlane = new THREE.Mesh(new THREE.BoxGeometry(12,10,18), materialBoundingBox);
+    boundingBoxPlane.visible = false;
+
+    let hangar = HANGAR.HANGAR(20, 19, 12);
+
+    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL,box, box2, box3, hangar, boundingBoxPlane];
+    center.add(hangar);
     
     
     

@@ -6,7 +6,7 @@ export const CACODEMON_STATE = {
     LOOKING_AT_PLAYER: 'LOOKING_AT_PLAYER',
 };
 
-const PLAYER_DETECT_DISTANCE = 20;
+const PLAYER_DETECT_DISTANCE = 25;
 const LOOK_AT_PLAYER_DURATION_FRAMES = 90; 
 const LOOK_AT_PLAYER_COOLDOWN_FRAMES = -60;
 const MAX_WANDER_DISTANCE = 25;
@@ -84,7 +84,7 @@ function handleLookingState(cacodemonData, player, scene) {
 
     const playerPosition = player.position.clone();
     playerPosition.y = cacodemon.position.y; 
-    cacodemon.lookAt(playerPosition);
+    smoothEnemyRotation(cacodemon, playerPosition);
 
     if (cacodemonData.lookAtFrames === Math.floor(LOOK_AT_PLAYER_DURATION_FRAMES / 2) && !cacodemonData.hasShot) {
         initFireball(cacodemonData);
