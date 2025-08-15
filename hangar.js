@@ -79,7 +79,7 @@ export function HANGAR(raio1, raio2, altura){
 
     let tetoFinal = CSG.toMesh(cylinderM, new THREE.Matrix4());
     tetoFinal.material = new THREE.MeshLambertMaterial( {color:'rgba(156, 52, 52, 1)'});
-    tetoFinal.material = TF.setMaterial('./T3_assets/elevador.jpg', 4, 4);
+    //tetoFinal.material = TF.setMaterial('./T3_assets/elevador.jpg', 4, 4);
     centro.teto = tetoFinal;
     centro.add(centro.teto);
     centro.teto.translateY(altura/2-(thickness/2));
