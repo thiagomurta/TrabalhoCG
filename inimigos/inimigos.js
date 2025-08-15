@@ -282,22 +282,22 @@ async function loadSoldierSprite() {
              actionSprite.scale.set(4.5, 4.5, 4.5);
 
             const actions = {
-                runDown: spriteMixer.Action(actionSprite, 100, 0, 0, 3, 0),
-                runLD: spriteMixer.Action(actionSprite, 100, 0, 1, 3, 1),
-                runLeft: spriteMixer.Action(actionSprite, 100, 0, 2, 3, 2),
-                runLU: spriteMixer.Action(actionSprite, 100, 0, 3, 3, 3),
-                runUp: spriteMixer.Action(actionSprite, 100, 0, 4, 3, 4),
-                runRU: spriteMixer.Action(actionSprite, 100, 0, 5, 3, 5),
-                runRight: spriteMixer.Action(actionSprite, 100, 0, 6, 3, 6),
-                runRD: spriteMixer.Action(actionSprite, 100, 0, 7, 3, 7),
-                ShootingDown: spriteMixer.Action(actionSprite, 100, 4, 0, 5, 0),
-                ShootingLD: spriteMixer.Action(actionSprite, 100, 4, 1, 5, 1),
-                ShootingLeft: spriteMixer.Action(actionSprite, 100, 4, 2, 5, 2),
-                ShootingLU: spriteMixer.Action(actionSprite, 100, 4, 3, 5, 3),
-                ShootingUp: spriteMixer.Action(actionSprite, 100, 4, 4, 5, 4),
-                ShootingRU: spriteMixer.Action(actionSprite, 100, 4, 5, 5, 5),
-                ShootingRight: spriteMixer.Action(actionSprite, 100, 4, 6, 5, 6),
-                ShootingRD: spriteMixer.Action(actionSprite, 100, 4, 7, 5, 7)
+                runDown:        spriteMixer.Action(actionSprite, 100, 0, 0, 3, 0),
+                runLD:          spriteMixer.Action(actionSprite, 100, 0, 1, 3, 1),
+                runLeft:        spriteMixer.Action(actionSprite, 100, 0, 2, 3, 2),
+                runLU:          spriteMixer.Action(actionSprite, 100, 0, 3, 3, 3),
+                runUp:          spriteMixer.Action(actionSprite, 100, 0, 4, 3, 4),
+                runRU:          spriteMixer.Action(actionSprite, 100, 0, 5, 3, 5),
+                runRight:       spriteMixer.Action(actionSprite, 100, 0, 6, 3, 6),
+                runRD:          spriteMixer.Action(actionSprite, 100, 0, 7, 3, 7),
+                ShootingDown:   spriteMixer.Action(actionSprite, 100, 4, 0, 5, 0),
+                ShootingLD:     spriteMixer.Action(actionSprite, 100, 4, 1, 5, 1),
+                ShootingLeft:   spriteMixer.Action(actionSprite, 100, 4, 2, 5, 2),
+                ShootingLU:     spriteMixer.Action(actionSprite, 100, 4, 3, 5, 3),
+                ShootingUp:     spriteMixer.Action(actionSprite, 100, 4, 4, 5, 4),
+                ShootingRU:     spriteMixer.Action(actionSprite, 100, 4, 5, 5, 5),
+                ShootingRight:  spriteMixer.Action(actionSprite, 100, 4, 6, 5, 6),
+                ShootingRD:     spriteMixer.Action(actionSprite, 100, 4, 7, 5, 7)
             };
             
             // Pausa todas as animações para evitar que comecem automaticamente
