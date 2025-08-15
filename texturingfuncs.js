@@ -49,7 +49,7 @@ export function planeTex(path)
     console.log(material)
     return material;
 }
-function setMaterial(file, repeatU = 1, repeatV = 1, color ){
+export function setMaterial(file, repeatU = 1, repeatV = 1, color ){
 
     let loader = new THREE.TextureLoader();
     let mat = new THREE.MeshBasicMaterial({ map: loader.load(file)});

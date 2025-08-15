@@ -50,7 +50,7 @@ export function area2(staired_level,path)
         }
     }
     let gateG=new THREE.BoxGeometry(staired_level.s_w,staired_level.height,1);
-    let gate=new THREE.Mesh(gateG,TF.boxTextureCust(['./T3_assets/gate.png'],staired_level.s_w,staired_level.height,1,staired_level.s_w/2,staired_level.height));
+    let gate=new THREE.Mesh(gateG,TF.boxTextureCust(['./T3_assets/gate.jpg'],staired_level.s_w,staired_level.height,1,staired_level.s_w/2,staired_level.height));
     gate.width=staired_level.s_w;
     staired_level.add(gate);
     gate.translateY(staired_level.height/2);
