@@ -14,7 +14,7 @@ export function area1(staired_level,material)
   let stairXFinish=stairXStart+staired_level.vaultedBox.stair_w;
   for(let i=0;i<76;i++)
   {
-    let collumn = new THREE.Mesh(cylinderGeo,material);
+    let collumn = new THREE.Mesh(cylinderGeo,TF.setMaterial("./T3_assets/roman_pila.jpg",2,5));
     staired_level.vaultedBox.add(collumn);
     collumn.translateY(staired_level.vaultedBox.height + height/2);
     
