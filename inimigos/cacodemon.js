@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { getCollisionObjects, smoothEnemyRotation } from './inimigos.js';
+import { checkProjectileCollisionWithPlayer } from './damageHandler.js'; // Importa a nova função
 
 export const CACODEMON_STATE = {
     WANDERING: 'WANDERING',
@@ -32,7 +33,7 @@ export function moveCacodemon(cacodemonData, scenario, player, scene) {
             break;
     }
 
-    moveFireball(cacodemonData, scene);
+    moveFireball(cacodemonData, scene, player);
 
     applyVerticalCollision(cacodemonData);
 
@@ -193,7 +194,7 @@ function initFireball(cacodemonData) {
     cacodemonData.obj.add(fireball);
 }
 
-function moveFireball(cacodemonData, scene) {
+function moveFireball(cacodemonData, scene, player) {
     const fireballArray = cacodemonData.fireballArray;
     if (!fireballArray || fireballArray.length === 0) return; // No fireballs to move
 
@@ -203,6 +204,14 @@ function moveFireball(cacodemonData, scene) {
         if (fireballData.isShooting) {
             const fireballMesh = fireballData.fireball;
             fireballMesh.position.add(fireballData.velocity);
+
+            if (checkProjectileCollisionWithPlayer(fireballMesh, player)) {
+                scene.remove(fireballMesh); 
+                fireballMesh.geometry.dispose(); 
+                fireballMesh.material.dispose();
+                fireballArray.splice(i, 1);
+                continue; // Pula para o próximo projétil
+            }
 
             const distanceToTarget = fireballMesh.position.distanceTo(fireballData.targetPoint);
             if (distanceToTarget <= FIREBALL.speed) {
