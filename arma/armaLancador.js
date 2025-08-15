@@ -2,10 +2,9 @@ import * as THREE from 'three';
 import { damageCacodemon, damageSkull, damagePainElemental } from '../inimigos/inimigos.js';
 import { teto } from '../t1.js';
 // --------------------- ARMA ---------------------
-// MACROS 
-const GUN_COLOR = 'rgb(100,255,100)';
+// MACROS
+const ROCKET_LAUNCHER_LOCATION = "./T3_assets/rocketlauncher.png";
 const BALL_COLOR = 'rgb(100, 193, 255)';
-const GUN_SIZE = { radius: 0.1, height: 2, segments: 32};
 const BALL_SIZE = { radius: 0.1, widthSegments: 20, heightSegments: 20 };
 const BALL_SPEED = 3.0;
 const BULLET_ORIGIN_POS = {x: 0.0, y: -0.0, z: 0.0};
@@ -13,7 +12,9 @@ const BULLET_ORIGIN_POS = {x: 0.0, y: -0.0, z: 0.0};
 
 const BALL_BOX_SIZE = 0.1;
 
-let gun = null;
+let rocketLauncherSprite = null;
+let rocketLauncherTexture = null;
+let animationTimer = null;
 let ballArray = [];
 let currentBulletIndex = 0;
 let lastShotTime = 0;
@@ -34,6 +35,7 @@ export function initShootBall(scenario, scene, camera) {
 // CONSERTA O OFFSET DE Y POR UM RAYCASTER
 // DEPOIS INICIALIZA A PRÓXIMA BALA PARA SER ATIRADA
 export function shootBall(scenario, scene, camera) {
+  animateRocketShot(); // Play the muzzle flash animation
 
   const bulletObj = ballArray[currentBulletIndex];
   scene.attach(bulletObj.ball); // Attach the current bullet to the scene
@@ -162,36 +164,72 @@ function initBullet(camera) {
   camera.add(ball);
 }
 
+function animateRocketShot() {
+    if (!rocketLauncherTexture) return;
+
+    rocketLauncherTexture.offset.x = 1 / 3;
+
+    animationTimer = setTimeout(() => {
+        if (rocketLauncherTexture) {
+            rocketLauncherTexture.offset.x = 2 / 3;
+        }
+    }, 100);
+
+    animationTimer = setTimeout(() => {
+        if (rocketLauncherTexture) {
+
+            rocketLauncherTexture.offset.x = 0 / 3; 
+        }
+    }, 200);
+}
+
 // CRIA O CILINDRO (ARMA), ADICIONA A CAMERA NA CENA E A ARMA NA CAMERA
 // E INICIALIZA A PRIMEIRA BALA
 export function initGun(camera) {
-  if (gun) {
-      removeGun(camera);
-  }
-  const cylinderGeometry = new THREE.CylinderGeometry(
-    GUN_SIZE.radius,
-    GUN_SIZE.radius,
-    GUN_SIZE.height,
-    GUN_SIZE.segments
-  );
-  const gunMaterial = new THREE.MeshLambertMaterial({color:GUN_COLOR});
+    if (rocketLauncherSprite) {
+        removeGun(camera);
+    }
 
-  gun = new THREE.Mesh(cylinderGeometry, gunMaterial);
+    const rocketLauncherMaterial = new THREE.SpriteMaterial({
+        transparent: true
+    });
 
-  const GUN_Y_OFFSET = -0.3;
-  const GUN_AIMS_FORWARD = THREE.MathUtils.degToRad(-90);
+    rocketLauncherTexture = new THREE.TextureLoader().load(
+        ROCKET_LAUNCHER_LOCATION, 
+        (texture) => { 
+            
+            texture.repeat.set(1 / 3, 1);
+            texture.wrapS = THREE.ClampToEdgeWrapping; // Prevents wrapping
 
-  gun.position.set(0.0, GUN_Y_OFFSET, 0.0);
-  gun.rotateX(GUN_AIMS_FORWARD);
+            rocketLauncherMaterial.map = texture;
 
-  camera.add(gun);
-  initBullet(camera);
+            rocketLauncherMaterial.needsUpdate = true; 
+
+            rocketLauncherSprite = new THREE.Sprite(rocketLauncherMaterial);
+            const aspectRatio = (261/3) / 135; 
+            rocketLauncherSprite.scale.set(aspectRatio * 0.9, 0.9, 1);
+            rocketLauncherSprite.position.set(0, -0.35, -1.2);
+
+            rocketLauncherSprite.name = 'rocketLauncher';
+            camera.add(rocketLauncherSprite);
+            rocketLauncherSprite.raycast = () => {};
+        }
+    );
+
+    initBullet(camera);
 }
 
 export function removeGun(camera) {
-    if (gun) {
-        camera.remove(gun);
-        gun = null;
+    const sprite = camera.getObjectByName('rocketLauncher');
+    if (sprite) {
+        camera.remove(sprite);
+        rocketLauncherSprite = null;
+        rocketLauncherTexture = null;
+    }
+
+    if (animationTimer) {
+        clearTimeout(animationTimer);
+        animationTimer = null;
     }
 
     for (let i = ballArray.length - 1; i >= 0; i--) {
@@ -207,6 +245,6 @@ export function removeGun(camera) {
     currentBulletIndex = 0;
     lastShotTime = 0;
     
-    console.log("Gun and all bullets removed.");
+    console.log("Rocket launcher and all bullets removed.");
 }
 
