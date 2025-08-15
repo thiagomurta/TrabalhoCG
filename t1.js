@@ -16,6 +16,7 @@ import { loadEnemies, moveEnemies, updateAnimations } from './inimigos/inimigos.
 import * as EL from './elevador.js'
 import { initWeaponSystem, updateWeapons, currentGun, GUNTYPE } from './arma/armaController.js';
 import * as GATE from './gateAnim.js'
+import * as TF from './texturingfuncs.js'
 
 // ---------------------Configuração inicial---------------------
 let scene, renderer;
@@ -46,7 +47,7 @@ let playerHasEnteredSceondArea = {value:false,name:"playerHasEnteredSecondArea"}
 
 // ---------------------Ambiente---------------------
 
-let plane = createGroundPlaneXZ(500, 500, 10, 10, "rgb(153, 148, 148)");
+let plane = TF.createGroundPlaneXZCust(500, 500, 10, 10, TF.planeTex(["../assets/textures/asfalto.jpg"]));
  scene.add(plane);
  plane.receiveShadow=true;
    // center.plane.translateY(+0.15);
