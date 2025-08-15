@@ -24,6 +24,8 @@ import {OBJLoader} from '../build/jsm/loaders/OBJLoader.js';
 import {MTLLoader} from '../build/jsm/loaders/MTLLoader.js';
 import { Plane } from './plane.js';
 
+import { instancePlayer, createPlayerHpBar, updatePlayerHpBar } from './player.js';
+
 
 
 // ---------------------Configuração inicial---------------------
@@ -73,7 +75,7 @@ teto.visible = false;
 scene.add(teto);
 let gateMove={value:true};
 
-let player = new THREE.Mesh(new THREE.BoxGeometry(1,5,1), new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"}));
+let player = instancePlayer();
 scene.add(player);
 player.translateY(1);
 player.add(camera)
@@ -83,6 +85,8 @@ const controls = new PointerLockControls(player, renderer.domElement);
 
 const blocker = document.getElementById('blocker');
 const instructions = document.getElementById('instructions');
+createPlayerHpBar();
+updatePlayerHpBar(player);
 
 // ---------------------Controles do mouse---------------------
 instructions.addEventListener('click', function () {
@@ -108,12 +112,14 @@ controls.addEventListener('lock', function () {
     crosshair.style.display = 'block'
     instructions.style.display = 'none';
     blocker.style.display = 'none';
+    document.getElementById('player-hp-container').style.display = 'block';
 });
 
 controls.addEventListener('unlock', function () {
     crosshair.style.display = 'none';
     blocker.style.display = 'block';
     instructions.style.display = '';
+    document.getElementById('player-hp-container').style.display = 'none';
 });
 
 // ---------------------Iluminação---------------------

@@ -1,8 +1,15 @@
 import * as THREE from 'three';
 import { applyDamageToEnemy } from './inimigos.js';
+import { updatePlayerHpBar } from '../player.js'; // Importa a função de atualização da UI
 
 const CHAINGUN_DAMAGE = 2;
 const ROCKET_DAMAGE = 10;
+
+const SKULL_DAMAGE = 5;
+const CACODEMON_DAMAGE = 8;
+
+const PLAYER_HIT_COOLDOWN_MS = 500; // Meio segundo de invencibilidade após ser atingido
+let lastPlayerHitTime = 0;
 
 const raycaster = new THREE.Raycaster();
 const screenCenter = new THREE.Vector2(0, 0);
@@ -70,4 +77,50 @@ export function markEnemyGroup(enemyData) {
     if (enemyData && enemyData.obj) {
         enemyData.obj.userData.isEnemyGroup = true;
     }
+}
+
+// --------------- PLAYER DAMAGE -----------------
+
+function applyDamageToPlayer(player, damage) {
+    const now = performance.now();
+    if (now - lastPlayerHitTime < PLAYER_HIT_COOLDOWN_MS) {
+        return; 
+    }
+    lastPlayerHitTime = now;
+
+    player.userData.hp -= damage;
+    if (player.userData.hp < 0) {
+        player.userData.hp = 0;
+    }
+    
+    console.log(`Jogador atingido! HP atual: ${player.userData.hp}`);
+    updatePlayerHpBar(player); 
+
+    if (player.userData.hp <= 0) {
+        // Lógica para quando o jogador morre (ex: reiniciar o nível, mostrar tela de "Game Over")
+        alert("Você morreu!");
+        document.location.reload();
+    }
+}
+
+export function checkSkullCollision(skullData, player) {
+    const skull = skullData.obj;
+    const distance = skull.position.distanceTo(player.position);
+    const collisionThreshold = 1.5; // Distância para considerar uma colisão
+
+    if (distance < collisionThreshold) {
+        applyDamageToPlayer(player, SKULL_DAMAGE);
+    }
+}
+
+
+export function checkProjectileCollisionWithPlayer(projectile, player) {
+    const projectileBox = new THREE.Box3().setFromObject(projectile);
+    const playerBox = new THREE.Box3().setFromObject(player);
+
+    if (projectileBox.intersectsBox(playerBox)) {
+        applyDamageToPlayer(player, CACODEMON_DAMAGE);
+        return true;
+    }
+    return false;
 }
