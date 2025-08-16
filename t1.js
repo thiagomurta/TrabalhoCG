@@ -23,7 +23,7 @@ import * as HANGAR from './hangar.js'
 import {OBJLoader} from '../build/jsm/loaders/OBJLoader.js';
 import {MTLLoader} from '../build/jsm/loaders/MTLLoader.js';
 import { Plane } from './plane.js';
-
+import { CubeTextureLoaderSingleFile } from '../libs/util/cubeTextureLoaderSingleFile.js';
 
 
 // ---------------------Configuração inicial---------------------
@@ -38,7 +38,14 @@ var stats = new Stats();
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0.0, 0.0, 0.0);
 camera.lookAt(new THREE.Vector3(-1.5, 2.0, -100.0));
+const textureLoader = new THREE.TextureLoader();
+let textureEquirec = textureLoader.load( './T3_assets/skybox.jpg' );
+    textureEquirec.mapping = THREE.EquirectangularReflectionMapping; // Reflection as default
+    textureEquirec.colorSpace = THREE.SRGBColorSpace;
 
+
+// Set scene's background as a equirectangular map
+scene.background = textureEquirec;
 //initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 
 const crosshair = document.querySelector('.crosshair');
@@ -55,7 +62,7 @@ let playerHasEnteredSecondArea = {value:false,name:"playerHasEnteredSecondArea"}
 
 // ---------------------Ambiente---------------------
 
-let plane = TF.createGroundPlaneXZCust(500, 500, 10, 10, TF.planeTex(["../assets/textures/asfalto.jpg"]));
+let plane = TF.createGroundPlaneXZCust(500, 500, 10, 10, TF.planeTex(["../assets/textures/intertravado.jpg"]));
  scene.add(plane);
  plane.receiveShadow=true;
    // center.plane.translateY(+0.15);
@@ -117,34 +124,34 @@ controls.addEventListener('unlock', function () {
 });
 
 // ---------------------Iluminação---------------------
-let positionLight = new THREE.Vector3(-200, 400, -200);
+let positionLight = new THREE.Vector3(-400, 400, -400);
 let positionLight2 = new THREE.Vector3(200, 400, 200);
 
-let lightColor = "rgb(255,255,255)";
+let lightColor = "rgb(112, 112, 111)";
 
-let dirLight = new THREE.DirectionalLight(lightColor, 2);
-let dirLight2 = new THREE.DirectionalLight(lightColor, 1);
+let dirLight = new THREE.DirectionalLight(lightColor, 10);
+//let dirLight2 = new THREE.DirectionalLight(lightColor, 0.);
 
 dirLight.position.copy(positionLight);
-dirLight2.position.copy(positionLight2);
+//dirLight2.position.copy(positionLight2);
 dirLight.castShadow = true;
 
-dirLight.shadow.mapSize.width = 1024;
-dirLight.shadow.mapSize.height = 1024;
+dirLight.shadow.mapSize.width = 2048;
+dirLight.shadow.mapSize.height = 2048;
 dirLight.shadow.camera.left = -300;
 dirLight.shadow.camera.right = 300;
 dirLight.shadow.camera.top = 300;
 dirLight.shadow.camera.bottom = -300;
-dirLight.shadow.camera.near = 1;
+dirLight.shadow.camera.near = 0.1;
 dirLight.shadow.camera.far = 1000;
 
 
 dirLight.target.position.set(0, 0, 5);
-dirLight2.target.position.set(0, 0, -5);
+//dirLight2.target.position.set(0, 0, -5);
 scene.add(dirLight.target);
-scene.add(dirLight2.target);
+//scene.add(dirLight2.target);
 
-const ambiente = new THREE.AmbientLight(lightColor, 0.5);
+const ambiente = new THREE.AmbientLight(lightColor, 0.15);
 // ---------------------Iluminação Hangar---------------------
 let lightPositionHangar = new THREE.Vector3(0, 3, 0);
 let lightColorHangar = 'rgb(255, 255, 255)'
@@ -165,7 +172,7 @@ scene.add(dirLightHangar);
 scene.add(ambiente);
 
 scene.add(dirLight);
-scene.add(dirLight2);
+//scene.add(dirLight2);
 
 // ---------------------Controles de teclado---------------------
 

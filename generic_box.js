@@ -61,9 +61,9 @@ export function genBox(width,height,length,stair_w,stair_l,path,stair_displaceme
     center.meshes.push(center.leftBox);
     center.meshes.push(center.upperBox);
     center.meshes.push(center.rightBox);
-    for (let mesh of center.meshes) {
-        mesh.receiveShadow = true;
-        mesh.castShadow = true;
+    for (let i=0;i<center.meshes.length;i++) {
+        center.meshes[i].receiveShadow = true;
+        center.meshes[i].castShadow = true;
     }
 
     return center;
