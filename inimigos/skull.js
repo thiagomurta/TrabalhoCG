@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { getCollisionObjects, smoothEnemyRotation } from './inimigos.js';
+import { checkSkullCollision } from './damageHandler.js'; // Importa a nova função
 
 export const SKULL_STATE = {
     WANDERING: 'WANDERING',
@@ -104,6 +105,8 @@ function handleChargingState(skullData, player) {
         skullData.targetPoint = null;
         return;
     }
+
+    checkSkullCollision(skullData, player);
 
     moveTowardsTarget(skullData, CHARGE_SPEED,  
         () => {

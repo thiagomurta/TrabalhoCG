@@ -23,7 +23,11 @@ import * as HANGAR from './hangar.js'
 import {OBJLoader} from '../build/jsm/loaders/OBJLoader.js';
 import {MTLLoader} from '../build/jsm/loaders/MTLLoader.js';
 import { Plane } from './plane.js';
+
 import { CubeTextureLoaderSingleFile } from '../libs/util/cubeTextureLoaderSingleFile.js';
+
+import { instancePlayer, createPlayerHpBar, updatePlayerHpBar } from './player.js';
+
 
 
 // ---------------------Configuração inicial---------------------
@@ -80,7 +84,7 @@ teto.visible = false;
 scene.add(teto);
 let gateMove={value:true};
 
-let player = new THREE.Mesh(new THREE.BoxGeometry(1,5,1), new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"}));
+let player = instancePlayer();
 scene.add(player);
 player.translateY(1);
 player.add(camera)
@@ -90,6 +94,8 @@ const controls = new PointerLockControls(player, renderer.domElement);
 
 const blocker = document.getElementById('blocker');
 const instructions = document.getElementById('instructions');
+createPlayerHpBar();
+updatePlayerHpBar(player);
 
 // ---------------------Controles do mouse---------------------
 instructions.addEventListener('click', function () {
@@ -115,12 +121,14 @@ controls.addEventListener('lock', function () {
     crosshair.style.display = 'block'
     instructions.style.display = 'none';
     blocker.style.display = 'none';
+    document.getElementById('player-hp-container').style.display = 'flex';
 });
 
 controls.addEventListener('unlock', function () {
     crosshair.style.display = 'none';
     blocker.style.display = 'block';
     instructions.style.display = '';
+    document.getElementById('player-hp-container').style.display = 'none';
 });
 
 // ---------------------Iluminação---------------------
@@ -257,6 +265,7 @@ const KEY_ARROW_DOWN = 40;
 const KEY_SPACE = 32;
 const KEY_1 = 49; // 1 key
 const KEY_2 = 50; // 2 key
+const KEY_SHIFT = 16; // Shift key
 const elSpeedo=10;
 // const SHOOT = ;
 let moveForward = false;
@@ -264,6 +273,7 @@ let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
 // let shoot = false;
+let isSprinting = false;
 
 
 
@@ -284,6 +294,9 @@ function movementControls(key, value) { // if xabu , go back here
         case KEY_ARROW_RIGHT:
         case KEY_D:
             moveRight = value;
+            break;
+        case KEY_SHIFT:
+            isSprinting = value;
             break;
         case KEY_SPACE:
             console.log("Player position: ", player.position);
@@ -316,6 +329,8 @@ function moveAnimate(delta) {
     const LEFT_WALL = scenario.objects[6];
     const RIGHT_WALL = scenario.objects[7];
 
+    const currentSpeed = isSprinting ? speed * 2 : speed;
+
     const isIntersectingWall = raycaster.intersectObjects([NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL]).length > 0;
     GATE.gateAnim(scenario.objects[1],gateMove);
     //ELEVADOR
@@ -336,14 +351,14 @@ function moveAnimate(delta) {
         horizontalCaster.ray.direction.copy(LOOK.Foward(controls)).normalize();
         const colision = INTER.intersection(horizontalCaster,scenario.objects, enemies, controls,speed*delta);
         if(!colision)
-            controls.moveForward(speed * delta);
+            controls.moveForward(currentSpeed * delta);
 
     }
     else if (moveBackward) {
         horizontalCaster.ray.direction.copy(LOOK.Backward(controls)).normalize();
         const colision = INTER.intersection(horizontalCaster,scenario.objects, enemies, controls,speed*delta);
         if(!colision)
-            controls.moveForward(speed * -1 * delta);
+            controls.moveForward(currentSpeed * -1 * delta);
     }
 
     if (moveRight) {
@@ -351,13 +366,13 @@ function moveAnimate(delta) {
         horizontalCaster.ray.direction.copy(LOOK.Right(controls)).normalize();
         const colision = INTER.intersection(horizontalCaster,scenario.objects, enemies, controls,speed*delta);
         if(!colision)
-            controls.moveRight(speed * delta);
+            controls.moveRight(currentSpeed * delta);
     }
     else if (moveLeft) {
         horizontalCaster.ray.direction.copy(LOOK.Left(controls)).normalize();
         const colision = INTER.intersection(horizontalCaster,scenario.objects, enemies, controls,speed*delta);
             if(!colision)
-        controls.moveRight(speed * -1 * delta);
+        controls.moveRight(currentSpeed * -1 * delta);
     }
 
     // if (isIntersectingRamp) {

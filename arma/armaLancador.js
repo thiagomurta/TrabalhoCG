@@ -1,11 +1,10 @@
 import * as THREE from 'three';
-import { damageCacodemon, damageSkull, damagePainElemental } from '../inimigos/inimigos.js';
+import { handleProjectileCollision } from '../inimigos/damageHandler.js'; 
 import { teto } from '../t1.js';
 // --------------------- ARMA ---------------------
-// MACROS 
-const GUN_COLOR = 'rgb(100,255,100)';
+// MACROS
+const ROCKET_LAUNCHER_LOCATION = "./T3_assets/rocketlauncher.png";
 const BALL_COLOR = 'rgb(100, 193, 255)';
-const GUN_SIZE = { radius: 0.1, height: 2, segments: 32};
 const BALL_SIZE = { radius: 0.1, widthSegments: 20, heightSegments: 20 };
 const BALL_SPEED = 3.0;
 const BULLET_ORIGIN_POS = {x: 0.0, y: -0.0, z: 0.0};
@@ -13,7 +12,9 @@ const BULLET_ORIGIN_POS = {x: 0.0, y: -0.0, z: 0.0};
 
 const BALL_BOX_SIZE = 0.1;
 
-let gun = null;
+let rocketLauncherSprite = null;
+let rocketLauncherTexture = null;
+let animationTimer = null;
 let ballArray = [];
 let currentBulletIndex = 0;
 let lastShotTime = 0;
@@ -34,6 +35,7 @@ export function initShootBall(scenario, scene, camera) {
 // CONSERTA O OFFSET DE Y POR UM RAYCASTER
 // DEPOIS INICIALIZA A PRÓXIMA BALA PARA SER ATIRADA
 export function shootBall(scenario, scene, camera) {
+  animateRocketShot(); // Play the muzzle flash animation
 
   const bulletObj = ballArray[currentBulletIndex];
   scene.attach(bulletObj.ball); // Attach the current bullet to the scene
@@ -84,58 +86,32 @@ function removeBullet(scene, bullet, ball, ballArray, i, camera){
 
 // PARA CADA BALA NA CENA, TRANSLADA O Z SE MOVIMENTAÇÃO HABILITADA
 export function moveBullet(scene, camera, enemies) {
-  for (let i = 0; i < ballArray.length; i++) {
+  // É mais seguro iterar de trás para frente ao remover itens de um array
+  for (let i = ballArray.length - 1; i >= 0; i--) {
     const bullet = ballArray[i];
     const ball = bullet.ball; 
     if (bullet.isShooting) {
-      const distanceToTarget = ball.position.distanceTo(bullet.targetPoint);
+      
+      // 1. Mova o projétil
+      bullet.ball.position.add(bullet.velocity);
+      
+      // 2. Verifique a colisão
+      const hasCollided = handleProjectileCollision(bullet, enemies);
 
+      if (hasCollided) {
+        removeBullet(scene, bullet, ball, ballArray, i, camera);
+        continue; 
+      }
+
+      // 3. Verifique se o projétil atingiu seu alvo ou distância máxima
+      const distanceToTarget = ball.position.distanceTo(bullet.targetPoint);
       if (distanceToTarget <= BALL_SPEED) {
         removeBullet(scene, bullet, ball, ballArray, i, camera);
-        continue; // Skip further processing for this bullet
+        continue;
       }
-
-      bullet.ball.position.add(bullet.velocity);
-      if (!enemies || !Array.isArray(enemies.cacodemons) || !Array.isArray(enemies.skulls)) {
-        console.log("No enemies to move or enemies data is not in the expected format.");
-        console.log(enemies);
-        return;
-      }
-      const bulletBox = new THREE.Box3().setFromObject(bullet.ball);
       
-      for (const enemy of enemies.cacodemons) {
-        const enemyBox = new THREE.Box3().setFromObject(enemy.obj.children[0]);
-        if (bulletBox.intersectsBox(enemyBox)) {
-          console.log("Hit an enemy!");
-          removeBullet(scene, bullet, ball, ballArray, i, camera);
-          damageCacodemon(enemies.cacodemons, enemy, 10);
-          continue;
-        }
-      }
-      for (const enemy of enemies.skulls) {
-        const enemyBox = new THREE.Box3().setFromObject(enemy.obj.children[0]);
-        if (bulletBox.intersectsBox(enemyBox)) {
-          console.log("Hit an enemy!");
-          removeBullet(scene, bullet, ball, ballArray, i, camera);
-          damageSkull(enemies.skulls, enemy, 10);
-          continue;
-        }
-      }
-
-      const enemy = enemies.painElementals[0];
-      if (enemy) {
-        const enemyBox = new THREE.Box3().setFromObject(enemy.obj.children[0]);
-        if (bulletBox.intersectsBox(enemyBox)) {
-          console.log("Hit an enemy!");
-          removeBullet(scene, bullet, ball, ballArray, i, camera);
-          damagePainElemental(enemies.painElementals, enemy, 10);
-          continue;
-        }
-      }
-
     }
   }
-
 }
 
 // CRIA GEOMETRIA DA BALA, ESCONDE NA FRENTE DA ARMA
@@ -162,36 +138,72 @@ function initBullet(camera) {
   camera.add(ball);
 }
 
+function animateRocketShot() {
+    if (!rocketLauncherTexture) return;
+
+    rocketLauncherTexture.offset.x = 1 / 3;
+
+    animationTimer = setTimeout(() => {
+        if (rocketLauncherTexture) {
+            rocketLauncherTexture.offset.x = 2 / 3;
+        }
+    }, 100);
+
+    animationTimer = setTimeout(() => {
+        if (rocketLauncherTexture) {
+
+            rocketLauncherTexture.offset.x = 0 / 3; 
+        }
+    }, 200);
+}
+
 // CRIA O CILINDRO (ARMA), ADICIONA A CAMERA NA CENA E A ARMA NA CAMERA
 // E INICIALIZA A PRIMEIRA BALA
 export function initGun(camera) {
-  if (gun) {
-      removeGun(camera);
-  }
-  const cylinderGeometry = new THREE.CylinderGeometry(
-    GUN_SIZE.radius,
-    GUN_SIZE.radius,
-    GUN_SIZE.height,
-    GUN_SIZE.segments
-  );
-  const gunMaterial = new THREE.MeshLambertMaterial({color:GUN_COLOR});
+    if (rocketLauncherSprite) {
+        removeGun(camera);
+    }
 
-  gun = new THREE.Mesh(cylinderGeometry, gunMaterial);
+    const rocketLauncherMaterial = new THREE.SpriteMaterial({
+        transparent: true
+    });
 
-  const GUN_Y_OFFSET = -0.3;
-  const GUN_AIMS_FORWARD = THREE.MathUtils.degToRad(-90);
+    rocketLauncherTexture = new THREE.TextureLoader().load(
+        ROCKET_LAUNCHER_LOCATION, 
+        (texture) => { 
+            
+            texture.repeat.set(1 / 3, 1);
+            texture.wrapS = THREE.ClampToEdgeWrapping; // Prevents wrapping
 
-  gun.position.set(0.0, GUN_Y_OFFSET, 0.0);
-  gun.rotateX(GUN_AIMS_FORWARD);
+            rocketLauncherMaterial.map = texture;
 
-  camera.add(gun);
-  initBullet(camera);
+            rocketLauncherMaterial.needsUpdate = true; 
+
+            rocketLauncherSprite = new THREE.Sprite(rocketLauncherMaterial);
+            const aspectRatio = (261/3) / 135; 
+            rocketLauncherSprite.scale.set(aspectRatio * 0.9, 0.9, 1);
+            rocketLauncherSprite.position.set(0, -0.35, -1.2);
+
+            rocketLauncherSprite.name = 'rocketLauncher';
+            camera.add(rocketLauncherSprite);
+            rocketLauncherSprite.raycast = () => {};
+        }
+    );
+
+    initBullet(camera);
 }
 
 export function removeGun(camera) {
-    if (gun) {
-        camera.remove(gun);
-        gun = null;
+    const sprite = camera.getObjectByName('rocketLauncher');
+    if (sprite) {
+        camera.remove(sprite);
+        rocketLauncherSprite = null;
+        rocketLauncherTexture = null;
+    }
+
+    if (animationTimer) {
+        clearTimeout(animationTimer);
+        animationTimer = null;
     }
 
     for (let i = ballArray.length - 1; i >= 0; i--) {
@@ -207,6 +219,6 @@ export function removeGun(camera) {
     currentBulletIndex = 0;
     lastShotTime = 0;
     
-    console.log("Gun and all bullets removed.");
+    console.log("Rocket launcher and all bullets removed.");
 }
 
