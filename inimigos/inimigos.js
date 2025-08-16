@@ -292,14 +292,13 @@ function initSkull(){
 export function getCollisionObjects(scenario) {
     const LEFTMOST_BOX = scenario.objects[0];
     const UPPER_MIDDLE_BOX = scenario.objects[1];
-    const RIGHTMOST_BOX = scenario.objects[2];
-    const LOWER_MIDDLE_BOX = scenario.objects[3];
-    const NORTH_WALL = scenario.objects[4];
-    const SOUTH_WALL = scenario.objects[5];
-    const LEFT_WALL = scenario.objects[6];
-    const RIGHT_WALL = scenario.objects[7];
+    
+    const NORTH_WALL = scenario.objects[2];
+    const SOUTH_WALL = scenario.objects[4];
+    const LEFT_WALL = scenario.objects[3];
+    const RIGHT_WALL = scenario.objects[5];
     const PLANE = scenario.parent.children[0];
-    const collisionObjects = [PLANE, LEFTMOST_BOX, UPPER_MIDDLE_BOX, RIGHTMOST_BOX, LOWER_MIDDLE_BOX, NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL];
+    const collisionObjects = [PLANE, LEFTMOST_BOX, UPPER_MIDDLE_BOX, NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL];
     return collisionObjects;
 }
 
