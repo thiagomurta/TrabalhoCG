@@ -4,6 +4,50 @@ import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js'
 
 import * as LOOK from './lookers.js'
 
+export function takeKey(caster, object, hasKey, scene, keyMesh){
+    // let intersects = caster.intersectObject(object);
+
+    if(object.children.includes(keyMesh)){
+        if (!hasKey.value) {
+            console.log("Pegou a chave!");
+
+            hasKey.value = true;
+        }
+    }
+}
+
+export function dropKey(caster, object, hasKey, condition, keyMesh){
+
+    if (!hasKey.value) {
+        console.log("Dropou a chave!");
+        
+        hasKey.value = true;
+        
+        // adiciona chave na caixa de drop
+        // if (object && keyMesh) {
+            //     object.add(keyMesh);
+            //     keyMesh.position.set(0, 1, 0);
+            // }
+    }
+}
+
+
+export function intersectionBoxs(caster, objects, controls, distance)
+{
+    for(let i = 0; i < objects.length; i++)
+    {
+        let intersects=caster.intersectObject(objects[i]);
+        if(intersects.length > 0)
+        {
+            let hitNormal = intersects[0].face.normal;
+            fixDir(hitNormal, caster.ray.direction);
+            controls.camera.position.addScaledVector(caster.ray.direction, distance);
+            return true;
+        }
+    }
+    return false;
+}
+
 export function intersection(caster, objects, enemies, controls, distance)
 {
     const ray = caster.ray;

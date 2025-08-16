@@ -24,8 +24,6 @@ import {OBJLoader} from '../build/jsm/loaders/OBJLoader.js';
 import {MTLLoader} from '../build/jsm/loaders/MTLLoader.js';
 import { Plane } from './plane.js';
 
-import { CubeTextureLoaderSingleFile } from '../libs/util/cubeTextureLoaderSingleFile.js';
-
 import { instancePlayer, createPlayerHpBar, updatePlayerHpBar } from './player.js';
 
 
@@ -42,14 +40,7 @@ var stats = new Stats();
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0.0, 0.0, 0.0);
 camera.lookAt(new THREE.Vector3(-1.5, 2.0, -100.0));
-const textureLoader = new THREE.TextureLoader();
-let textureEquirec = textureLoader.load( './T3_assets/skybox.jpg' );
-    textureEquirec.mapping = THREE.EquirectangularReflectionMapping; // Reflection as default
-    textureEquirec.colorSpace = THREE.SRGBColorSpace;
 
-
-// Set scene's background as a equirectangular map
-scene.background = textureEquirec;
 //initDefaultBasicLight(scene); // Create a basic light to illuminate the scene
 
 const crosshair = document.querySelector('.crosshair');
@@ -66,7 +57,7 @@ let playerHasEnteredSecondArea = {value:false,name:"playerHasEnteredSecondArea"}
 
 // ---------------------Ambiente---------------------
 
-let plane = TF.createGroundPlaneXZCust(500, 500, 10, 10, TF.planeTex(["../assets/textures/intertravado.jpg"]));
+let plane = TF.createGroundPlaneXZCust(500, 500, 10, 10, TF.planeTex(["../assets/textures/asfalto.jpg"]));
  scene.add(plane);
  plane.receiveShadow=true;
    // center.plane.translateY(+0.15);
@@ -82,7 +73,7 @@ teto.rotation.x = Math.PI / 2;
 teto.position.set(0,40,0);
 teto.visible = false;
 scene.add(teto);
-let gateMove={value:true};
+let gateMove={value:false};
 
 let player = instancePlayer();
 scene.add(player);
@@ -132,32 +123,32 @@ controls.addEventListener('unlock', function () {
 });
 
 // ---------------------Iluminação---------------------
-let positionLight = new THREE.Vector3(-400, 400, -400);
+let positionLight = new THREE.Vector3(-200, 400, -200);
 let positionLight2 = new THREE.Vector3(200, 400, 200);
 
-let lightColor = "rgb(112, 112, 111)";
+let lightColor = "rgb(255,255,255)";
 
-let dirLight = new THREE.DirectionalLight(lightColor, 10);
-//let dirLight2 = new THREE.DirectionalLight(lightColor, 0.);
+let dirLight = new THREE.DirectionalLight(lightColor, 2);
+let dirLight2 = new THREE.DirectionalLight(lightColor, 1);
 
 dirLight.position.copy(positionLight);
-//dirLight2.position.copy(positionLight2);
+dirLight2.position.copy(positionLight2);
 dirLight.castShadow = true;
 
-dirLight.shadow.mapSize.width = 2048;
-dirLight.shadow.mapSize.height = 2048;
+dirLight.shadow.mapSize.width = 1024;
+dirLight.shadow.mapSize.height = 1024;
 dirLight.shadow.camera.left = -300;
 dirLight.shadow.camera.right = 300;
 dirLight.shadow.camera.top = 300;
 dirLight.shadow.camera.bottom = -300;
-dirLight.shadow.camera.near = 0.1;
+dirLight.shadow.camera.near = 1;
 dirLight.shadow.camera.far = 1000;
 
 
 dirLight.target.position.set(0, 0, 5);
-//dirLight2.target.position.set(0, 0, -5);
+dirLight2.target.position.set(0, 0, -5);
 scene.add(dirLight.target);
-//scene.add(dirLight2.target);
+scene.add(dirLight2.target);
 
 const ambiente = new THREE.AmbientLight(lightColor, 0.5);
 // ---------------------Iluminação Hangar---------------------
@@ -180,7 +171,7 @@ scene.add(dirLightHangar);
 scene.add(ambiente);
 
 scene.add(dirLight);
-//scene.add(dirLight2);
+scene.add(dirLight2);
 
 // ---------------------Controles de teclado---------------------
 
@@ -192,61 +183,166 @@ window.addEventListener('keyup', (event) => movementControls(event.keyCode, fals
 scene.add(controls.getObject());
 // ---------------------Criando a Mesh que vai ser usada---------------------
 
+let materialBox = new THREE.MeshLambertMaterial({color: "rgb(86, 202, 19)"});
+let boxTakeKeyA1 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox);
+boxTakeKeyA1.translateX(-10);//-130
+boxTakeKeyA1.translateY(0);//5
+boxTakeKeyA1.translateZ(0);//-160
+
+let material4 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
+let boxDropKeyA1 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), material4);
+boxDropKeyA1.translateX(20);
+boxDropKeyA1.translateY(0.75);
+boxDropKeyA1.translateZ(-98);
+
+let materialBox3 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
+let boxTakeKeyA2 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox3);
+boxTakeKeyA2.translateX(0);
+boxTakeKeyA2.translateY(0);//5
+boxTakeKeyA2.translateZ(-90);//-160
+
+let materialBox4 = new THREE.MeshLambertMaterial({color: "rgb(214, 83, 8)"});
+let boxDropKeyA2 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox4);
+boxDropKeyA2.translateX(130);
+boxDropKeyA2.translateY(0.75);
+boxDropKeyA2.translateZ(-98);
+
+let materialBox5 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
+let boxTakeKeyA3 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox5);
+boxTakeKeyA3.translateX(0);
+boxTakeKeyA3.translateY(0);//5
+boxTakeKeyA3.translateZ(-90);//-160
+
+let materialBox6 = new THREE.MeshLambertMaterial({color: "rgb(214, 83, 8)"});
+let boxDropKeyA3 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox6);
+boxDropKeyA3.translateX(130);
+boxDropKeyA3.translateY(0.75);
+boxDropKeyA3.translateZ(-98);
+
+scene.add(boxTakeKeyA1);
+scene.add(boxDropKeyA1);
+
+scene.add(boxTakeKeyA2);
+scene.add(boxDropKeyA2);
+
+scene.add(boxTakeKeyA3);
+scene.add(boxDropKeyA3);
+
+const BOX = [boxTakeKeyA1, boxTakeKeyA2, boxTakeKeyA3, boxDropKeyA1, boxDropKeyA2, boxDropKeyA3];
+const BOX_KEYS = BOX.slice(0, 3);//[boxTakeKeyA1, boxTakeKeyA2/*, boxTakeKeyA3*/];
+const BOX_DROP_KEYS = BOX.slice(0);//[boxDropKeyA1, boxDropKeyA2/*, boxDropKeyA3*/];
+
+
 let chave1 = CHAVE.CHAVE('rgb(255, 0, 0)');
 let chave2 = CHAVE.CHAVE('rgb(255, 255, 0)');
 let chave3 = CHAVE.CHAVE('rgb(0, 0, 255)');
-let take_key1 = false;
-let take_key2 = false;
-let drop_key1 = false;
-// chave2.translateX(2);
-// scene.add(chave1);
-// scene.add(chave2);
-scene.add(scenario.objects[11]);
+
+let take_key1 = {value: false};
+let take_key1_complete = {value: false};
+
+let take_key2 = {value: false};
+let take_key2_complete = {value: false};
+
+let take_key3 = {value: false};
+let take_key3_complete = {value: false};
+
+let drop_key1 = {value: false};
+let drop_key1_complete = {value: false};
+
+let drop_key2 = {value: false};
+let drop_key2_complete = {value: false};
+
+let drop_key3 = {value: false};
+let drop_key3_complete = {value: false};
+
+let condition_key1 = {value: true};
+let condition_key2 = {value: false};
+let condition_key3 = {value:false};
+
+let condition_take_key1 = {value: true};
+let condition_take_key2 = {value: false};
+let condition_take_key3 = {value:false};
 
 
 let enemies = await loadEnemies(scene);
 
-const posFinalBox1 = scenario.objects[9].position.y + 1.5;
-const posFinalBox2 = scenario.objects[10].position.y + 1.5;
+const posFinalBox1 = boxTakeKeyA1.position.y + 1;//1.5
+const posFinalBox2 = boxTakeKeyA2.position.y + 1.5;
+const posFinalBox3 = boxTakeKeyA3.position.y + 1.5;
 function operationKeys(){
     
-    if (take_key1){
-        scene.remove(chave1);
+    if (take_key1.value && !take_key1_complete.value){
+        boxTakeKeyA1.remove(chave1);
+        take_key1.value = false;
+        take_key1_complete.value = true;
+        // scene.remove(boxTakeKeyA1);
     }
-    if (drop_key1){
-        scenario.objects[8].add(chave1);
+    if (drop_key1.value && !drop_key1_complete.value && !take_key1.value){
+        console.log("dropa a chave");
+        take_key1.value = false;
+        boxDropKeyA1.add(chave1);
+        gateMove.value = true;
+        drop_key1_complete.value = true;
+        condition_key2.value = true;
     }
-    if (take_key2){
-        scene.remove(chave2);
-    } 
+    if (take_key2.value && !take_key2_complete.value){
+        boxTakeKeyA2.remove(chave2);
+        take_key2_complete.value = true;
+        // scene.remove(boxTakeKeyA2);
+    }
+    if (drop_key2.value && !drop_key2_complete.value && !condition_key2.value){
+        console.log("dropa a chave 2");
+        take_key2.value = false;
+        boxDropKeyA2.add(chave2);
+        drop_key2_complete.value = true;
+        condition_key3.value = true;
+    }
+    if (take_key3.value && !take_key3_complete.value){
+        boxTakeKeyA3.remove(chave2);
+        take_key3_complete.value = true;
+        // scene.remove(boxTakeKeyA2);
+        BOX_KEYS.shift();
+    }
+    if (drop_key3.value && !drop_key3_complete.value && !condition_key3.value){
+        console.log("dropa a chave 2");
+        take_key3.value = false;
+        boxDropKeyA3.add(chave3);
+        drop_key3_complete.value = true;
+    }
     // Adicionar a chave após a eliminação das skulls
-    if (enemies.skulls.length === 0){
-        console.log("matou as caveiras");
-        scenario.objects[9].add(chave1);
-        if(scenario.objects[9].position.y < posFinalBox1){
-            scenario.objects[9].position.y += 0.1;
+    if (/*enemies.skulls.length === 0 &&*/ !take_key1_complete.value){
+        // console.log("chave tá lá");
+        boxTakeKeyA1.add(chave1);
+        if(boxTakeKeyA1.position.y < posFinalBox1){
+            boxTakeKeyA1.position.y += 0.1;
         }
     }
     // Adicionar a chave após a eliminação dos cacodemons
-    if (enemies.cacodemons.length === 0){
-        scenario.objects[10].add(chave2);
-        if(scenario.objects[10].position.y < posFinalBox2){
-            // if(scenario.objects[10].position.y < scenario.objects[0].height){
-                scenario.objects[10].position.y += 0.1;
-            // }
+    if (/*enemies.cacodemons.length === 0 &&*/ !take_key2_complete.value && take_key1_complete.value){
+        boxTakeKeyA2.add(chave2);
+        if(boxTakeKeyA2.position.y < posFinalBox2){
+            boxTakeKeyA2.position.y += 0.1;
         }
+        
+    }
+    if (/*enemies.soldiers.length === 0 &&*/ !take_key3_complete.value && take_key2_complete.value){
+        boxTakeKeyA3.add(chave3);
+        if(boxTakeKeyA3.position.y < posFinalBox3){
+            boxTakeKeyA3.position.y += 0.1;
+        }
+        
     }
 }
 
 // ------------ ASSET DO AVIÃO --------------
-
+/*
 async function init(){
     const planeAsset = await Plane();
     scene.add(planeAsset);
     scene.add(boundingBoxPlane);
 }
 init();
-
+*/
 
 // ------------ CONTROLES DO TECLADO --------------
 
@@ -350,14 +446,57 @@ function moveAnimate(delta) {
     if (moveForward) {
         horizontalCaster.ray.direction.copy(LOOK.Foward(controls)).normalize();
         const colision = INTER.intersection(horizontalCaster,scenario.objects, enemies, controls,speed*delta);
-        if(!colision)
+        const colisionKeys = INTER.intersectionBoxs(horizontalCaster, BOX_KEYS, controls, speed*delta);
+        const colisionBoxDropKeys = INTER.intersectionBoxs(horizontalCaster, BOX_DROP_KEYS, controls, speed*delta);
+        if(colisionKeys){
+            if(condition_take_key1.value){
+                INTER.takeKey(horizontalCaster, boxTakeKeyA1, take_key1, scene, chave1);
+                condition_take_key2.value = true;
+            }
+            if(condition_take_key2.value){
+                console.log("bateu na caixa que pega a chave 2");
+                INTER.takeKey(horizontalCaster, boxTakeKeyA2, take_key2, scene, chave2);
+                condition_take_key3.value = true;
+            }
+        }
+        if(colisionBoxDropKeys){
+            console.log("bateu na caixa que recebe chave");
+            if(condition_key1.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA1, drop_key1, scene, chave1);
+            if(condition_key2.value && drop_key2.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
+            if(condition_key3.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
+        }
+        if(!colision && !colisionKeys && !colisionBoxDropKeys)
             controls.moveForward(currentSpeed * delta);
 
     }
     else if (moveBackward) {
         horizontalCaster.ray.direction.copy(LOOK.Backward(controls)).normalize();
         const colision = INTER.intersection(horizontalCaster,scenario.objects, enemies, controls,speed*delta);
-        if(!colision)
+        const colisionKeys = INTER.intersectionBoxs(horizontalCaster, BOX_KEYS, controls, speed*delta);
+        const colisionBoxDropKeys = INTER.intersectionBoxs(horizontalCaster, BOX_DROP_KEYS, controls, speed*delta);
+        if(colisionKeys){
+            if(condition_take_key1.value){
+                INTER.takeKey(horizontalCaster, boxTakeKeyA1, take_key1, scene, chave1);
+                condition_take_key2.value = true;
+            }
+            if(condition_take_key2.value){
+                INTER.takeKey(horizontalCaster, boxTakeKeyA2, take_key2, scene, chave2);
+                condition_take_key3.value = true;
+            }
+        }
+        if(colisionBoxDropKeys){
+            console.log("bateu na caixa que recebe chave");
+            if(condition_key1.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA1, drop_key1, scene, chave1);
+            if(condition_key2.value && drop_key2.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
+            if(condition_key3.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
+        }
+        if(!colision && !colisionKeys && !colisionBoxDropKeys)
             controls.moveForward(currentSpeed * -1 * delta);
     }
 
@@ -365,27 +504,56 @@ function moveAnimate(delta) {
         
         horizontalCaster.ray.direction.copy(LOOK.Right(controls)).normalize();
         const colision = INTER.intersection(horizontalCaster,scenario.objects, enemies, controls,speed*delta);
-        if(!colision)
+        const colisionKeys = INTER.intersectionBoxs(horizontalCaster, BOX_KEYS, controls, speed*delta);
+        const colisionBoxDropKeys = INTER.intersectionBoxs(horizontalCaster, BOX_DROP_KEYS, controls, speed*delta);
+        if(colisionKeys){
+            if(condition_take_key1.value){
+                INTER.takeKey(horizontalCaster, boxTakeKeyA1, take_key1, scene, chave1);
+                condition_take_key3.value = true;
+            }
+            if(condition_take_key2.value){
+                INTER.takeKey(horizontalCaster, boxTakeKeyA2, take_key2, scene, chave2);
+                condition_take_key3.value = true;
+            }
+        }
+        if(colisionBoxDropKeys){
+            console.log("bateu na caixa que recebe chave");
+            if(condition_key1.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA1, drop_key1, scene, chave1);
+            if(condition_key2.value && drop_key2.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
+            if(condition_key3.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
+        }
+        if(!colision && !colisionKeys && !colisionBoxDropKeys)
             controls.moveRight(currentSpeed * delta);
     }
     else if (moveLeft) {
         horizontalCaster.ray.direction.copy(LOOK.Left(controls)).normalize();
         const colision = INTER.intersection(horizontalCaster,scenario.objects, enemies, controls,speed*delta);
-            if(!colision)
-        controls.moveRight(currentSpeed * -1 * delta);
-    }
-
-    // if (isIntersectingRamp) {
-    //    // player.position.y += speed * delta;
-    // }
-
-    // if ((!isIntersectingRamp && !isIntersectingPlane && !isIntersectingGround)) {
-    //     player.position.y -= speed * delta;
-    //     console.log("aqui");
-    // }
-
-    if (isIntersectingWall) {
-        console.log("bateu na parede");
+        const colisionKeys = INTER.intersectionBoxs(horizontalCaster, BOX_KEYS, controls, speed*delta);
+        const colisionBoxDropKeys = INTER.intersectionBoxs(horizontalCaster, BOX_DROP_KEYS, controls, speed*delta);
+        if(colisionKeys){
+            if(condition_take_key1.value){
+                INTER.takeKey(horizontalCaster, boxTakeKeyA1, take_key1, scene, chave1);
+                condition_take_key2.value = true;
+            }
+            if(condition_take_key2.value){
+                INTER.takeKey(horizontalCaster, boxTakeKeyA2, take_key2, scene, chave2);
+                condition_take_key3.value = true;
+            }
+        }
+        if(colisionBoxDropKeys){
+            console.log("bateu na caixa que recebe chave");
+            if(condition_key1.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA1, drop_key1, scene, chave1);
+            if(condition_key2.value && drop_key2.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
+            if(condition_key3.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
+        }
+        if(!colision && !colisionKeys && !colisionBoxDropKeys)
+            controls.moveRight(currentSpeed * -1 * delta);
     }
 }
 

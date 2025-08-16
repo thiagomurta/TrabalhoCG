@@ -34,10 +34,10 @@ export function HANGAR(raio1, raio2, altura){
 
 
     cylinderMesh.position.set(0, 0, 0);
-    cylinderMesh2.position.set(0, 0, 1);
+    cylinderMesh2.position.set(0, 0, 0);
     cubeMesh.position.set(raio1, 0, 0);
     cubeMesh2.position.set(-raio1, 0, 0);
-    cubeMesh3.position.set(0, 0, -raio1);
+    cubeMesh3.position.set(0, 0, -raio1+thickness/2);
     cubeMesh4.position.set(raio1-(raio1/4)+(thickness/2), 0, raio1);
     cubeMesh5.position.set(-raio1+(raio1/4)-(thickness/2), 0, raio1);
     cubeMesh6.position.set(0, 0, raio1+thickness);
@@ -60,17 +60,25 @@ export function HANGAR(raio1, raio2, altura){
     cubeMesh6.updateMatrix();
 
     // parede cilíndrica
-    let cylinderWall1 = new THREE.CylinderGeometry(raio1, raio1, 1, 32, true, undefined, Math.PI, Math.PI);
+    let cylinderWall1 = new THREE.CylinderGeometry(raio2, raio2, thickness/2, 32, true, undefined, Math.PI, Math.PI);
     let cylinderWall1Mesh = new THREE.Mesh(cylinderWall1, cylinderMaterial);
+    let cylinderWall2 = new THREE.CylinderGeometry(raio2, raio2, thickness/2, 32, true, undefined, Math.PI, Math.PI);
+    let cylinderWall2Mesh = new THREE.Mesh(cylinderWall2, cylinderMaterial);
 
     cylinderWall1Mesh.rotateX(THREE.MathUtils.degToRad(90));
     cylinderWall1Mesh.rotateY(THREE.MathUtils.degToRad(90));
     cylinderWall1Mesh.rotateZ(THREE.MathUtils.degToRad(180));
+    cylinderWall2Mesh.rotateX(THREE.MathUtils.degToRad(90));
+    cylinderWall2Mesh.rotateY(THREE.MathUtils.degToRad(90));
+    cylinderWall2Mesh.rotateZ(THREE.MathUtils.degToRad(180));
 
     cylinderWall1Mesh.position.set(0, altura/2, raio1);
+    cylinderWall2Mesh.position.set(0, altura/2, -raio1);
 
     cylinderWall1Mesh.matrixAutoUpdate = false;
     cylinderWall1Mesh.updateMatrix();
+    cylinderWall2Mesh.matrixAutoUpdate = false;
+    cylinderWall2Mesh.updateMatrix();
 
 
     let cylinderCSG  = CSG.fromMesh(cylinderMesh); // cilindro maior
@@ -80,10 +88,11 @@ export function HANGAR(raio1, raio2, altura){
     let tetoFinal = CSG.toMesh(cylinderM, new THREE.Matrix4());
     tetoFinal.material = new THREE.MeshLambertMaterial( {color:'rgba(156, 52, 52, 1)'});
     tetoFinal.material = TF.setMaterial('./T3_assets/elevador.jpg', 4, 4);
+    tetoFinal.translateY(thickness/2);
     centro.teto = tetoFinal;
     centro.add(centro.teto);
     centro.teto.translateY(altura/2-(thickness/2));
-    centro.paredes = [cubeMesh, cubeMesh2, cubeMesh3, cylinderWall1Mesh, cubeMesh4, cubeMesh5, cubeMesh6/*cylinderDoor2Mesh*/];
+    centro.paredes = [cubeMesh, cubeMesh2, cubeMesh3, cylinderWall1Mesh, cylinderWall2Mesh, cubeMesh4, cubeMesh5, cubeMesh6/*cylinderDoor2Mesh*/];
     for (let i = 0; i < centro.paredes.length; i++){
         centro.add(centro.paredes[i]);
     }

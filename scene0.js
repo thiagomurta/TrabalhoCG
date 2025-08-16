@@ -31,8 +31,8 @@ export function Scene0()
     let bd0=SL.genStairedLevel(300,6,100,33,10,16, ["./T3_assets/romanWall.jpg"],0,["./T3_assets/metalBoxSide.jpeg"]);
     bd0.rotateYC(Math.PI);
     
-    let material4 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
-    let box = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), material4);
+    // let material4 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
+    // let boxDropKeyA1 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), material4);
         
     let material5 = new THREE.MeshLambertMaterial({color: "rgb(71, 68, 68)"})
     let wallU=new THREE.Mesh(new THREE.BoxGeometry(500,40,0.1),material5);
@@ -78,31 +78,38 @@ export function Scene0()
     wallR.translateX(+250.05);
     wallR.translateY(20);
 
-    center.add(box);
-    box.translateZ(-98);
-    box.translateX(20);
-    box.translateY(0.75);
-    let materialBox = new THREE.MeshLambertMaterial({color: "rgb(86, 202, 19)"});
-    let box2 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox);
-    center.add(box2);
-    box2.translateX(-130);
-    box2.translateY(5);
-    box2.translateZ(-160);
+    // center.add(boxDropKeyA1);
+    // boxDropKeyA1.translateZ(-98);
+    // boxDropKeyA1.translateX(20);
+    // boxDropKeyA1.translateY(0.75);
+    // let materialBox = new THREE.MeshLambertMaterial({color: "rgb(86, 202, 19)"});
+    // let boxTakeKeyA1 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox);
+    // center.add(boxTakeKeyA1);
+    // boxTakeKeyA1.translateX(-130);
+    // boxTakeKeyA1.translateY(5);
+    // boxTakeKeyA1.translateZ(-160);
 
-    let materialBox3 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
-    let box3 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox3);
-    center.add(box3);
-    box3.translateX(0);
-    box3.translateY(6.5);
-    box3.translateZ(-160);
+    // let materialBox3 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
+    // let boxTakeKeyA2 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox3);
+    // center.add(boxTakeKeyA2);
+    // boxTakeKeyA2.translateX(0);
+    // boxTakeKeyA2.translateY(6.5);
+    // boxTakeKeyA2.translateZ(-160);
+
+    // let materialBox4 = new THREE.MeshLambertMaterial({color: "rgb(214, 83, 8)"});
+    // let boxTakeKeyA3 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox4);
+    // center.add(boxTakeKeyA3);
+    // boxTakeKeyA3.translateX(130);
+    // boxTakeKeyA3.translateY(0.75);
+    // boxTakeKeyA3.translateZ(-98);
 
     let materialBoundingBox = new THREE.MeshLambertMaterial();
     let boundingBoxPlane = new THREE.Mesh(new THREE.BoxGeometry(12,10,18), materialBoundingBox);
     boundingBoxPlane.visible = false;
 
-    let hangar = HANGAR.HANGAR(20, 19, 12);
-
-    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL,box, box2, box3, /*hangar,*/ boundingBoxPlane];
+    let hangar = HANGAR.HANGAR(40, 38, 20);
+                //  0    1   2   3    4     5     6     7        8              9            10           11              12 
+    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL/*,boxDropKeyA1, boxTakeKeyA1, boxTakeKeyA2, boxTakeKeyA3, boundingBoxPlane*/];
     center.add(hangar);
     
     
