@@ -159,7 +159,7 @@ dirLight.target.position.set(0, 0, 5);
 scene.add(dirLight.target);
 //scene.add(dirLight2.target);
 
-const ambiente = new THREE.AmbientLight(lightColor, 0.15);
+const ambiente = new THREE.AmbientLight(lightColor, 0.5);
 // ---------------------Iluminação Hangar---------------------
 let lightPositionHangar = new THREE.Vector3(0, 3, 0);
 let lightColorHangar = 'rgb(255, 255, 255)'

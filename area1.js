@@ -9,18 +9,18 @@ export function area1(staired_level,material)
   let cylinderGeo=new THREE.CylinderGeometry( radius, radius, height, 35 );
   //let numColLine=20;
   //let numDispLine=numColLine-1;
-  let displacement=(staired_level.vaultedBox.width - 20*2*radius)/19;
+  let displacement=(staired_level.vaultedBox.width - 20*2*radius*1.3)/19;
   let stairXStart=+(staired_level.vaultedBox.width*staired_level.vaultedBox.stair_displacement)-staired_level.vaultedBox.stair_w/2;
   let stairXFinish=stairXStart+staired_level.vaultedBox.stair_w;
   for(let i=0;i<76;i++)
   {
-    let collumn = new THREE.Mesh(cylinderGeo,TF.setMaterial("./T3_assets/roman_pila.jpg",2,5));
+    let collumn = new THREE.Mesh(cylinderGeo,TF.cylDispTexture('./T3_assets/roman_pila.jpg','./T3_assets/disp_map_true.jpg',height,radius,radius,35));
     staired_level.vaultedBox.add(collumn);
     collumn.translateY(staired_level.vaultedBox.height + height/2);
     
     if(i<20) // left line
     {
-        collumn.translateX(-(staired_level.vaultedBox.width/2)+radius);
+        collumn.translateX(-(staired_level.vaultedBox.width/2)+radius+radius*0.3);
         collumn.translateZ((staired_level.vaultedBox.length/2));
         collumn.translateZ(-(2*radius+displacement)*i-radius);
         
@@ -28,20 +28,20 @@ export function area1(staired_level,material)
     }
     if(i>19 && i<40) // right line
     {
-        collumn.translateX(+(staired_level.vaultedBox.width/2)-radius);
+        collumn.translateX(+(staired_level.vaultedBox.width/2)-radius-radius*0.3);
         collumn.translateZ((staired_level.vaultedBox.length/2));
         collumn.translateZ(-(2*radius+displacement)*(i-20)-radius);
     }
     if(i>=40 && i<58)// upper line
     {
-        collumn.translateZ(-staired_level.vaultedBox.width/2 + radius);
+        collumn.translateZ(-staired_level.vaultedBox.width/2 + radius+radius*0.3);
         collumn.translateX(-(staired_level.vaultedBox.width/2)+radius);
         collumn.translateX(+(2*radius+displacement)*(i-40+1));
         
     }
     if(i>=58)
     {
-        collumn.translateZ(+staired_level.vaultedBox.width/2 - radius);
+        collumn.translateZ(+staired_level.vaultedBox.width/2 - radius -radius*0.3);
         collumn.translateX(-(staired_level.vaultedBox.width/2)+radius);
         collumn.translateX(+(2*radius+displacement)*(i-58+1));
        
