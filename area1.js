@@ -55,7 +55,7 @@ export function area1(staired_level,material)
         let cylinderGeo1=new THREE.CylinderGeometry( radius+0.4, radius+0.4, height, 35 );
         let collumnCol = new THREE.Mesh(cylinderGeo1,material);
         collumn.castShadow=true;
-        collumn.recieveShadow=true;
+        collumn.receiveShadow=true;
         collumn.add(collumnCol);
         collumnCol.visible=false;
         staired_level.vaultedBox.meshes.push(collumnCol);

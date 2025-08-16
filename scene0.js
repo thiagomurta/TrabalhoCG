@@ -19,7 +19,7 @@ export function Scene0()
     A1.area1(bu0,material0);
     
     let material1 = new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"});
-    let bu1_paths=["./T3_assets/metalBoxSide.jpeg","./T3_assets/metalBoxSide.jpeg","./T3_assets/mb.jpg","./T3_assets/mb.jpg","./T3_assets/metalBoxSide.jpeg","./T3_assets/metalBoxSide.jpeg"]
+    let bu1_paths=["./T3_assets/metalBoxSide.jpeg","./T3_assets/metalBoxSide.jpeg","./T3_assets/metalBoxSide.jpeg","./T3_assets/mb.jpg","./T3_assets/metalBoxSide.jpeg","./T3_assets/metalBoxSide.jpeg"]
     let bu1=SL.genStairedLevel(100,6,100,33,10,16,bu1_paths,0,["./T3_assets/metalBoxSide.jpeg"]);
     A2.area2(bu1,["./T3_assets/mb_pillar.jpg"]);
     EL.elevador(bu1,['./T3_assets/elevador.jpg']);

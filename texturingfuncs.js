@@ -45,14 +45,14 @@ export function boxMultipleTexture(path,width,height,length)
 }
 export function planeTex(path)
 {
-    var material=setMaterial(path[0],10,10,);
+    var material=setMaterial(path[0],50,50,);
     console.log(material)
     return material;
 }
-export function setMaterial(file, repeatU = 1, repeatV = 1, color ){
+export function setMaterial(file, repeatU = 1, repeatV = 1, color="rgb(64,64,64)" ){
 
     let loader = new THREE.TextureLoader();
-    let mat = new THREE.MeshBasicMaterial({ map: loader.load(file)});
+    let mat = new THREE.MeshLambertMaterial({ map: loader.load(file)});
       mat.map.colorSpace = THREE.SRGBColorSpace;
    mat.map.wrapS = mat.map.wrapT = THREE.RepeatWrapping;
    mat.map.minFilter = mat.map.magFilter = THREE.LinearFilter;
