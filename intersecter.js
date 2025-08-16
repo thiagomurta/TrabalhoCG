@@ -62,7 +62,7 @@ export function intersection(caster, objects, enemies, controls, distance)
 
     for(let i =0;i<objects.length;i++)
     {
-        if(i<=3)
+        if(i<1)
         {
             for(let j=0;j<objects[i].vaultedBox.meshes.length;j++)
             {
@@ -105,7 +105,7 @@ export function fall(caster,objects,controls,distance)
     let fall=true;
     for(let i=0;i<objects.length && fall==true;i++)
     {
-        if(i<4)
+        if(i<2)
         {
             for(let j=0;j<objects[i].vaultedBox.meshes.length && fall==true;j++)
             {
@@ -121,7 +121,7 @@ export function fall(caster,objects,controls,distance)
             }
 
         }
-        if(i==4 && fall==true)
+        if(i==2 && fall==true)
         {
             fall=(caster.intersectObject(objects[i]).length>0)?false:true;
             

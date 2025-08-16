@@ -19,17 +19,13 @@ export function Scene0()
     A1.area1(bu0,material0);
     
     let material1 = new THREE.MeshLambertMaterial({color: "rgb(231, 11, 11)"});
-    let bu1_paths=["./T3_assets/metalBoxSide.jpeg","./T3_assets/metalBoxSide.jpeg","./T3_assets/metalBoxSide.jpeg","./T3_assets/mb.jpg","./T3_assets/metalBoxSide.jpeg","./T3_assets/metalBoxSide.jpeg"]
+    let bu1_paths=["./T3_assets/metalBoxSide.jpeg","./T3_assets/metalBoxSide.jpeg","./T3_assets/mb.jpg","./T3_assets/mb.jpg","./T3_assets/metalBoxSide.jpeg","./T3_assets/metalBoxSide.jpeg"]
     let bu1=SL.genStairedLevel(100,6,100,33,10,16,bu1_paths,0,["./T3_assets/metalBoxSide.jpeg"]);
     A2.area2(bu1,["./T3_assets/mb_pillar.jpg"]);
     EL.elevador(bu1,['./T3_assets/elevador.jpg']);
     
-    let material2 = new THREE.MeshLambertMaterial({color: "rgb(7, 255, 214)"});
-    let bu2=SL.genStairedLevel(100,6,100,33,10,16,["./T3_assets/romanWall.jpg"],0.25,["./T3_assets/metalBoxSide.jpeg"]);
+    
 
-    let material3 = new THREE.MeshLambertMaterial({color: "rgb(156, 165, 37)"});
-    let bd0=SL.genStairedLevel(300,6,100,33,10,16, ["./T3_assets/romanWall.jpg"],0,["./T3_assets/metalBoxSide.jpeg"]);
-    bd0.rotateYC(Math.PI);
     
     // let material4 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
     // let boxDropKeyA1 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), material4);
@@ -54,14 +50,8 @@ export function Scene0()
     bu1.translateZC(-150);
   //  bu1.translateYC();
 
-    center.add(bu2);
-    bu2.translateZC(-150);
-    bu2.translateXC(125);
-    //bu2.translateY();
+   
 
-    center.add(bd0);
-    bd0.translateZC(-150);
-    //bd0.translateYC();
 
     center.add(wallU);
     wallU.translateZ(250.05);
@@ -109,7 +99,7 @@ export function Scene0()
 
     let hangar = HANGAR.HANGAR(40, 38, 20);
                 //  0    1   2   3    4     5     6     7        8              9            10           11              12 
-    center.objects=[bu0,bu1,bu2,bd0,wallU,wallR,wallD,wallL/*,boxDropKeyA1, boxTakeKeyA1, boxTakeKeyA2, boxTakeKeyA3, boundingBoxPlane*/];
+    center.objects=[bu0,bu1,wallU,wallR,wallD,wallL/*,boxDropKeyA1, boxTakeKeyA1, boxTakeKeyA2, boxTakeKeyA3, boundingBoxPlane*/];
     center.add(hangar);
     
     
