@@ -67,7 +67,7 @@ let playerHasEnteredSecondArea = {value:false,name:"playerHasEnteredSecondArea"}
 
 // ---------------------Ambiente---------------------
 
-let plane = TF.createGroundPlaneXZCust(500, 500, 10, 10, TF.planeTex(["../assets/textures/asfalto.jpg"]));
+let plane = TF.createGroundPlaneXZCust(500, 500, 10, 10, TF.planeTex(["../assets/textures/intertravado.jpg"]));
  scene.add(plane);
  plane.receiveShadow=true;
    // center.plane.translateY(+0.15);
