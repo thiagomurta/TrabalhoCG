@@ -49,6 +49,15 @@ export function planeTex(path)
     console.log(material)
     return material;
 }
+export function cylDispTexture(path,pathDisp,height,radius1,radius2,segments)
+{
+    let fineTuneU=1;
+    let fineTuneV=1;
+    let fineTuneDispU=10;
+    let fineTuneDispV=1;
+    let mat=[setDispMaterial(path,fineTuneU,fineTuneV,'rgba(114, 114, 114, 1)',pathDisp,fineTuneDispU,fineTuneDispV),setDispMaterial(path),setMaterial(path)];
+    return mat;
+}
 export function setMaterial(file, repeatU = 1, repeatV = 1, color="rgb(64,64,64)" ){
 
     let loader = new THREE.TextureLoader();
@@ -57,6 +66,29 @@ export function setMaterial(file, repeatU = 1, repeatV = 1, color="rgb(64,64,64)
    mat.map.wrapS = mat.map.wrapT = THREE.RepeatWrapping;
    mat.map.minFilter = mat.map.magFilter = THREE.LinearFilter;
    mat.map.repeat.set(repeatU,repeatV); 
+   return mat;
+}
+export function setDispMaterial(file, repeatU = 1, repeatV = 1, color="rgb(64,64,64)" ,dispMapPath,dispU,dispV){
+
+    let loader = new THREE.TextureLoader();
+    let map=loader.load(file);
+    let dispmap=loader.load(dispMapPath);
+    //dispmap.repeat.set(dispU,dispV);
+    map.colorSpace = THREE.SRGBColorSpace;
+    map.wrapS = map.wrapT = THREE.RepeatWrapping;
+    map.minFilter = map.magFilter = THREE.LinearFilter;
+    map.repeat.set(repeatU,repeatV); 
+
+    let mat = new THREE.MeshStandardMaterial({
+      map : map,
+      displacementMap:dispmap,
+      displacementScale:0.3,
+    });
+    
+     
+
+   //mat.side = THREE.DoubleSide;
+
    return mat;
 }
 export function createGroundPlaneXZCust(width, height, widthSegments = 10, heightSegments = 10, material) {
