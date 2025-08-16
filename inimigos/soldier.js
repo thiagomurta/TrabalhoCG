@@ -1,382 +1,113 @@
 import * as THREE from 'three';
-import { getCollisionObjects } from './inimigos.js';
-import { checkProjectileCollisionWithPlayer } from './damageHandler.js';
 
-// --- CONSTANTS ---
-// Describes the soldier's current behavior
-export const SOLDIER_STATE = {
-    WANDERING: 'WANDERING',
-    LOOKING_AT_PLAYER: 'LOOKING_AT_PLAYER',
-};
-
-// Gameplay parameters
-const PLAYER_DETECT_DISTANCE = 30;
-const LOOK_AT_PLAYER_DURATION_FRAMES = 120;
-const LOOK_AT_PLAYER_COOLDOWN_FRAMES = -90;
-const MAX_WANDER_DISTANCE = 20;
-const WANDER_SPEED = 0.08;
-const PROXIMITY_THRESHOLD = 1.0;
-const COLLISION_CHECK_DISTANCE = 1.0;
-const SOLDIER_VERTICAL_OFFSET = 0.9;
-const VERTICAL_SMOOTHING_FACTOR = 0.02;
-
-// Projectile parameters
-const PROJECTILE = { speed: 0.6, radius: 0.2, color: 0xff8800 };
-
-
-// ============================================================================================
-//                                  MAIN SOLDIER LOGIC
-// ============================================================================================
+// -----------------------------------------------------------------------------------
+// As funções auxiliares vêm primeiro.
+// -----------------------------------------------------------------------------------
 
 /**
- * Main function to update the soldier's state, position, and animation each frame.
- * @param {object} soldierData - The soldier's state object.
- * @param {object} scenario - The game's scenario data.
- * @param {object} player - The player object.
- * @param {THREE.Scene} scene - The main scene.
- * @param {THREE.Camera} camera - The main camera.
+ * Controla qual animação do soldado deve ser executada, garantindo que
+ * apenas uma animação toque por vez.
+ * @param {object} soldierData - Os dados do soldado.
+ * @param {string} newActionName - O nome da nova animação a ser tocada (ex: 'ShootingUp').
  */
-export function moveSoldier(soldierData, scenario, player, scene, camera) {
-    // Initialize collision objects on the first run
-    if (!soldierData.collisionObjects) {
-        soldierData.collisionObjects = getCollisionObjects(scenario);
-    }
-    // Update the sprite animation timer
-    soldierData.spriteMixer.update(soldierData.clock.getDelta());
-
-    // --- State Machine ---
-    // Updates the soldier's behavior based on its current state
-    switch (soldierData.state) {
-        case SOLDIER_STATE.WANDERING:
-            handleWanderingState(soldierData, player);
-            break;
-        case SOLDIER_STATE.LOOKING_AT_PLAYER:
-            handleLookingState(soldierData, player, scene);
-            break;
-    }
-
-    // Update any active projectiles
-    moveProjectile(soldierData, scene, player);
-    
-    // Adjust the soldier's vertical position based on ground collision
-    applyVerticalCollision(soldierData);
-
-    // Update the soldier's sprite animation based on its movement and the camera's perspective
-    updateAnimation(soldierData, player, camera);
-}
-
-
-// ============================================================================================
-//                                BEHAVIOR STATE HANDLERS
-// ============================================================================================
-
-/**
- * Handles the 'WANDERING' state. The soldier moves to random points
- * and checks if the player is nearby.
- */
-function handleWanderingState(soldierData, player) {
-    // If the player is detected and the soldier is not on cooldown, switch to LOOKING state
-    if (tryDetectPlayer(soldierData, player) && soldierData.lookAtFrames >= 0) {
-        soldierData.hasShot = false;
-        soldierData.state = SOLDIER_STATE.LOOKING_AT_PLAYER;
-        soldierData.lookAtFrames = LOOK_AT_PLAYER_DURATION_FRAMES;
+function playAnimation(soldierData, newActionName) {
+    // Se a animação que queremos tocar já está ativa, não fazemos nada.
+    if (soldierData.currentAction === newActionName) {
         return;
     }
 
-    // If the soldier has no target or has reached it, find a new wander point
-    const soldier = soldierData.obj;
-    if (!soldierData.targetPoint || soldier.position.distanceTo(soldierData.targetPoint) < PROXIMITY_THRESHOLD) {
-        soldierData.targetPoint = getNewWanderTarget(soldier.position);
+    // Para todas as animações possíveis, para a que estiver tocando no momento.
+    Object.values(soldierData.actions).forEach(action => action.stop());
+
+    // Procura e seleciona a nova ação a ser tocada.
+    const actionToPlay = soldierData.actions[newActionName];
+
+    if (actionToPlay) {
+        actionToPlay.playLoop(); // Toca a nova animação em loop.
+    } else {
+        // Log de aviso caso a animação não seja encontrada.
+        console.warn(`Animação não encontrada: ${newActionName}`);
     }
 
-    // Move towards the target point, handling potential collisions
-    moveTowardsTarget(soldierData, WANDER_SPEED, () => {
-        soldierData.targetPoint = null; // Invalidate target if blocked
-    });
-
-    // Increment the cooldown timer if it's negative
-    if (soldierData.lookAtFrames < 0) soldierData.lookAtFrames++;
+    // Guarda o nome da animação que está tocando agora.
+    soldierData.currentAction = newActionName;
 }
 
 /**
- * Handles the 'LOOKING_AT_PLAYER' state. The soldier stops, faces the player,
- * and shoots a projectile.
- */
-function handleLookingState(soldierData, player, scene) {
-    soldierData.targetPoint = null; // Stop wandering
-    soldierData.velocity = new THREE.Vector3(0,0,0); // Explicitly stop movement
-
-    // Shoot at the midpoint of the "looking" duration
-    if (soldierData.lookAtFrames === Math.floor(LOOK_AT_PLAYER_DURATION_FRAMES / 2) && !soldierData.hasShot) {
-        initProjectile(soldierData);
-        shootProjectile(soldierData, scene, player);
-    }
-
-    // Countdown frames until returning to WANDERING state
-    soldierData.lookAtFrames--;
-    if (soldierData.lookAtFrames <= 0) {
-        soldierData.state = SOLDIER_STATE.WANDERING;
-        soldierData.lookAtFrames = LOOK_AT_PLAYER_COOLDOWN_FRAMES; // Start cooldown
-    }
-}
-
-
-// ============================================================================================
-//                             REFACTORED ANIMATION LOGIC
-// ============================================================================================
-
-/**
- * Determines the direction name (e.g., 'Up', 'Left', 'RD') from an angle.
- * The angle is relative to the camera's perspective.
- * @param {number} angleDeg - The relative angle in degrees.
- * @returns {string} The name of the direction.
+ * Converte um ângulo em graus para um nome de direção (Up, Down, Left, Right, etc.).
+ * @param {number} angleDeg - O ângulo em graus, já calculado em relação à câmera.
+ * @returns {string} O nome da direção correspondente.
  */
 function getDirectionNameFromAngle(angleDeg) {
-    if (angleDeg > -22.5 && angleDeg <= 22.5) return 'Down';
-    if (angleDeg > 22.5 && angleDeg <= 67.5) return 'RD';
-    if (angleDeg > 67.5 && angleDeg <= 112.5) return 'Right';
-    if (angleDeg > 112.5 && angleDeg <= 157.5) return 'RU';
-    if (angleDeg > 157.5 || angleDeg <= -157.5) return 'Up'; // Handles the angle wrap-around
-    if (angleDeg > -157.5 && angleDeg <= -112.5) return 'LU';
-    if (angleDeg > -112.5 && angleDeg <= -67.5) return 'Left';
-    if (angleDeg > -67.5 && angleDeg <= -22.5) return 'LD';
-    return 'Down'; // Fallback direction
+    // Normaliza o ângulo para o intervalo de -180 a 180 para facilitar os cálculos.
+    while (angleDeg <= -180) angleDeg += 360;
+    while (angleDeg > 180) angleDeg -= 360;
+
+    if (angleDeg > -22.5 && angleDeg <= 22.5) return 'Down';    // Frente
+    if (angleDeg > 22.5 && angleDeg <= 67.5) return 'RD';     // Frente-Direita
+    if (angleDeg > 67.5 && angleDeg <= 112.5) return 'Right';   // Direita
+    if (angleDeg > 112.5 && angleDeg <= 157.5) return 'RU';    // Trás-Direita
+    if (angleDeg > 157.5 || angleDeg <= -157.5) return 'Up';  // Trás
+    if (angleDeg > -157.5 && angleDeg <= -112.5) return 'LU'; // Trás-Esquerda
+    if (angleDeg > -112.5 && angleDeg <= -67.5) return 'Left';  // Esquerda
+    if (angleDeg > -67.5 && angleDeg <= -22.5) return 'LD';   // Frente-Esquerda
+    
+    return 'Down'; // Direção padrão caso algo dê errado.
 }
 
-/**
- * Determines which animation action to play based on the soldier's state.
- * @param {object} soldierData - The soldier's state object.
- * @param {string} directionName - The calculated direction name.
- * @param {boolean} isMoving - Whether the soldier is currently moving.
- * @returns {string} The name of the action to play (e.g., 'runUp', 'ShootingLeft', 'idle').
- */
-function determineActionName(soldierData, directionName, isMoving) {
-    if (soldierData.state === SOLDIER_STATE.LOOKING_AT_PLAYER) {
-        return 'Shooting' + directionName;
-    } 
-    
-    if (isMoving) {
-        return 'run' + directionName;
-    } 
-    
-    // If not moving and not shooting, the soldier is idle.
-    return 'idle';
-}
+// -----------------------------------------------------------------------------------
+// Conteúdo da função de atualização (agora preenchida).
+// -----------------------------------------------------------------------------------
 
 /**
- * Plays the specified animation, handling transitions from the previous state.
- * @param {object} soldierData - The soldier's state object.
- * @param {string} actionName - The name of the action to play.
+ * Atualiza a orientação e a animação do sprite do soldado.
+ * @param {object} soldierData - Os dados do soldado.
+ * @param {object} player - O objeto do jogador.
+ * @param {object} camera - A câmera principal da cena.
  */
-function playAction(soldierData, actionName) {
-    const { actions, actionSprite, lastDirection } = soldierData;
-
-    // Don't restart the same animation
-    if (soldierData.currentAction === actionName) {
-        return;
-    }
-
-    // Stop all other running animations to ensure a clean transition
-    Object.values(actions).forEach(action => action.stop());
-
-    if (actionName === 'idle') {
-        // For idle, we manually set a static frame based on the last movement direction.
-        const idleFrameMap = {
-            'Down':  [4, 0], 'RD': [4, 7], 'Right': [4, 6], 'RU': [4, 5],
-            'Up':    [4, 4], 'LU': [4, 3], 'Left':  [4, 2], 'LD': [4, 1]
-        };
-        const idleDirection = lastDirection || 'Down';
-        const frame = idleFrameMap[idleDirection];
-        if (frame) {
-            actionSprite.setFrame(frame[0], frame[1]);
-        }
-    } else {
-        // For all other actions, find it in the actions map and play it in a loop.
-        const actionToPlay = actions[actionName];
-        if (actionToPlay) {
-            actionToPlay.playLoop();
-        } else {
-            // If an animation is missing, log a warning and default to idle.
-            console.warn(`Animation action "${actionName}" not found!`);
-            playAction(soldierData, 'idle'); 
-        }
-    }
-    
-    // Store the new action name as the current action
-    soldierData.currentAction = actionName;
-}
-
-/**
- * Main animation update function. This is now based on VELOCITY for perfect sync.
- * This function calculates the correct sprite based on movement relative to the camera.
- * @param {object} soldierData - The soldier's state object.
- * @param {object} player - The player object.
- * @param {THREE.Camera} camera - The main camera.
- */
-function updateAnimation(soldierData, player, camera) {
+function updateSoldierAnimation(soldierData, player, camera) {
     const { obj: soldier, actionSprite } = soldierData;
 
-    // 1. Orient Sprite: Always make the 2D sprite face the 3D camera.
+    // 1. EFEITO BILLBOARD: Fazer o sprite sempre encarar a câmera.
+    // Copiamos a rotação da câmera no eixo Y para o sprite.
     const euler = new THREE.Euler();
     euler.setFromQuaternion(camera.quaternion, 'YXZ');
     actionSprite.rotation.y = euler.y;
 
-    // 2. Determine World Direction from VELOCITY
-    // *** BUG FIX ***
-    // The animation direction is now based on the soldier's actual velocity for this frame,
-    // not its intended destination. This prevents any 1-frame lag when changing direction.
-    const isMoving = soldierData.velocity && soldierData.velocity.lengthSq() > 0.0001;
-    let worldDirectionVector;
+    // 2. CÁLCULO DO ÂNGULO RELATIVO
+    // O soldado sempre "olha" para o jogador, então criamos um vetor nessa direção.
+    const soldierToPlayerVector = player.position.clone().sub(soldier.position);
 
-    if (isMoving) {
-        // If moving, the direction is the actual velocity vector.
-        worldDirectionVector = soldierData.velocity.clone();
-    } else {
-        // If idle or shooting, the direction is towards the player.
-        worldDirectionVector = player.position.clone().sub(soldier.position);
-    }
-
-    // 3. Calculate Relative Angle: Convert the world direction into an angle relative to the camera's view.
-    const worldAngle = Math.atan2(worldDirectionVector.x, worldDirectionVector.z);
+    // O ângulo no "mundo" do vetor que aponta do soldado para o jogador.
+    const worldAngle = Math.atan2(soldierToPlayerVector.x, soldierToPlayerVector.z);
+    
+    // O ângulo de visão da câmera no "mundo".
     const cameraAngle = euler.y;
-    // The '+ Math.PI' adjustment aligns the coordinate systems correctly.
+
+    // O ângulo relativo é a diferença entre para onde o soldado olha (jogador)
+    // e de onde a câmera está olhando. Somamos PI (180 graus) para ajustar o quadrante.
     const relativeAngle = worldAngle - cameraAngle + Math.PI;
+    
+    // Convertemos de radianos para graus para usar na nossa função auxiliar.
     const angleDeg = THREE.MathUtils.radToDeg(relativeAngle);
 
-    // 4. Get Direction Name: Convert the numeric angle into a string like 'Up', 'Left', etc.
+    // 3. SELEÇÃO E EXECUÇÃO DA ANIMAÇÃO
+    // Com o ângulo relativo, descobrimos o nome da direção (ex: 'Up', 'Left', 'RD').
     const directionName = getDirectionNameFromAngle(angleDeg);
 
-    // 5. Store Last Direction: When moving, save the direction to use for the idle state.
-    if (isMoving) {
-        soldierData.lastDirection = directionName;
-    }
+    // Como o soldado está parado e em alerta, usamos as animações "Shooting".
+    // Elas mostram o soldado mirando naquela direção.
+    const actionName = 'Shooting' + directionName;
 
-    // 6. Determine Action: Decide which animation to play ('runUp', 'ShootingLeft', 'idle').
-    const actionName = determineActionName(soldierData, directionName, isMoving);
-
-    // 7. Play Animation: Execute the chosen animation and handle the transition.
-    playAction(soldierData, actionName);
+    // Finalmente, tocamos a animação correta.
+    playAnimation(soldierData, actionName);
 }
 
+// -----------------------------------------------------------------------------------
+// Função principal de exportação (permanece a mesma do Passo 1).
+// -----------------------------------------------------------------------------------
 
-// ============================================================================================
-//                                  MOVEMENT & COLLISION
-// ============================================================================================
-
-/**
- * Moves the soldier and stores its velocity for the frame.
- * @param {object} soldierData - The soldier's state object.
- * @param {number} speed - The movement speed.
- * @param {function} onBlockCallback - Callback to run if movement is blocked.
- */
-function moveTowardsTarget(soldierData, speed, onBlockCallback) {
-    const soldier = soldierData.obj;
-    if (!soldierData.targetPoint) {
-        soldierData.velocity = new THREE.Vector3(0, 0, 0); // Set zero velocity
-        return;
-    }
-
-    const direction = soldierData.targetPoint.clone().sub(soldier.position).normalize();
-    const raycaster = new THREE.Raycaster(soldier.position, direction, 0, COLLISION_CHECK_DISTANCE);
-    const intersects = raycaster.intersectObjects(soldierData.collisionObjects);
-
-    if (intersects.length > 0) {
-        onBlockCallback();
-        soldierData.velocity = new THREE.Vector3(0, 0, 0); // Set zero velocity
-    } else {
-        const frameVelocity = direction.multiplyScalar(speed);
-        soldier.position.add(frameVelocity);
-        soldierData.velocity = frameVelocity.clone(); // Store the velocity for this frame
-    }
-}
-
-function tryDetectPlayer(soldierData, player) {
-    return soldierData.obj.position.distanceTo(player.position) < PLAYER_DETECT_DISTANCE;
-}
-
-function applyVerticalCollision(soldierData) {
-    const soldier = soldierData.obj;
-    const groundCheckOffset = 0.1;
-
-    const downRaycaster = new THREE.Raycaster(
-        new THREE.Vector3(soldier.position.x, soldier.position.y + groundCheckOffset, soldier.position.z),
-        new THREE.Vector3(0, -1, 0)
-    );
-
-    const intersects = downRaycaster.intersectObjects(soldierData.collisionObjects);
-
-    if (intersects.length > 0) {
-        const groundY = intersects[0].point.y;
-        const targetY = groundY + SOLDIER_VERTICAL_OFFSET;
-        // Smoothly interpolate to the target Y position to avoid jitter
-        soldier.position.y = THREE.MathUtils.lerp(soldier.position.y, targetY, VERTICAL_SMOOTHING_FACTOR);
-    } else {
-        // If no ground is detected, slowly fall
-        soldier.position.y -= 0.05;
-    }
-}
-
-function getNewWanderTarget(currentPosition) {
-    const targetX = currentPosition.x + (Math.random() * MAX_WANDER_DISTANCE - (MAX_WANDER_DISTANCE / 2));
-    const targetZ = currentPosition.z + (Math.random() * MAX_WANDER_DISTANCE - (MAX_WANDER_DISTANCE / 2));
-    return new THREE.Vector3(targetX, currentPosition.y, targetZ);
-}
-
-
-// ============================================================================================
-//                                     PROJECTILE LOGIC
-// ============================================================================================
-
-function initProjectile(soldierData) {
-    if (!soldierData.projectileArray) soldierData.projectileArray = [];
-    const sphere = new THREE.SphereGeometry(PROJECTILE.radius, 8, 8);
-    const material = new THREE.MeshBasicMaterial({ color: PROJECTILE.color });
-    const projectile = new THREE.Mesh(sphere, material);
-    soldierData.projectileArray.push({ mesh: projectile, isShooting: false, velocity: new THREE.Vector3(), targetPoint: new THREE.Vector3() });
-    soldierData.obj.add(projectile);
-}
-
-function shootProjectile(soldierData, scene, player) {
-    if (!soldierData.projectileArray || soldierData.projectileArray.length === 0) return;
-    const projectileData = soldierData.projectileArray[soldierData.projectileArray.length - 1];
-    const startPosition = new THREE.Vector3();
-    soldierData.actionSprite.getWorldPosition(startPosition);
-    soldierData.obj.remove(projectileData.mesh);
-    scene.add(projectileData.mesh);
-    projectileData.mesh.position.copy(startPosition);
-
-    projectileData.isShooting = true;
-    const targetPosition = player.position.clone();
-    targetPosition.y += 1.5; // Aim for the player's center mass
-    const direction = new THREE.Vector3().subVectors(targetPosition, startPosition).normalize();
-    projectileData.velocity.copy(direction).multiplyScalar(PROJECTILE.speed);
-    projectileData.targetPoint.copy(targetPosition);
-
-    soldierData.hasShot = true;
-}
-
-function moveProjectile(soldierData, scene, player) {
-    if (!soldierData.projectileArray) return;
-    for (let i = soldierData.projectileArray.length - 1; i >= 0; i--) {
-        const pData = soldierData.projectileArray[i];
-        if (pData.isShooting) {
-            pData.mesh.position.add(pData.velocity);
-
-            if (checkProjectileCollisionWithPlayer(pData.mesh, player)) {
-                scene.remove(pData.mesh);
-                pData.mesh.geometry.dispose();
-                pData.mesh.material.dispose();
-                soldierData.projectileArray.splice(i, 1);
-                continue;
-            }
-
-            // Remove projectile if it's near its target destination
-            if (pData.mesh.position.distanceTo(pData.targetPoint) < PROJECTILE.speed) {
-                scene.remove(pData.mesh);
-                pData.mesh.geometry.dispose();
-                pData.mesh.material.dispose();
-                soldierData.projectileArray.splice(i, 1);
-            }
-        }
-    }
+export function moveSoldier(soldierData, player, camera) {
+    soldierData.spriteMixer.update(soldierData.clock.getDelta());
+    updateSoldierAnimation(soldierData, player, camera);
 }
