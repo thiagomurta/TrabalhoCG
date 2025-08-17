@@ -32,10 +32,14 @@ export function moveSkull(skullData, scenario, player) {
 
     switch (skullData.state) {
         case SKULL_STATE.WANDERING:
+            skullData.hasPlayed = false;
             handleWanderingState(skullData, player);
             break;
         case SKULL_STATE.CHARGING:
-            playPositionalSound('LOST_SOUL_ATTACK', skullData.obj);
+            if (!skullData.hasPlayed) {
+                playPositionalSound('LOST_SOUL_ATTACK', skullData.obj);
+                skullData.hasPlayed = true;
+            }
             handleChargingState(skullData, player);
             break;
     }

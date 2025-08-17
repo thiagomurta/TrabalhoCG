@@ -68,8 +68,8 @@ function setupBackgroundMusic() {
 export function playSound(name) {
     const sound = sounds[name];
     if (sound) {
-        if (sound.isPlaying) {
-            sound.stop();
+        if (sound.isPlaying && name !== 'CHAINGUN_FIRE') {
+            return;
         }
         sound.play();
     } else {

@@ -64,9 +64,9 @@ let atElevador=false;
 let elevadorCanMove=true;
 let isAttached=false;
 let isMouseDown = false;
-let playerHasEnteredFirstArea = {value:false,name:"playerHasEnteredFirstArea", soundPlayed: false};
+export let playerHasEnteredFirstArea = {value: false, name:"playerHasEnteredFirstArea", soundPlayed: false};
 
-let playerHasEnteredSecondArea = {value:false,name:"playerHasEnteredSecondArea", soundPlayed: false}
+export let playerHasEnteredSecondArea = {value: false, name:"playerHasEnteredSecondArea", soundPlayed: false}
 
 // --------------------- GOD MODE ---------------------
 export const godModeState = { enabled: false };
@@ -410,6 +410,8 @@ const KEY_SPACE = 32;
 const KEY_1 = 49; // 1 key
 const KEY_2 = 50; // 2 key
 const KEY_SHIFT = 16; // Shift key
+const KEY_G = 71; 
+const KEY_Q = 81;
 const elSpeedo=10;
 // const SHOOT = ;
 let moveForward = false;
@@ -453,6 +455,15 @@ function movementControls(key, value) { // if xabu , go back here
         case KEY_2:
             if (currentGun === GUNTYPE.chaingun) {
                 toggleGun(camera); // Switch to ball launcher
+            }
+            break;
+        case KEY_Q:
+            if (value) toggleBackgroundMusic(); // Ligar/desligar música
+            break;
+        case KEY_G:
+            if (value) { // Only toggle on keydown, not keyup
+                godModeState.enabled = !godModeState.enabled;
+                godModeText.style.display = godModeState.enabled ? 'block' : 'none';
             }
             break;
     }
