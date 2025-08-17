@@ -26,6 +26,7 @@ import {OBJLoader} from '../build/jsm/loaders/OBJLoader.js';
 import {MTLLoader} from '../build/jsm/loaders/MTLLoader.js';
 import { Plane } from './plane.js';
 import { CubeTextureLoaderSingleFile } from '../libs/util/cubeTextureLoaderSingleFile.js';
+import * as VA from './animMove.js'
 
 import { instancePlayer, createPlayerHpBar, updatePlayerHpBar } from './player.js';
 
@@ -620,6 +621,7 @@ initWeaponSystem(camera, renderer);
 const clock = new THREE.Clock();
 
 export let fadingObjects = [];
+let test={value:true};
 render();
 
 function render() {
@@ -633,8 +635,11 @@ function render() {
         if (enemies) moveEnemies(scene, scenario, player, enemies, playerHasEnteredFirstArea.value, playerHasEnteredSecondArea.value); // will move enemies
         moveBullet(scene, camera, enemies); // will move bullet if its isShooting attribute is truthy
     }
+
     renderer.shadowMap.enabled=true;
     renderer.shadowMap.type=THREE.PCFShadowMap;
     renderer.render(scene, camera) // Render scene
+    VA.animVert(scenario.walls4,30,drop_key2,-30)
+    VA.animVert(scenario.porta,40,drop_key3,-40);
     requestAnimationFrame(render);
 }
