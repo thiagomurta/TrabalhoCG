@@ -12,6 +12,7 @@ import { movePainElemental, PAINELEMENTAL_STATE } from './painelemental.js';
 import { markEnemyGroup } from './damageHandler.js';
 import { SpriteMixer } from '../../libs/sprites/SpriteMixer.js'; // Importar o SpriteMixer
 import { moveSoldier } from './soldier.js'; // Importar o soldado
+import { playSound } from './../sons/sons.js';
 
 export const AREA_DIMENSION = 100;
 export const AREAS_Z = -150;
@@ -385,14 +386,13 @@ function initSkull(){
 export function getCollisionObjects(scenario) {
     const LEFTMOST_BOX = scenario.objects[0];
     const UPPER_MIDDLE_BOX = scenario.objects[1];
-    const RIGHTMOST_BOX = scenario.objects[2];
-    const LOWER_MIDDLE_BOX = scenario.objects[3];
-    const NORTH_WALL = scenario.objects[4];
-    const SOUTH_WALL = scenario.objects[5];
-    const LEFT_WALL = scenario.objects[6];
-    const RIGHT_WALL = scenario.objects[7];
+    
+    const NORTH_WALL = scenario.objects[2];
+    const SOUTH_WALL = scenario.objects[4];
+    const LEFT_WALL = scenario.objects[3];
+    const RIGHT_WALL = scenario.objects[5];
     const PLANE = scenario.parent.children[0];
-    const collisionObjects = [PLANE, LEFTMOST_BOX, UPPER_MIDDLE_BOX, RIGHTMOST_BOX, LOWER_MIDDLE_BOX, NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL];
+    const collisionObjects = [PLANE, LEFTMOST_BOX, UPPER_MIDDLE_BOX, NORTH_WALL, SOUTH_WALL, LEFT_WALL, RIGHT_WALL];
     return collisionObjects;
 }
 
@@ -477,6 +477,19 @@ export function applyDamageToEnemy(enemyData, damage, enemies) {
     enemyData.hp -= damage;
     if (enemyData.hp <= 0) {
         enemyData.hp = 0;
+
+        if (enemyData.name.startsWith('cacodemon')) {
+            playSound('CACODEMON_DEATH');
+        }
+        if (enemyData.name === 'skull') {
+            playSound('LOST_SOUL_DEATH');
+        }
+        if (enemyData.name === 'painElemental') {
+            playSound('PAIN_ELEMENTAL_DEATH');
+        }
+        if (enemyData.name === 'soldier') {
+            playSound('SOLDIER_DEATH');
+        }
         startFadingAnimation(enemyData); // Inicia a animação de desaparecimento
 
         let enemyArray;
@@ -487,7 +500,7 @@ export function applyDamageToEnemy(enemyData, damage, enemies) {
             enemyArray = enemies.skulls;
         } else if (enemyData.name === 'painElemental') {
             enemyArray = enemies.painElementals;
-        } else if (enemyData.name === 'soldier') { 
+        } else if (enemyData.name === 'soldier') {
             enemyArray = enemies.soldiers;
         }
 

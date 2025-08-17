@@ -1,28 +1,42 @@
 import * as THREE from  'three';
 import * as TF from './texturingfuncs.js'
 import { CSG } from '../libs/other/CSGMesh.js';
+import { DoubleSide } from '../build/three.module.js';
 
-export function HANGAR(raio1, raio2, altura){
+export function HANGAR(comprimento,raio1, raio2, altura){
 
     let thickness = 1;
-    let cubeMaterial = new THREE.MeshLambertMaterial({color:'rgb(255, 255, 255)'});
-
+   let cubeMaterial = new THREE.MeshLambertMaterial({color:'rgb(255, 255, 255)'});
+    let boxMaterial1=TF.boxTexture(["./T3_assets/concrete_wall.jpg"],thickness*1.5,altura,comprimento);
     let centro    = new THREE.Mesh(new THREE.BoxGeometry(0, 0, 0),cubeMaterial);
-    let cubeMesh  = new THREE.Mesh(new THREE.BoxGeometry(thickness, altura, 2*raio1), cubeMaterial);
-    let cubeMesh2 = new THREE.Mesh(new THREE.BoxGeometry(thickness, altura, 2*raio1), cubeMaterial);
-    let cubeMesh3 = new THREE.Mesh(new THREE.BoxGeometry(2*raio1, altura, thickness), cubeMaterial);
-    let cubeMesh4 = new THREE.Mesh(new THREE.BoxGeometry(raio1/2, altura, thickness), cubeMaterial);
-    let cubeMesh5 = new THREE.Mesh(new THREE.BoxGeometry(raio1/2, altura, thickness), cubeMaterial);
-    let cubeMesh6 = new THREE.Mesh(new THREE.BoxGeometry(raio1+thickness, altura, thickness), cubeMaterial);
+    let cubeMesh  = new THREE.Mesh(new THREE.BoxGeometry(thickness*1.5, altura, comprimento), boxMaterial1);
+    let cubeMesh2 = new THREE.Mesh(new THREE.BoxGeometry(thickness*1.5, altura, comprimento), boxMaterial1);
+
+    let boxMaterial2=TF.boxTexture(["./T3_assets/concrete_wall.jpg"],2*raio1,altura,thickness);
+    let cubeMesh3 = new THREE.Mesh(new THREE.BoxGeometry(2*raio1, altura, thickness), boxMaterial2);
+    
+    let boxMaterial3=TF.boxTexture(["./T3_assets/concrete_wall.jpg"],raio1/2,altura,thickness);
+    let cubeMesh4 = new THREE.Mesh(new THREE.BoxGeometry(raio1/2, altura, thickness), boxMaterial3);
+    let cubeMesh5 = new THREE.Mesh(new THREE.BoxGeometry(raio1/2, altura, thickness), boxMaterial3);
+    
+    let boxMaterial4=TF.boxTexture(["./T3_assets/metal_wall_rot.jpg"],raio1+thickness, altura, thickness*1.5);
+    let cubeMesh6 = new THREE.Mesh(new THREE.BoxGeometry(raio1+thickness, altura, thickness*1.5), boxMaterial4);
 
 
-    let cylinderGeometry = new THREE.CylinderGeometry(raio1, raio1, 2*raio1, 32, true, undefined, Math.PI, Math.PI);
-    var cylinderGeometry2 = new THREE.CylinderGeometry(raio2, raio2, 2*raio1, 32, true, undefined, Math.PI, Math.PI);
+    let cylinderGeometry = new THREE.CylinderGeometry(raio1, raio1, comprimento+0.1, 32, true, undefined, Math.PI, Math.PI);
+    var cylinderGeometry2 = new THREE.CylinderGeometry(raio2, raio2, comprimento+0.1, 32, true, undefined, Math.PI, Math.PI);
 
-    var cylinderMaterial = new THREE.MeshLambertMaterial( {color:'rgba(156, 52, 52, 1)'});
+    var cylinderMaterial1 = [TF.setMaterial("./T3_assets/militar_roof_rot.jpg",comprimento/10,Math.PI*raio1/10),
+        TF.setMaterial("./T3_assets/militar_roof_rot.jpg",Math.PI*raio1/10,Math.PI*raio1/10),
+        TF.setMaterial("./T3_assets/militar_roof_rot.jpg",Math.PI*raio1/10,Math.PI*raio1/10)
+    ];
+    var cylinderMaterial2 = [TF.setMaterial("./T3_assets/militar_roof_rot.jpg",comprimento/10,Math.PI*raio2/10),
+        TF.setMaterial("./T3_assets/militar_roof_rot.jpg",Math.PI*raio2/10,Math.PI*raio2/10),
+        TF.setMaterial("./T3_assets/militar_roof_rot.jpg",Math.PI*raio2/10,Math.PI*raio2/10)
+    ];
 
-    let cylinderMesh = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
-    let cylinderMesh2 = new THREE.Mesh(cylinderGeometry2, cylinderMaterial);
+    let cylinderMesh = new THREE.Mesh(cylinderGeometry, cylinderMaterial1);
+    let cylinderMesh2 = new THREE.Mesh(cylinderGeometry2, cylinderMaterial2);
 
 
     cylinderMesh.rotateX(THREE.MathUtils.degToRad(90));
@@ -33,14 +47,17 @@ export function HANGAR(raio1, raio2, altura){
     cylinderMesh2.rotateZ(THREE.MathUtils.degToRad(180));
 
 
-    cylinderMesh.position.set(0, 0, 0);
-    cylinderMesh2.position.set(0, 0, 1);
-    cubeMesh.position.set(raio1, 0, 0);
-    cubeMesh2.position.set(-raio1, 0, 0);
-    cubeMesh3.position.set(0, 0, -raio1);
-    cubeMesh4.position.set(raio1-(raio1/4)+(thickness/2), 0, raio1);
-    cubeMesh5.position.set(-raio1+(raio1/4)-(thickness/2), 0, raio1);
-    cubeMesh6.position.set(0, 0, raio1+thickness);
+    cylinderMesh.position.set(0,0, 0);
+    centro.outCyl=cylinderMesh;
+
+    cylinderMesh2.position.set(0, 0, 0);
+    centro.inCyl=cylinderMesh2;
+    cubeMesh.position.set(raio1-thickness*0.75,0, 0);
+    cubeMesh2.position.set(-raio1+thickness*0.75, 0, 0);
+    cubeMesh3.position.set(0, 0, -comprimento/2+thickness/2);
+    cubeMesh4.position.set(raio1-(raio1/4)+(thickness/2), 0, comprimento/2-thickness/2);
+    cubeMesh5.position.set(-raio1+(raio1/4)-(thickness/2), 0, comprimento/2-thickness/2);
+    cubeMesh6.position.set(0, 0, comprimento/2-thickness*0.375);
 
     cylinderMesh.matrixAutoUpdate = false;
     cylinderMesh.updateMatrix();
@@ -60,17 +77,25 @@ export function HANGAR(raio1, raio2, altura){
     cubeMesh6.updateMatrix();
 
     // parede cilíndrica
-    let cylinderWall1 = new THREE.CylinderGeometry(raio1, raio1, 1, 32, true, undefined, Math.PI, Math.PI);
-    let cylinderWall1Mesh = new THREE.Mesh(cylinderWall1, cylinderMaterial);
+    let cylinderWall1 = new THREE.CylinderGeometry(raio2, raio2, thickness/2, 32, true, undefined, Math.PI, Math.PI);
+    let cylinderWall1Mesh = new THREE.Mesh(cylinderWall1, cylinderMaterial1);
+    let cylinderWall2 = new THREE.CylinderGeometry(raio2, raio2, thickness/2, 32, true, undefined, Math.PI, Math.PI);
+    let cylinderWall2Mesh = new THREE.Mesh(cylinderWall2, cylinderMaterial2);
 
     cylinderWall1Mesh.rotateX(THREE.MathUtils.degToRad(90));
     cylinderWall1Mesh.rotateY(THREE.MathUtils.degToRad(90));
     cylinderWall1Mesh.rotateZ(THREE.MathUtils.degToRad(180));
+    cylinderWall2Mesh.rotateX(THREE.MathUtils.degToRad(90));
+    cylinderWall2Mesh.rotateY(THREE.MathUtils.degToRad(90));
+    cylinderWall2Mesh.rotateZ(THREE.MathUtils.degToRad(180));
 
-    cylinderWall1Mesh.position.set(0, altura/2, raio1);
+    cylinderWall1Mesh.position.set(0, altura/2, comprimento/2);
+    cylinderWall2Mesh.position.set(0, altura/2, -comprimento/2);
 
     cylinderWall1Mesh.matrixAutoUpdate = false;
     cylinderWall1Mesh.updateMatrix();
+    cylinderWall2Mesh.matrixAutoUpdate = false;
+    cylinderWall2Mesh.updateMatrix();
 
 
     let cylinderCSG  = CSG.fromMesh(cylinderMesh); // cilindro maior
@@ -79,11 +104,13 @@ export function HANGAR(raio1, raio2, altura){
 
     let tetoFinal = CSG.toMesh(cylinderM, new THREE.Matrix4());
     tetoFinal.material = new THREE.MeshLambertMaterial( {color:'rgba(156, 52, 52, 1)'});
-    tetoFinal.material = TF.setMaterial('./T3_assets/elevador.jpg', 4, 4);
+    tetoFinal.material = TF.setMaterial("./T3_assets/militar_roof.jpg",10,10);
+    tetoFinal.material.side=DoubleSide;
+    tetoFinal.translateY(thickness/2);
     centro.teto = tetoFinal;
     centro.add(centro.teto);
-    centro.teto.translateY(altura/2-(thickness/2));
-    centro.paredes = [cubeMesh, cubeMesh2, cubeMesh3, cylinderWall1Mesh, cubeMesh4, cubeMesh5, cubeMesh6/*cylinderDoor2Mesh*/];
+    centro.teto.translateY(altura/2-(thickness));
+    centro.paredes = [cubeMesh, cubeMesh2, cubeMesh3, cylinderWall1Mesh, cylinderWall2Mesh, cubeMesh4, cubeMesh5, cubeMesh6/*cylinderDoor2Mesh*/];
     for (let i = 0; i < centro.paredes.length; i++){
         centro.add(centro.paredes[i]);
     }
