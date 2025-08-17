@@ -96,12 +96,15 @@ export function Scene0()
 
     let materialBoundingBox = new THREE.MeshLambertMaterial();
     let boundingBoxPlane = new THREE.Mesh(new THREE.BoxGeometry(12,10,18), materialBoundingBox);
+    center.add(boundingBoxPlane);
     boundingBoxPlane.visible = false;
+    boundingBoxPlane.translateX(150);
+    boundingBoxPlane.translateZ(-180);
 
 
     let hangar = HANGAR.HANGAR(100, 40, 38, 20);
                 //  0    1   2   3    4     5     6     7        8              9            10           11              12 
-    center.objects=[bu0,bu1,wallU,wallR,wallD,wallL/*,boxDropKeyA1, boxTakeKeyA1, boxTakeKeyA2, boxTakeKeyA3, boundingBoxPlane*/];
+    center.objects=[bu0,bu1,wallU,wallR,wallD,wallL/*,boxDropKeyA1, boxTakeKeyA1, boxTakeKeyA2, boxTakeKeyA3, boundingBoxPlane, hangar*/, boundingBoxPlane];
     center.add(hangar);
     hangar.translateX(150);
     hangar.translateZ(-150);
