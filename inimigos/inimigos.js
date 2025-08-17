@@ -11,7 +11,7 @@ import { fadingObjects } from '../t1.js';
 import { movePainElemental, PAINELEMENTAL_STATE } from './painelemental.js';
 import { markEnemyGroup } from './damageHandler.js';
 import { SpriteMixer } from '../../libs/sprites/SpriteMixer.js'; // Importar o SpriteMixer
-import { moveSoldier } from './soldier.js'; // Importar o soldado
+import { moveSoldier, SOLDIER_STATE } from './soldier.js'; // Importar o soldado
 import { playSound } from './../sons/sons.js';
 
 export const AREA_DIMENSION = 100;
@@ -78,7 +78,7 @@ export function moveEnemies(scene, scenario, player, enemies, playerHasEnteredFi
 
     for (let painElementalData of painElementals) movePainElemental(painElementalData, scenario, player, scene, enemies);
 
-    for (let soldierData of soldiers) moveSoldier(soldierData, player, camera);
+    for (let soldierData of soldiers) moveSoldier(soldierData, scenario, player, scene, camera);
 }
 
 
@@ -204,18 +204,19 @@ export async function loadEnemies(scene) {
             name: 'soldier',
             obj: enemyGroup,
             id: i++,
+            lookAtFrames: 0,
+            targetPoint: null,
+            state: SOLDIER_STATE.WANDERING,
+            hasShot: false,
+            lastDirection: 'runDown',
 
-            currentAction: null,
-            targetDirection: new THREE.Vector3(0, 0, 0).sub(spawnPoint).normalize(),
-
-
-            // Recursos do sprite:
+            // Recursos do sprite
             spriteMixer: soldierResources.spriteMixer,
             actionSprite: soldierResources.actionSprite,
             actions: soldierResources.actions,
             clock: new THREE.Clock(),
 
-            // HP Bar:
+            // HP Bar
             hp: 30,
             maxHp: 30,
             context: context,
