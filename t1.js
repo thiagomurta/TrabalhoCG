@@ -70,7 +70,9 @@ export let playerHasEnteredSecondArea = {value: false, name:"playerHasEnteredSec
 
 // --------------------- GOD MODE ---------------------
 export const godModeState = { enabled: false };
+const gotAllKeys = { value: false };
 let godModeText;
+let gotAllKeysText;
 
 function createGodModeUI() {
     godModeText = document.createElement('div');
@@ -87,6 +89,23 @@ function createGodModeUI() {
     godModeText.style.display = 'none'; // Initially hidden
     godModeText.innerText = 'GOD MODE ENABLED';
     document.body.appendChild(godModeText);
+}
+
+function createGotAllKeysUI() {
+    gotAllKeysText = document.createElement('div');
+    gotAllKeysText.id = 'got-all-keys-text';
+    gotAllKeysText.style.position = 'absolute';
+    gotAllKeysText.style.top = '200px';
+    gotAllKeysText.style.left = '15%';
+    gotAllKeysText.style.transform = 'translateX(-50%)';
+    gotAllKeysText.style.color = '#1100ffff';
+    gotAllKeysText.style.fontSize = '2em';
+    gotAllKeysText.style.fontFamily = '"Press Start 2P", cursive, sans-serif';
+    gotAllKeysText.style.fontWeight = 'bold';
+    gotAllKeysText.style.textShadow = '2px 2px 4px #000000';
+    gotAllKeysText.style.display = 'none'; // Initially hidden
+    gotAllKeysText.innerText = 'GOT ALL KEYS';
+    document.body.appendChild(gotAllKeysText);
 }
 // ----------------------------------------------------
 
@@ -125,6 +144,7 @@ const instructions = document.getElementById('instructions');
 createPlayerHpBar();
 updatePlayerHpBar(player);
 createGodModeUI(); // Create the God Mode text element
+createGotAllKeysUI();
 
 // ---------------------Controles do mouse---------------------
 
@@ -486,7 +506,8 @@ function movementControls(key, value) { // if xabu , go back here
     
                 // drop_key3.value = value;
                 // drop_key3_complete.value = value;
-              
+                gotAllKeys.value = !gotAllKeys.value;
+                gotAllKeysText.style.display = gotAllKeys.value ? 'block' : 'none';
             }
           break;
         case KEY_Q:
