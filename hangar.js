@@ -108,16 +108,19 @@ export function HANGAR(comprimento,raio1, raio2, altura){
     tetoFinal.material.side=DoubleSide;
     tetoFinal.translateY(thickness/2);
     centro.teto = tetoFinal;
+    centro.teto.castShadow=true;
+    centro.teto.receiveShadow=true;
     centro.add(centro.teto);
     centro.teto.translateY(altura/2-(thickness));
-    centro.paredes = [cubeMesh, cubeMesh2, cubeMesh3, cylinderWall1Mesh, cylinderWall2Mesh, cubeMesh4, cubeMesh5, cubeMesh6/*cylinderDoor2Mesh*/];
-    for (let i = 0; i < centro.paredes.length; i++){
-        centro.add(centro.paredes[i]);
+    centro.objects = [cubeMesh, cubeMesh2, cubeMesh3, cylinderWall1Mesh, cylinderWall2Mesh, cubeMesh4, cubeMesh5, cubeMesh6/*cylinderDoor2Mesh*/];
+    for (let i = 0; i < centro.objects.length; i++){
+        centro.add(centro.objects[i]);
     }
-
+    centro.raio2=raio2;
+    centro.comprimento=comprimento;
+    centro.altura=altura;
     /// translates
     /// translate em z para parede fundo e frente
     /// translate em x para parede fundo e frente
-    
     return centro;
 }

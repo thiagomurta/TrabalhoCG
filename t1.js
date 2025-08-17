@@ -138,7 +138,7 @@ let positionLight2 = new THREE.Vector3(200, 400, 200);
 
 let lightColor = "rgb(112, 112, 111)";
 
-let dirLight = new THREE.DirectionalLight(lightColor, 10);
+let dirLight = new THREE.DirectionalLight(lightColor, 20);
 //let dirLight2 = new THREE.DirectionalLight(lightColor, 0.);
 
 dirLight.position.copy(positionLight);

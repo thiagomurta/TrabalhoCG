@@ -58,7 +58,7 @@ export function cylDispTexture(path,pathDisp,height,radius1,radius2,segments)
     let mat=[setDispMaterial(path,fineTuneU,fineTuneV,'rgba(114, 114, 114, 1)',pathDisp,fineTuneDispU,fineTuneDispV),setDispMaterial(path),setMaterial(path)];
     return mat;
 }
-export function setMaterial(file, repeatU = 1, repeatV = 1, color="rgb(64,64,64)" ){
+export function setMaterial(file, repeatU = 1, repeatV = 1, color="rgba(32, 32, 32, 1)" ){
 
     let loader = new THREE.TextureLoader();
     let mat = new THREE.MeshLambertMaterial({ map: loader.load(file)});
@@ -68,7 +68,7 @@ export function setMaterial(file, repeatU = 1, repeatV = 1, color="rgb(64,64,64)
    mat.map.repeat.set(repeatU,repeatV); 
    return mat;
 }
-export function setDispMaterial(file, repeatU = 1, repeatV = 1, color="rgb(64,64,64)" ,dispMapPath,dispU,dispV){
+export function setDispMaterial(file, repeatU = 1, repeatV = 1, color="rgba(26, 26, 26, 1)" ,dispMapPath,dispU,dispV){
 
     let loader = new THREE.TextureLoader();
     let map=loader.load(file);

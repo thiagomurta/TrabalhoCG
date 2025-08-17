@@ -94,7 +94,7 @@ export function area1(staired_level,material)
                 block.rotateY(Math.PI/2);
                 block.translateY(staired_level.height + 1 + height);
                 block.translateZ((staired_level.length/2));
-                block.translateX(25);
+                block.translateX(20);
             }else{
                 block.translateX(0);
                 block.translateY(staired_level.height + 1 + height);
