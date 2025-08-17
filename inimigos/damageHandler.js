@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { applyDamageToEnemy } from './inimigos.js';
-import { updatePlayerHpBar } from '../player.js'; // Importa a função de atualização da UI
+import { updatePlayerHpBar } from '../player.js'; 
+import { playSound, playPositionalSound } from './../sons/sons.js';
+import { godModeState } from '../t1.js'; // Import God Mode state
 
 const CHAINGUN_DAMAGE = 2;
 const ROCKET_DAMAGE = 10;
@@ -69,6 +71,16 @@ function applyDamage(hitObject, damage, enemies) {
                       enemies.painElementals.find(e => e.obj === enemyGroup);
 
     if (enemyData) {
+        // Toca o som de "hurt" específico do inimigo
+        if (enemyData.name.startsWith('cacodemon')) {
+            playPositionalSound('CACODEMON_HURT', enemyData.obj);
+        } else if (enemyData.name === 'skull') {
+            playPositionalSound('LOST_SOUL_HURT', enemyData.obj);
+        } else if (enemyData.name === 'painElemental') {
+            playPositionalSound('PAIN_ELEMENTAL_HURT', enemyData.obj);
+        } else if (enemyData.name === 'soldier') {
+            playPositionalSound('SOLDIER_HURT', enemyData.obj);
+        }
         applyDamageToEnemy(enemyData, damage, enemies);
     }
 }
@@ -82,12 +94,16 @@ export function markEnemyGroup(enemyData) {
 // --------------- PLAYER DAMAGE -----------------
 
 function applyDamageToPlayer(player, damage) {
+    if (godModeState.enabled) {
+        return;
+    }
+
     const now = performance.now();
     if (now - lastPlayerHitTime < PLAYER_HIT_COOLDOWN_MS) {
         return; 
     }
     lastPlayerHitTime = now;
-
+    playSound('PLAYER_HURT');
     player.userData.hp -= damage;
     if (player.userData.hp < 0) {
         player.userData.hp = 0;

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { getCollisionObjects, smoothEnemyRotation, loadSkull, createHpBar, updateHpBar } from './inimigos.js';
 import { SKULL_STATE, CHARGE_TARGET_DISTANCE } from './skull.js';
+import { playPositionalSound } from './../sons/sons.js';
 
 export const PAINELEMENTAL_STATE = {
     WANDERING: 'WANDERING',
@@ -42,6 +43,7 @@ export function movePainElemental(painElementalData, scenario, player, scene, en
 function handleWanderingState(painElementalData, player) {
     if (tryDetectPlayer(painElementalData, player) && painElementalData.lookAtFrames >= 0) {
         console.log("PainElemental detected player, switching to LOOKING_AT_PLAYER state");
+        playPositionalSound('PAINELEMENTAL_AGGRO', painElementalData.obj);
         painElementalData.hasShot = false;
         painElementalData.state = PAINELEMENTAL_STATE.LOOKING_AT_PLAYER;
         painElementalData.lookAtFrames = LOOK_AT_PLAYER_DURATION_FRAMES;
@@ -87,6 +89,7 @@ function handleLookingState(painElementalData, player, scene, enemies, scenario)
     painElemental.lookAt(playerPosition);
 
     if (painElementalData.lookAtFrames === Math.floor(LOOK_AT_PLAYER_DURATION_FRAMES / 2) && !painElementalData.hasShot) {
+        playPositionalSound('PAIN_ELEMENTAL_ATTACK', painElementalData.obj);
         shootSkull(painElementalData, scene, player, enemies, scenario);
     }
     

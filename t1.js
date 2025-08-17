@@ -7,7 +7,8 @@ import {initRenderer,
         createGroundPlaneXZ } from "../libs/util/util.js";
 import * as S0 from "./scene0.js";
 import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
-import {moveBullet} from "./arma/armaLancador.js";
+import { initSoundSystem, toggleBackgroundMusic, playSound } from './sons/sons.js'; // Adicione esta importação
+import { moveBullet } from "./arma/armaLancador.js"; 
 import * as CHAVE from './chave.js';
 import * as LOOK from './lookers.js'
 import * as INTER from './intersecter.js'
@@ -15,6 +16,7 @@ import * as SCLIMB from './stairClimb.js'
 import { loadEnemies, moveEnemies, updateAnimations } from './inimigos/inimigos.js';
 import * as EL from './elevador.js'
 import { toggleGun, initWeaponSystem, updateWeapons, currentGun, GUNTYPE } from './arma/armaController.js';
+
 import * as GATE from './gateAnim.js'
 
 import * as TF from './texturingfuncs.js'
@@ -61,11 +63,35 @@ let atElevador=false;
 let elevadorCanMove=true;
 let isAttached=false;
 let isMouseDown = false;
-let playerHasEnteredFirstArea = {value:false,name:"playerHasEnteredFirstArea"};
+let playerHasEnteredFirstArea = {value:false,name:"playerHasEnteredFirstArea", soundPlayed: false};
 
-let playerHasEnteredSecondArea = {value:false,name:"playerHasEnteredSecondArea"}
+let playerHasEnteredSecondArea = {value:false,name:"playerHasEnteredSecondArea", soundPlayed: false}
+
+// --------------------- GOD MODE ---------------------
+export const godModeState = { enabled: false };
+let godModeText;
+
+function createGodModeUI() {
+    godModeText = document.createElement('div');
+    godModeText.id = 'god-mode-text';
+    godModeText.style.position = 'absolute';
+    godModeText.style.top = '20px';
+    godModeText.style.left = '50%';
+    godModeText.style.transform = 'translateX(-50%)';
+    godModeText.style.color = '#FF0000';
+    godModeText.style.fontSize = '2em';
+    godModeText.style.fontFamily = '"Press Start 2P", cursive, sans-serif';
+    godModeText.style.fontWeight = 'bold';
+    godModeText.style.textShadow = '2px 2px 4px #000000';
+    godModeText.style.display = 'none'; // Initially hidden
+    godModeText.innerText = 'GOD MODE ENABLED';
+    document.body.appendChild(godModeText);
+}
+// ----------------------------------------------------
 
 // ---------------------Ambiente---------------------
+
+initSoundSystem(camera);
 
 let plane = TF.createGroundPlaneXZCust(500, 500, 10, 10, TF.planeTex(["../assets/textures/intertravado.jpg"]));
  scene.add(plane);
@@ -97,8 +123,10 @@ const blocker = document.getElementById('blocker');
 const instructions = document.getElementById('instructions');
 createPlayerHpBar();
 updatePlayerHpBar(player);
+createGodModeUI(); // Create the God Mode text element
 
 // ---------------------Controles do mouse---------------------
+
 instructions.addEventListener('click', function () {
     controls.lock();
 }, false);
@@ -119,6 +147,7 @@ window.addEventListener('mouseup', function (event) {
 }, false);
 
 controls.addEventListener('lock', function () {
+    toggleBackgroundMusic();
     crosshair.style.display = 'block'
     instructions.style.display = 'none';
     blocker.style.display = 'none';
@@ -126,6 +155,7 @@ controls.addEventListener('lock', function () {
 });
 
 controls.addEventListener('unlock', function () {
+    toggleBackgroundMusic();
     crosshair.style.display = 'none';
     blocker.style.display = 'block';
     instructions.style.display = '';
@@ -195,39 +225,39 @@ scene.add(controls.getObject());
 
 let materialBox = new THREE.MeshLambertMaterial({color: "rgb(86, 202, 19)"});
 let boxTakeKeyA1 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox);
-boxTakeKeyA1.translateX(-10);//-130
-boxTakeKeyA1.translateY(0);//5
-boxTakeKeyA1.translateZ(0);//-160
+boxTakeKeyA1.translateX(-130);//-130
+boxTakeKeyA1.translateY(5);//5
+boxTakeKeyA1.translateZ(-160);//-160
 
 let material4 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
 let boxDropKeyA1 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), material4);
 boxDropKeyA1.translateX(20);
-boxDropKeyA1.translateY(0.75);
+boxDropKeyA1.translateY(1.5);
 boxDropKeyA1.translateZ(-98);
 
 let materialBox3 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
 let boxTakeKeyA2 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox3);
 boxTakeKeyA2.translateX(0);
-boxTakeKeyA2.translateY(0);//5
-boxTakeKeyA2.translateZ(-90);//-160
+boxTakeKeyA2.translateY(5);//5
+boxTakeKeyA2.translateZ(-160);//-160
 
 let materialBox4 = new THREE.MeshLambertMaterial({color: "rgb(214, 83, 8)"});
 let boxDropKeyA2 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox4);
-boxDropKeyA2.translateX(130);
+boxDropKeyA2.translateX(100);
 boxDropKeyA2.translateY(0.75);
 boxDropKeyA2.translateZ(-98);
 
 let materialBox5 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
 let boxTakeKeyA3 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox5);
-boxTakeKeyA3.translateX(0);
-boxTakeKeyA3.translateY(0);//5
-boxTakeKeyA3.translateZ(-90);//-160
+boxTakeKeyA3.translateX(125);
+boxTakeKeyA3.translateY(-1);//5
+boxTakeKeyA3.translateZ(-98);//-160
 
 let materialBox6 = new THREE.MeshLambertMaterial({color: "rgb(214, 83, 8)"});
 let boxDropKeyA3 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox6);
-boxDropKeyA3.translateX(130);
+boxDropKeyA3.translateX(0);
 boxDropKeyA3.translateY(0.75);
-boxDropKeyA3.translateZ(-98);
+boxDropKeyA3.translateZ(10);
 
 scene.add(boxTakeKeyA1);
 scene.add(boxDropKeyA1);
@@ -240,7 +270,7 @@ scene.add(boxDropKeyA3);
 
 const BOX = [boxTakeKeyA1, boxTakeKeyA2, boxTakeKeyA3, boxDropKeyA1, boxDropKeyA2, boxDropKeyA3];
 const BOX_KEYS = BOX.slice(0, 3);//[boxTakeKeyA1, boxTakeKeyA2/*, boxTakeKeyA3*/];
-const BOX_DROP_KEYS = BOX.slice(0);//[boxDropKeyA1, boxDropKeyA2/*, boxDropKeyA3*/];
+const BOX_DROP_KEYS = BOX.slice(3,6);//[boxDropKeyA1, boxDropKeyA2/*, boxDropKeyA3*/];
 
 
 let chave1 = CHAVE.CHAVE('rgb(255, 0, 0)');
@@ -276,65 +306,72 @@ let condition_take_key3 = {value:false};
 
 let enemies = await loadEnemies(scene);
 
-const posFinalBox1 = boxTakeKeyA1.position.y + 1;//1.5
+const posFinalBox1 = boxTakeKeyA1.position.y + 1.5;//1.5
 const posFinalBox2 = boxTakeKeyA2.position.y + 1.5;
 const posFinalBox3 = boxTakeKeyA3.position.y + 1.5;
 function operationKeys(){
     
     if (take_key1.value && !take_key1_complete.value){
         boxTakeKeyA1.remove(chave1);
-        take_key1.value = false;
         take_key1_complete.value = true;
         // scene.remove(boxTakeKeyA1);
+        playSound('KEY_PICKUP'); // Som ao pegar a chave
+        BOX_KEYS.shift();
     }
-    if (drop_key1.value && !drop_key1_complete.value && !take_key1.value){
-        console.log("dropa a chave");
+    if (drop_key1.value && !drop_key1_complete.value && take_key1.value){
         take_key1.value = false;
         boxDropKeyA1.add(chave1);
         gateMove.value = true;
+        playSound('DOOR_OPEN'); // Som ao abrir o portão
         drop_key1_complete.value = true;
         condition_key2.value = true;
+        BOX_DROP_KEYS.shift();
     }
     if (take_key2.value && !take_key2_complete.value){
         boxTakeKeyA2.remove(chave2);
         take_key2_complete.value = true;
         // scene.remove(boxTakeKeyA2);
+        playSound('KEY_PICKUP'); // Som ao pegar a chave
+        BOX_KEYS.shift();
     }
-    if (drop_key2.value && !drop_key2_complete.value && !condition_key2.value){
-        console.log("dropa a chave 2");
+    if (drop_key2.value && !drop_key2_complete.value && take_key2.value){
         take_key2.value = false;
         boxDropKeyA2.add(chave2);
         drop_key2_complete.value = true;
         condition_key3.value = true;
+        BOX_DROP_KEYS.shift();
     }
     if (take_key3.value && !take_key3_complete.value){
-        boxTakeKeyA3.remove(chave2);
+        boxTakeKeyA3.remove(chave3);
         take_key3_complete.value = true;
-        // scene.remove(boxTakeKeyA2);
         BOX_KEYS.shift();
     }
-    if (drop_key3.value && !drop_key3_complete.value && !condition_key3.value){
-        console.log("dropa a chave 2");
+    if (drop_key3.value && !drop_key3_complete.value && take_key3.value){
+        console.log("dropa a chave 3");
         take_key3.value = false;
         boxDropKeyA3.add(chave3);
         drop_key3_complete.value = true;
+        BOX_DROP_KEYS.shift();
     }
+
     // Adicionar a chave após a eliminação das skulls
-    if (/*enemies.skulls.length === 0 &&*/ !take_key1_complete.value){
-        // console.log("chave tá lá");
+    if (enemies.skulls.length === 0 && !take_key1_complete.value){
         boxTakeKeyA1.add(chave1);
         if(boxTakeKeyA1.position.y < posFinalBox1){
             boxTakeKeyA1.position.y += 0.1;
         }
     }
     // Adicionar a chave após a eliminação dos cacodemons
-    if (/*enemies.cacodemons.length === 0 &&*/ !take_key2_complete.value && take_key1_complete.value){
+    if (enemies.cacodemons.length === 0 && !take_key2_complete.value && take_key1_complete.value){
         boxTakeKeyA2.add(chave2);
+        console.log("chegou aqui")
         if(boxTakeKeyA2.position.y < posFinalBox2){
+            console.log("chegou aqui")
             boxTakeKeyA2.position.y += 0.1;
         }
         
     }
+    // Adicionar a chave após a eliminação dos soldados
     if (/*enemies.soldiers.length === 0 &&*/ !take_key3_complete.value && take_key2_complete.value){
         boxTakeKeyA3.add(chave3);
         if(boxTakeKeyA3.position.y < posFinalBox3){
@@ -364,6 +401,7 @@ const KEY_S = 83;
 const KEY_W = 87;
 const KEY_A = 65;
 const KEY_D = 68;
+const KEY_G = 71; // G key
 const KEY_ARROW_LEFT = 37;
 const KEY_ARROW_UP = 38;
 const KEY_ARROW_RIGHT = 39;
@@ -372,6 +410,7 @@ const KEY_SPACE = 32;
 const KEY_1 = 49; // 1 key
 const KEY_2 = 50; // 2 key
 const KEY_SHIFT = 16; // Shift key
+const KEY_Q = 81; 
 const elSpeedo=10;
 // const SHOOT = ;
 let moveForward = false;
@@ -417,6 +456,15 @@ function movementControls(key, value) { // if xabu , go back here
                 toggleGun(camera); // Switch to ball launcher
             }
             break;
+        case KEY_Q:
+            if (value) toggleBackgroundMusic(); // Ligar/desligar música
+            break;
+        case KEY_G:
+            if (value) { // Only toggle on keydown, not keyup
+                godModeState.enabled = !godModeState.enabled;
+                godModeText.style.display = godModeState.enabled ? 'block' : 'none';
+            }
+            break;
     }
 }
 
@@ -442,6 +490,7 @@ function moveAnimate(delta) {
     //ELEVADOR
     verticalCaster.ray.direction.copy(LOOK.Down(controls)).normalize();
     atElevador=EL.elevadorLogic(verticalCaster,scenario.objects[1],controls,elevadorCanMove,isAttached);
+    if(atElevador && elevadorCanMove) playSound('PLATFORM_MOVE');
 
     //FALL logic
     if(!atElevador){
@@ -468,15 +517,18 @@ function moveAnimate(delta) {
                 INTER.takeKey(horizontalCaster, boxTakeKeyA2, take_key2, scene, chave2);
                 condition_take_key3.value = true;
             }
+            if(condition_take_key3.value){
+                INTER.takeKey(horizontalCaster, boxTakeKeyA3, take_key3, scene, chave3);
+            }
         }
         if(colisionBoxDropKeys){
             console.log("bateu na caixa que recebe chave");
             if(condition_key1.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA1, drop_key1, scene, chave1);
-            if(condition_key2.value && drop_key2.value)
+            if(condition_key2.value && !drop_key2.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
-            if(condition_key3.value)
-                INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
+            if(condition_key3.value && !drop_key3.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA3, drop_key3, scene, chave3);
         }
         if(!colision && !colisionKeys && !colisionBoxDropKeys)
             controls.moveForward(currentSpeed * delta);
@@ -496,15 +548,18 @@ function moveAnimate(delta) {
                 INTER.takeKey(horizontalCaster, boxTakeKeyA2, take_key2, scene, chave2);
                 condition_take_key3.value = true;
             }
+            if(condition_take_key3.value){
+                INTER.takeKey(horizontalCaster, boxTakeKeyA3, take_key3, scene, chave3);
+            }
         }
         if(colisionBoxDropKeys){
             console.log("bateu na caixa que recebe chave");
             if(condition_key1.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA1, drop_key1, scene, chave1);
-            if(condition_key2.value && drop_key2.value)
+            if(condition_key2.value && !drop_key2.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
-            if(condition_key3.value)
-                INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
+            if(condition_key3.value && !drop_key3.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA3, drop_key3, scene, chave3);
         }
         if(!colision && !colisionKeys && !colisionBoxDropKeys)
             controls.moveForward(currentSpeed * -1 * delta);
@@ -519,21 +574,24 @@ function moveAnimate(delta) {
         if(colisionKeys){
             if(condition_take_key1.value){
                 INTER.takeKey(horizontalCaster, boxTakeKeyA1, take_key1, scene, chave1);
-                condition_take_key3.value = true;
+                condition_take_key2.value = true;
             }
             if(condition_take_key2.value){
                 INTER.takeKey(horizontalCaster, boxTakeKeyA2, take_key2, scene, chave2);
                 condition_take_key3.value = true;
+            }
+            if(condition_take_key3.value){
+                INTER.takeKey(horizontalCaster, boxTakeKeyA3, take_key3, scene, chave3);
             }
         }
         if(colisionBoxDropKeys){
             console.log("bateu na caixa que recebe chave");
             if(condition_key1.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA1, drop_key1, scene, chave1);
-            if(condition_key2.value && drop_key2.value)
+            if(condition_key2.value && !drop_key2.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
-            if(condition_key3.value)
-                INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
+            if(condition_key3.value && !drop_key3.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA3, drop_key3, scene, chave3);
         }
         if(!colision && !colisionKeys && !colisionBoxDropKeys)
             controls.moveRight(currentSpeed * delta);
@@ -552,20 +610,25 @@ function moveAnimate(delta) {
                 INTER.takeKey(horizontalCaster, boxTakeKeyA2, take_key2, scene, chave2);
                 condition_take_key3.value = true;
             }
+            if(condition_take_key3.value){
+                INTER.takeKey(horizontalCaster, boxTakeKeyA3, take_key3, scene, chave3);
+            }
         }
         if(colisionBoxDropKeys){
             console.log("bateu na caixa que recebe chave");
             if(condition_key1.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA1, drop_key1, scene, chave1);
-            if(condition_key2.value && drop_key2.value)
+            if(condition_key2.value && !drop_key2.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
-            if(condition_key3.value)
-                INTER.dropKey(horizontalCaster, boxDropKeyA2, drop_key2, scene, chave2);
+            if(condition_key3.value && !drop_key3.value)
+                INTER.dropKey(horizontalCaster, boxDropKeyA3, drop_key3, scene, chave3);
         }
         if(!colision && !colisionKeys && !colisionBoxDropKeys)
             controls.moveRight(currentSpeed * -1 * delta);
     }
 }
+
+
 
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
 initWeaponSystem(camera, renderer);
@@ -579,7 +642,7 @@ function render() {
     stats.update();
     if (controls.isLocked) {
         updateAnimations();
-        updateWeapons(scenario, scene, camera, enemies);
+        updateWeapons(scenario, scene, camera, enemies, playSound);
         operationKeys();
         moveAnimate(clock.getDelta());
         //console.log(playerHasEnteredFirstArea);

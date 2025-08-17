@@ -36,14 +36,15 @@ export function toggleGun(camera) {
     }
 }
 
-export function updateWeapons(scenario, scene, camera, enemies) {
+export function updateWeapons(scenario, scene, camera, enemies, playSound) {
     if (isMouseDown) {
         switch (currentGun) {
             case GUNTYPE.chaingun:
                 startShootingChaingun(enemies, camera);
+                playSound('CHAINGUN_FIRE');
                 break;
             case GUNTYPE.lancador:
-                initShootBall(scenario,scene, camera); // Simplified: Assumes it handles its own cooldown
+                initShootBall(scenario,scene, camera); 
                 break;
         }
     } else {

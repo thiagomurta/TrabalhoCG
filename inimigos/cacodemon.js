@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { getCollisionObjects, smoothEnemyRotation } from './inimigos.js';
 import { checkProjectileCollisionWithPlayer } from './damageHandler.js'; // Importa a nova função
+import { playPositionalSound } from './../sons/sons.js';
 
 export const CACODEMON_STATE = {
     WANDERING: 'WANDERING',
@@ -43,10 +44,16 @@ export function moveCacodemon(cacodemonData, scenario, player, scene) {
 function handleWanderingState(cacodemonData, player) {
     if (tryDetectPlayer(cacodemonData, player) && cacodemonData.lookAtFrames >= 0) {
         console.log("Cacodemon detected player, switching to LOOKING_AT_PLAYER state");
+        playPositionalSound('CACODEMON_AGGRO', cacodemonData.obj);
         cacodemonData.hasShot = false;
         cacodemonData.state = CACODEMON_STATE.LOOKING_AT_PLAYER;
         cacodemonData.lookAtFrames = LOOK_AT_PLAYER_DURATION_FRAMES;
         return;
+    }
+
+    if (!cacodemonData.nearSoundPlaying) {
+        playPositionalSound('CACODEMON_NEAR', cacodemonData.obj);
+        cacodemonData.nearSoundPlaying = true; // Evita tocar o som em loop a cada frame
     }
 
     const cacodemon = cacodemonData.obj;
@@ -88,6 +95,7 @@ function handleLookingState(cacodemonData, player, scene) {
     smoothEnemyRotation(cacodemon, playerPosition);
 
     if (cacodemonData.lookAtFrames === Math.floor(LOOK_AT_PLAYER_DURATION_FRAMES / 2) && !cacodemonData.hasShot) {
+        playPositionalSound('CACODEMON_ATTACK', cacodemonData.obj);
         initFireball(cacodemonData);
         shootFireball(cacodemonData, scene, player);
     }
