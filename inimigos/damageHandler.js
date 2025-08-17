@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { applyDamageToEnemy } from './inimigos.js';
 import { updatePlayerHpBar } from '../player.js'; 
 import { playSound, playPositionalSound } from './../sons/sons.js';
+import { godModeState } from '../t1.js'; // Import God Mode state
 
 const CHAINGUN_DAMAGE = 2;
 const ROCKET_DAMAGE = 10;
@@ -93,6 +94,10 @@ export function markEnemyGroup(enemyData) {
 // --------------- PLAYER DAMAGE -----------------
 
 function applyDamageToPlayer(player, damage) {
+    if (godModeState.enabled) {
+        return;
+    }
+
     const now = performance.now();
     if (now - lastPlayerHitTime < PLAYER_HIT_COOLDOWN_MS) {
         return; 

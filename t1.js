@@ -67,6 +67,28 @@ let playerHasEnteredFirstArea = {value:false,name:"playerHasEnteredFirstArea", s
 
 let playerHasEnteredSecondArea = {value:false,name:"playerHasEnteredSecondArea", soundPlayed: false}
 
+// --------------------- GOD MODE ---------------------
+export const godModeState = { enabled: false };
+let godModeText;
+
+function createGodModeUI() {
+    godModeText = document.createElement('div');
+    godModeText.id = 'god-mode-text';
+    godModeText.style.position = 'absolute';
+    godModeText.style.top = '20px';
+    godModeText.style.left = '50%';
+    godModeText.style.transform = 'translateX(-50%)';
+    godModeText.style.color = '#FF0000';
+    godModeText.style.fontSize = '2em';
+    godModeText.style.fontFamily = '"Press Start 2P", cursive, sans-serif';
+    godModeText.style.fontWeight = 'bold';
+    godModeText.style.textShadow = '2px 2px 4px #000000';
+    godModeText.style.display = 'none'; // Initially hidden
+    godModeText.innerText = 'GOD MODE ENABLED';
+    document.body.appendChild(godModeText);
+}
+// ----------------------------------------------------
+
 // ---------------------Ambiente---------------------
 
 initSoundSystem(camera);
@@ -101,6 +123,7 @@ const blocker = document.getElementById('blocker');
 const instructions = document.getElementById('instructions');
 createPlayerHpBar();
 updatePlayerHpBar(player);
+createGodModeUI(); // Create the God Mode text element
 
 // ---------------------Controles do mouse---------------------
 
@@ -378,6 +401,7 @@ const KEY_S = 83;
 const KEY_W = 87;
 const KEY_A = 65;
 const KEY_D = 68;
+const KEY_G = 71; // G key
 const KEY_ARROW_LEFT = 37;
 const KEY_ARROW_UP = 38;
 const KEY_ARROW_RIGHT = 39;
@@ -434,6 +458,12 @@ function movementControls(key, value) { // if xabu , go back here
             break;
         case KEY_Q:
             if (value) toggleBackgroundMusic(); // Ligar/desligar música
+            break;
+        case KEY_G:
+            if (value) { // Only toggle on keydown, not keyup
+                godModeState.enabled = !godModeState.enabled;
+                godModeText.style.display = godModeState.enabled ? 'block' : 'none';
+            }
             break;
     }
 }
