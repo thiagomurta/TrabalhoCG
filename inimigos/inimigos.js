@@ -7,7 +7,7 @@ import {moveSkull} from './skull.js';
 import {moveCacodemon} from './cacodemon.js';
 import { SKULL_STATE } from './skull.js';
 import { CACODEMON_STATE } from './cacodemon.js';
-import { fadingObjects } from '../t1.js';
+import { fadingObjects } from '../t3.js';
 import { movePainElemental, PAINELEMENTAL_STATE } from './painelemental.js';
 import { markEnemyGroup } from './damageHandler.js';
 import { playSound } from './../sons/sons.js';
@@ -387,6 +387,15 @@ export function applyDamageToEnemy(enemyData, damage, enemies, firstArea, second
     if (enemyData.name.startsWith('skull') && !firstArea) return;
         
     enemyData.hp -= damage;
+            if (enemyData.name.startsWith('cacodemon')) {
+                if (secondArea) playPositionalSound('CACODEMON_HURT', enemyData.obj);
+            } else if (enemyData.name === 'skull') {
+                if (firstArea) playPositionalSound('LOST_SOUL_HURT', enemyData.obj);
+            } else if (enemyData.name === 'painElemental') {
+                playPositionalSound('PAIN_ELEMENTAL_HURT', enemyData.obj);
+            } else if (enemyData.name === 'soldier') {
+                playPositionalSound('SOLDIER_HURT', enemyData.obj);
+            }
     if (enemyData.hp <= 0) {
         enemyData.hp = 0;
 
