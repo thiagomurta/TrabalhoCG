@@ -3,7 +3,7 @@ import { getCollisionObjects } from './inimigos.js';
 import { checkProjectileCollisionWithPlayer } from './damageHandler.js';
 
 // =============================================================================
-// CONSTANTS
+// ENUMS & CONSTANTS
 // =============================================================================
 
 export const SOLDIER_STATE = {
@@ -48,9 +48,12 @@ export function moveSoldier(soldierData, scenario, player, scene, camera) {
     // Update animations.
     soldierData.spriteMixer.update(soldierData.clock.getDelta());
 
-    // NOTE: Billboarding (forcing sprite to face camera) has been removed
-    // to implement the fixed-angle sprite system. The sprite's visual
-    // orientation is now handled entirely by the animation logic.
+    // NOTE: Re-introducing billboarding. The sprite will now always face the camera.
+    const euler = new THREE.Euler();
+    euler.setFromQuaternion(camera.quaternion, 'YXZ');
+    soldierData.actionSprite.rotation.y = euler.y;
+
+    updateSoldierAnimation(soldierData, player, camera);
 
     // State machine for soldier AI.
     switch (soldierData.state) {
@@ -69,7 +72,7 @@ export function moveSoldier(soldierData, scenario, player, scene, camera) {
     applyVerticalCollision(soldierData);
 
     // Update the soldier's animation based on its current state and direction.
-    updateSoldierAnimation(soldierData, player, camera);
+    
 }
 
 // =============================================================================
