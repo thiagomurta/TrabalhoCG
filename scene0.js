@@ -109,6 +109,10 @@ export function Scene0()
     let a4=A4.area4();
     center.add(a4);
     a4.translateZ(150);
+    for(let i=0;i<hangar.objects.length;i++)
+    {
+      center.objects.push(hangar.objects[i]);
+    }
     for(let i=0;i<a4.objects.length;i++)
     {
       center.objects.push(a4.objects[i]);
