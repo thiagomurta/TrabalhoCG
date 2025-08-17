@@ -104,9 +104,11 @@ center.add(wall4);
 wall4.translateY(15);
 wall4.translateX(-125-2)
 wall4.translateZ(-50);
-center.objects.push(wall1);
-center.objects.push(wall2);
-center.objects.push(wall3);
-center.objects.push(wall4);
+
+
+// center.objects.push(wall1);
+// center.objects.push(wall2);
+// center.objects.push(wall3);
+// center.objects.push(wall4);
 return center;
 }
