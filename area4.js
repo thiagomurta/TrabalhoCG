@@ -104,12 +104,14 @@ center.add(wall4);
 wall4.translateY(15);
 wall4.translateX(-125-2)
 wall4.translateZ(-50);
-
-
-// center.objects.push(wall1);
-// center.objects.push(wall2);
-// center.objects.push(wall3);
-// center.objects.push(wall4);
+let saidaG=new THREE.BoxGeometry(5,0.15,5);
+let saida=new THREE.Mesh(saidaG,TF.boxTexture(["./T3_assets/saida.jpg"],5,0.3,5));
+center.add(saida);
+center.saida=saida;
+ center.objects.push(wall1);
+ center.objects.push(wall2);
+ center.objects.push(wall3);
+ center.objects.push(wall4);
 center.walls4=[wall1,wall2,wall3,wall4];
 return center;
 }
