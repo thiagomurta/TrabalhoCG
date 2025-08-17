@@ -304,7 +304,7 @@ let condition_take_key1 = {value: true};
 let condition_take_key2 = {value: false};
 let condition_take_key3 = {value:false};
 
-let apelacao = {value: false};
+export const apelacao = { value: false };
 
 let enemies = await loadEnemies(scene);
 
@@ -320,7 +320,7 @@ function operationKeys(){
         take_key1_complete.value = true;
         BOX_KEYS.shift();
     }
-    if (drop_key1.value && !drop_key1_complete.value && take_key1.value){
+    if ((drop_key1.value && !drop_key1_complete.value && take_key1.value)){
         take_key1.value = false;
         boxDropKeyA1.add(chave1);
         gateMove.value = true;
@@ -353,14 +353,14 @@ function operationKeys(){
     }
 
     // Adicionar a chave após a eliminação das skulls
-    if ((enemies.skulls.length === 0 && !take_key1_complete.value) || apelacao.value){
+    if ((enemies.skulls.length === 0 || apelacao.value) && !take_key1_complete.value){
         boxTakeKeyA1.add(chave1);
         if(boxTakeKeyA1.position.y < posFinalBox1){
             boxTakeKeyA1.position.y += 0.1;
         }
     }
     // Adicionar a chave após a eliminação dos cacodemons
-    if ((enemies.cacodemons.length <= 4 && !take_key2_complete.value && take_key1_complete.value) || apelacao.value){
+    if ((enemies.cacodemons.length <= 4 || apelacao.value) && !take_key2_complete.value && take_key1_complete.value){
         boxTakeKeyA2.add(chave2);
         if(boxTakeKeyA2.position.y < posFinalBox2){
             boxTakeKeyA2.position.y += 0.1;
@@ -370,7 +370,7 @@ function operationKeys(){
         }
     }
     // Adicionar a chave após a eliminação dos soldados
-    if ((/*enemies.soldiers.length === 0 &&*/ !take_key3_complete.value && take_key2_complete.value) || apelacao.value){
+    if ((/*enemies.soldiers.length === 0 ||*/ apelacao.value) && !take_key3_complete.value && take_key2_complete.value){
         boxTakeKeyA3.add(chave3);
         if(boxTakeKeyA3.position.y < posFinalBox3){
             boxTakeKeyA3.position.y += 0.1;
@@ -410,6 +410,7 @@ const KEY_SPACE = 32;
 const KEY_1 = 49; // 1 key
 const KEY_2 = 50; // 2 key
 const KEY_SHIFT = 16; // Shift key
+const KEY_C = 67;
 const KEY_G = 71; 
 const KEY_Q = 81;
 const elSpeedo=10;
@@ -457,6 +458,37 @@ function movementControls(key, value) { // if xabu , go back here
                 toggleGun(camera); // Switch to ball launcher
             }
             break;
+
+        case KEY_C:
+            if(value){
+                console.log("pegou as chaves")
+                apelacao.value = !apelacao.value;
+                take_key1_complete.value = value;
+                take_key2_complete.value = value;
+                take_key3_complete.value = value;
+                take_key1.value = value;
+                take_key2.value = value;
+                take_key3.value = value;
+    
+                condition_key1.value = value;
+                condition_key2.value = value;
+                condition_key3.value = value;
+    
+                // condition_take_key1.value = value;
+                // condition_take_key2.value = value;
+                // condition_take_key3.value = value;
+    
+                // drop_key1.value = value;
+                // drop_key1_complete.value = value;
+    
+                // drop_key2.value = value;
+                // drop_key2_complete.value = value;
+    
+                // drop_key3.value = value;
+                // drop_key3_complete.value = value;
+              
+            }
+          break;
         case KEY_Q:
             if (value) toggleBackgroundMusic(); // Ligar/desligar música
             break;
@@ -567,7 +599,6 @@ function moveAnimate(delta) {
         
         horizontalCaster.ray.direction.copy(LOOK.Right(controls)).normalize();
         const colision = INTER.intersection(horizontalCaster,scenario.objects, enemies, controls,speed*delta);
-        // const colisionPlane = INTER.intersection(horizontalCaster,boundingBoxPlane, enemies, controls,speed*delta);
         const colisionKeys = INTER.intersectionBoxs(horizontalCaster, BOX_KEYS, controls, speed*delta);
         const colisionBoxDropKeys = INTER.intersectionBoxs(horizontalCaster, BOX_DROP_KEYS, controls, speed*delta);
         if(colisionKeys){
@@ -597,7 +628,6 @@ function moveAnimate(delta) {
     else if (moveLeft) {
         horizontalCaster.ray.direction.copy(LOOK.Left(controls)).normalize();
         const colision = INTER.intersection(horizontalCaster,scenario.objects, enemies, controls,speed*delta);
-        // const colisionPlane = INTER.intersection(horizontalCaster,boundingBoxPlane, enemies, controls,speed*delta);
         const colisionKeys = INTER.intersectionBoxs(horizontalCaster, BOX_KEYS, controls, speed*delta);
         const colisionBoxDropKeys = INTER.intersectionBoxs(horizontalCaster, BOX_DROP_KEYS, controls, speed*delta);
         if(colisionKeys){
