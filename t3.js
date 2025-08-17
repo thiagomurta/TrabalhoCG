@@ -245,7 +245,7 @@ scene.add(controls.getObject());
 // ---------------------Criando a Mesh que vai ser usada---------------------
 
 let materialBox = new THREE.MeshLambertMaterial({color: "rgb(86, 202, 19)"});
-let boxTakeKeyA1 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox);
+let boxTakeKeyA1 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5),  TF.setMaterial("./T3_assets/stone_floor.jpg"));
 boxTakeKeyA1.translateX(-130);//-130
 boxTakeKeyA1.translateY(5);//5
 boxTakeKeyA1.translateZ(-160);//-160
