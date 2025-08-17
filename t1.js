@@ -63,9 +63,9 @@ let atElevador=false;
 let elevadorCanMove=true;
 let isAttached=false;
 let isMouseDown = false;
-let playerHasEnteredFirstArea = {value:false,name:"playerHasEnteredFirstArea", soundPlayed: false};
+export let playerHasEnteredFirstArea = {value: false, name:"playerHasEnteredFirstArea", soundPlayed: false};
 
-let playerHasEnteredSecondArea = {value:false,name:"playerHasEnteredSecondArea", soundPlayed: false}
+export let playerHasEnteredSecondArea = {value: false, name:"playerHasEnteredSecondArea", soundPlayed: false}
 
 // --------------------- GOD MODE ---------------------
 export const godModeState = { enabled: false };

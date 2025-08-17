@@ -88,7 +88,7 @@ export async function loadEnemies(scene) {
             boundingBox: new THREE.Box3().setFromObject(skull),
             targetPoint: null,
             state: SKULL_STATE.WANDERING,
-
+            hasPlayed: false,
             // HP Bar 
             hp: 20,
             maxHp: 20,
@@ -380,7 +380,12 @@ export function updateHpBar(cacodemonData) {
     texture.needsUpdate = true;
 }
 
-export function applyDamageToEnemy(enemyData, damage, enemies) {
+export function applyDamageToEnemy(enemyData, damage, enemies, firstArea, secondArea) {
+    console.log(firstArea);
+    console.log(secondArea);
+    if (enemyData.name.startsWith('cacodemon') && !secondArea) return;
+    if (enemyData.name.startsWith('skull') && !firstArea) return;
+        
     enemyData.hp -= damage;
     if (enemyData.hp <= 0) {
         enemyData.hp = 0;
