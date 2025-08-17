@@ -10,6 +10,7 @@ import { CACODEMON_STATE } from './cacodemon.js';
 import { fadingObjects } from '../t1.js';
 import { movePainElemental, PAINELEMENTAL_STATE } from './painelemental.js';
 import { markEnemyGroup } from './damageHandler.js';
+import { playSound } from './../sons/sons.js';
 
 export const AREA_DIMENSION = 100;
 export const AREAS_Z = -150;
@@ -383,6 +384,19 @@ export function applyDamageToEnemy(enemyData, damage, enemies) {
     enemyData.hp -= damage;
     if (enemyData.hp <= 0) {
         enemyData.hp = 0;
+
+        if (enemyData.name.startsWith('cacodemon')) {
+            playSound('CACODEMON_DEATH');
+        }
+        if (enemyData.name === 'skull') {
+            playSound('LOST_SOUL_DEATH');
+        }
+        if (enemyData.name === 'painElemental') {
+            playSound('PAIN_ELEMENTAL_DEATH');
+        }
+        if (enemyData.name === 'soldier') {
+            playSound('SOLDIER_DEATH');
+        }
         startFadingAnimation(enemyData); // Inicia a animação de desaparecimento
 
         let enemyArray;
@@ -393,6 +407,8 @@ export function applyDamageToEnemy(enemyData, damage, enemies) {
             enemyArray = enemies.skulls;
         } else if (enemyData.name === 'painElemental') {
             enemyArray = enemies.painElementals;
+        } else if (enemyData.name === 'soldier') {
+            enemyArray = enemies.soldiers;
         }
 
         if (enemyArray) {
