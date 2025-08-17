@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { handleProjectileCollision } from '../inimigos/damageHandler.js'; 
 import { teto } from '../t1.js';
+import { playSound }  from '../sons/sons.js';
 // --------------------- ARMA ---------------------
 // MACROS
 const ROCKET_LAUNCHER_LOCATION = "./T3_assets/rocketlauncher.png";
@@ -25,6 +26,8 @@ export function initShootBall(scenario, scene, camera) {
   
   const currentTime = performance.now() / 1000; // Get current time in seconds
   if (currentTime - lastShotTime >= SHOOT_COOLDOWN) {
+      playSound('ROCKET_LAUNCHER_FIRE');
+
       shootBall(scenario, scene, camera);
       lastShotTime = currentTime; // Update the last shot time
   }

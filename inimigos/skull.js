@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { getCollisionObjects, smoothEnemyRotation } from './inimigos.js';
 import { checkSkullCollision } from './damageHandler.js'; // Importa a nova função
+import { playPositionalSound } from './../sons/sons.js';
 
 export const SKULL_STATE = {
     WANDERING: 'WANDERING',
@@ -34,6 +35,7 @@ export function moveSkull(skullData, scenario, player) {
             handleWanderingState(skullData, player);
             break;
         case SKULL_STATE.CHARGING:
+            playPositionalSound('LOST_SOUL_ATTACK', skullData.obj);
             handleChargingState(skullData, player);
             break;
     }

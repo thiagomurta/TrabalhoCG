@@ -7,7 +7,8 @@ import {initRenderer,
         createGroundPlaneXZ } from "../libs/util/util.js";
 import * as S0 from "./scene0.js";
 import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
-import {moveBullet} from "./arma/armaLancador.js";
+import { initSoundSystem, toggleBackgroundMusic, playSound } from './sons/sons.js'; // Adicione esta importação
+import { moveBullet } from "./arma/armaLancador.js"; 
 import * as CHAVE from './chave.js';
 import * as LOOK from './lookers.js'
 import * as INTER from './intersecter.js'
@@ -15,6 +16,7 @@ import * as SCLIMB from './stairClimb.js'
 import { loadEnemies, moveEnemies, updateAnimations } from './inimigos/inimigos.js';
 import * as EL from './elevador.js'
 import { toggleGun, initWeaponSystem, updateWeapons, currentGun, GUNTYPE } from './arma/armaController.js';
+
 import * as GATE from './gateAnim.js'
 
 import * as TF from './texturingfuncs.js'
@@ -61,11 +63,13 @@ let atElevador=false;
 let elevadorCanMove=true;
 let isAttached=false;
 let isMouseDown = false;
-let playerHasEnteredFirstArea = {value:false,name:"playerHasEnteredFirstArea"};
+let playerHasEnteredFirstArea = {value:false,name:"playerHasEnteredFirstArea", soundPlayed: false};
 
-let playerHasEnteredSecondArea = {value:false,name:"playerHasEnteredSecondArea"}
+let playerHasEnteredSecondArea = {value:false,name:"playerHasEnteredSecondArea", soundPlayed: false}
 
 // ---------------------Ambiente---------------------
+
+initSoundSystem(camera);
 
 let plane = TF.createGroundPlaneXZCust(500, 500, 10, 10, TF.planeTex(["../assets/textures/intertravado.jpg"]));
  scene.add(plane);
@@ -99,6 +103,7 @@ createPlayerHpBar();
 updatePlayerHpBar(player);
 
 // ---------------------Controles do mouse---------------------
+
 instructions.addEventListener('click', function () {
     controls.lock();
 }, false);
@@ -119,6 +124,7 @@ window.addEventListener('mouseup', function (event) {
 }, false);
 
 controls.addEventListener('lock', function () {
+    toggleBackgroundMusic();
     crosshair.style.display = 'block'
     instructions.style.display = 'none';
     blocker.style.display = 'none';
@@ -126,6 +132,7 @@ controls.addEventListener('lock', function () {
 });
 
 controls.addEventListener('unlock', function () {
+    toggleBackgroundMusic();
     crosshair.style.display = 'none';
     blocker.style.display = 'block';
     instructions.style.display = '';
@@ -284,12 +291,15 @@ function operationKeys(){
     if (take_key1.value && !take_key1_complete.value){
         boxTakeKeyA1.remove(chave1);
         take_key1_complete.value = true;
+        // scene.remove(boxTakeKeyA1);
+        playSound('KEY_PICKUP'); // Som ao pegar a chave
         BOX_KEYS.shift();
     }
     if (drop_key1.value && !drop_key1_complete.value && take_key1.value){
         take_key1.value = false;
         boxDropKeyA1.add(chave1);
         gateMove.value = true;
+        playSound('DOOR_OPEN'); // Som ao abrir o portão
         drop_key1_complete.value = true;
         condition_key2.value = true;
         BOX_DROP_KEYS.shift();
@@ -297,6 +307,8 @@ function operationKeys(){
     if (take_key2.value && !take_key2_complete.value){
         boxTakeKeyA2.remove(chave2);
         take_key2_complete.value = true;
+        // scene.remove(boxTakeKeyA2);
+        playSound('KEY_PICKUP'); // Som ao pegar a chave
         BOX_KEYS.shift();
     }
     if (drop_key2.value && !drop_key2_complete.value && take_key2.value){
@@ -374,6 +386,7 @@ const KEY_SPACE = 32;
 const KEY_1 = 49; // 1 key
 const KEY_2 = 50; // 2 key
 const KEY_SHIFT = 16; // Shift key
+const KEY_Q = 81; 
 const elSpeedo=10;
 // const SHOOT = ;
 let moveForward = false;
@@ -419,6 +432,9 @@ function movementControls(key, value) { // if xabu , go back here
                 toggleGun(camera); // Switch to ball launcher
             }
             break;
+        case KEY_Q:
+            if (value) toggleBackgroundMusic(); // Ligar/desligar música
+            break;
     }
 }
 
@@ -444,6 +460,7 @@ function moveAnimate(delta) {
     //ELEVADOR
     verticalCaster.ray.direction.copy(LOOK.Down(controls)).normalize();
     atElevador=EL.elevadorLogic(verticalCaster,scenario.objects[1],controls,elevadorCanMove,isAttached);
+    if(atElevador && elevadorCanMove) playSound('PLATFORM_MOVE');
 
     //FALL logic
     if(!atElevador){
@@ -581,6 +598,8 @@ function moveAnimate(delta) {
     }
 }
 
+
+
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
 initWeaponSystem(camera, renderer);
 
@@ -593,7 +612,7 @@ function render() {
     stats.update();
     if (controls.isLocked) {
         updateAnimations();
-        updateWeapons(scenario, scene, camera, enemies);
+        updateWeapons(scenario, scene, camera, enemies, playSound);
         operationKeys();
         moveAnimate(clock.getDelta());
         //console.log(playerHasEnteredFirstArea);
