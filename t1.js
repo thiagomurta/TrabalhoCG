@@ -243,20 +243,20 @@ boxTakeKeyA2.translateZ(-160);//-160
 
 let materialBox4 = new THREE.MeshLambertMaterial({color: "rgb(214, 83, 8)"});
 let boxDropKeyA2 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox4);
-boxDropKeyA2.translateX(100);
-boxDropKeyA2.translateY(0.75);
+boxDropKeyA2.translateX(125);
+boxDropKeyA2.translateY(-1);
 boxDropKeyA2.translateZ(-98);
 
 let materialBox5 = new THREE.MeshLambertMaterial({color: "rgb(165, 49, 49)"});
 let boxTakeKeyA3 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox5);
-boxTakeKeyA3.translateX(125);
+boxTakeKeyA3.translateX(150);
 boxTakeKeyA3.translateY(-1);//5
 boxTakeKeyA3.translateZ(-98);//-160
 
 let materialBox6 = new THREE.MeshLambertMaterial({color: "rgb(214, 83, 8)"});
 let boxDropKeyA3 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), materialBox6);
 boxDropKeyA3.translateX(0);
-boxDropKeyA3.translateY(0.75);
+boxDropKeyA3.translateY(-1);
 boxDropKeyA3.translateZ(10);
 
 scene.add(boxTakeKeyA1);
@@ -303,35 +303,33 @@ let condition_take_key1 = {value: true};
 let condition_take_key2 = {value: false};
 let condition_take_key3 = {value:false};
 
+let apelacao = {value: false};
 
 let enemies = await loadEnemies(scene);
 
-const posFinalBox1 = boxTakeKeyA1.position.y + 1.5;//1.5
-const posFinalBox2 = boxTakeKeyA2.position.y + 1.5;
-const posFinalBox3 = boxTakeKeyA3.position.y + 1.5;
+const posFinalBox1 = boxTakeKeyA1.position.y + 1.75;//1.5
+const posFinalBox2 = boxTakeKeyA2.position.y + 1.75;
+const posFinalBox3 = boxTakeKeyA3.position.y + 2.25;
+const posFinalDropBox2 = boxDropKeyA2.position.y + 2.25;
+const posFinalDropBox3 = boxDropKeyA3.position.y + 2.25;
 function operationKeys(){
     
-    if (take_key1.value && !take_key1_complete.value){
+    if ((take_key1.value && !take_key1_complete.value) || apelacao.value){
         boxTakeKeyA1.remove(chave1);
         take_key1_complete.value = true;
-        // scene.remove(boxTakeKeyA1);
-        playSound('KEY_PICKUP'); // Som ao pegar a chave
         BOX_KEYS.shift();
     }
     if (drop_key1.value && !drop_key1_complete.value && take_key1.value){
         take_key1.value = false;
         boxDropKeyA1.add(chave1);
         gateMove.value = true;
-        playSound('DOOR_OPEN'); // Som ao abrir o portão
         drop_key1_complete.value = true;
         condition_key2.value = true;
         BOX_DROP_KEYS.shift();
     }
-    if (take_key2.value && !take_key2_complete.value){
+    if ((take_key2.value && !take_key2_complete.value) || apelacao.value){
         boxTakeKeyA2.remove(chave2);
         take_key2_complete.value = true;
-        // scene.remove(boxTakeKeyA2);
-        playSound('KEY_PICKUP'); // Som ao pegar a chave
         BOX_KEYS.shift();
     }
     if (drop_key2.value && !drop_key2_complete.value && take_key2.value){
@@ -341,13 +339,12 @@ function operationKeys(){
         condition_key3.value = true;
         BOX_DROP_KEYS.shift();
     }
-    if (take_key3.value && !take_key3_complete.value){
+    if ((take_key3.value && !take_key3_complete.value) || apelacao.value){
         boxTakeKeyA3.remove(chave3);
         take_key3_complete.value = true;
         BOX_KEYS.shift();
     }
     if (drop_key3.value && !drop_key3_complete.value && take_key3.value){
-        console.log("dropa a chave 3");
         take_key3.value = false;
         boxDropKeyA3.add(chave3);
         drop_key3_complete.value = true;
@@ -355,41 +352,44 @@ function operationKeys(){
     }
 
     // Adicionar a chave após a eliminação das skulls
-    if (enemies.skulls.length === 0 && !take_key1_complete.value){
+    if ((enemies.skulls.length === 0 && !take_key1_complete.value) || apelacao.value){
         boxTakeKeyA1.add(chave1);
         if(boxTakeKeyA1.position.y < posFinalBox1){
             boxTakeKeyA1.position.y += 0.1;
         }
     }
     // Adicionar a chave após a eliminação dos cacodemons
-    if (enemies.cacodemons.length === 0 && !take_key2_complete.value && take_key1_complete.value){
+    if ((enemies.cacodemons.length <= 4 && !take_key2_complete.value && take_key1_complete.value) || apelacao.value){
         boxTakeKeyA2.add(chave2);
-        console.log("chegou aqui")
         if(boxTakeKeyA2.position.y < posFinalBox2){
-            console.log("chegou aqui")
             boxTakeKeyA2.position.y += 0.1;
         }
-        
+        if(boxDropKeyA2.position.y < posFinalDropBox2){
+            boxDropKeyA2.position.y += 0.1;
+        }
     }
     // Adicionar a chave após a eliminação dos soldados
-    if (/*enemies.soldiers.length === 0 &&*/ !take_key3_complete.value && take_key2_complete.value){
+    if ((/*enemies.soldiers.length === 0 &&*/ !take_key3_complete.value && take_key2_complete.value) || apelacao.value){
         boxTakeKeyA3.add(chave3);
         if(boxTakeKeyA3.position.y < posFinalBox3){
             boxTakeKeyA3.position.y += 0.1;
+        }
+        if(boxDropKeyA3.position.y < posFinalDropBox3){
+            boxDropKeyA3.position.y += 0.1;
         }
         
     }
 }
 
 // ------------ ASSET DO AVIÃO --------------
-/*
 async function init(){
     const planeAsset = await Plane();
+    planeAsset.translateX(-180);
+    planeAsset.translateZ(-150);
     scene.add(planeAsset);
-    scene.add(boundingBoxPlane);
 }
 init();
-*/
+
 
 // ------------ CONTROLES DO TECLADO --------------
 
@@ -401,7 +401,6 @@ const KEY_S = 83;
 const KEY_W = 87;
 const KEY_A = 65;
 const KEY_D = 68;
-const KEY_G = 71; // G key
 const KEY_ARROW_LEFT = 37;
 const KEY_ARROW_UP = 38;
 const KEY_ARROW_RIGHT = 39;
@@ -410,7 +409,6 @@ const KEY_SPACE = 32;
 const KEY_1 = 49; // 1 key
 const KEY_2 = 50; // 2 key
 const KEY_SHIFT = 16; // Shift key
-const KEY_Q = 81; 
 const elSpeedo=10;
 // const SHOOT = ;
 let moveForward = false;
@@ -454,15 +452,6 @@ function movementControls(key, value) { // if xabu , go back here
         case KEY_2:
             if (currentGun === GUNTYPE.chaingun) {
                 toggleGun(camera); // Switch to ball launcher
-            }
-            break;
-        case KEY_Q:
-            if (value) toggleBackgroundMusic(); // Ligar/desligar música
-            break;
-        case KEY_G:
-            if (value) { // Only toggle on keydown, not keyup
-                godModeState.enabled = !godModeState.enabled;
-                godModeText.style.display = godModeState.enabled ? 'block' : 'none';
             }
             break;
     }
@@ -513,7 +502,6 @@ function moveAnimate(delta) {
                 condition_take_key2.value = true;
             }
             if(condition_take_key2.value){
-                console.log("bateu na caixa que pega a chave 2");
                 INTER.takeKey(horizontalCaster, boxTakeKeyA2, take_key2, scene, chave2);
                 condition_take_key3.value = true;
             }
@@ -522,7 +510,6 @@ function moveAnimate(delta) {
             }
         }
         if(colisionBoxDropKeys){
-            console.log("bateu na caixa que recebe chave");
             if(condition_key1.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA1, drop_key1, scene, chave1);
             if(condition_key2.value && !drop_key2.value)
@@ -530,7 +517,7 @@ function moveAnimate(delta) {
             if(condition_key3.value && !drop_key3.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA3, drop_key3, scene, chave3);
         }
-        if(!colision && !colisionKeys && !colisionBoxDropKeys)
+        if(!colision && !colisionKeys && !colisionBoxDropKeys /*&& !colisionPlane*/)
             controls.moveForward(currentSpeed * delta);
 
     }
@@ -553,7 +540,6 @@ function moveAnimate(delta) {
             }
         }
         if(colisionBoxDropKeys){
-            console.log("bateu na caixa que recebe chave");
             if(condition_key1.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA1, drop_key1, scene, chave1);
             if(condition_key2.value && !drop_key2.value)
@@ -561,7 +547,7 @@ function moveAnimate(delta) {
             if(condition_key3.value && !drop_key3.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA3, drop_key3, scene, chave3);
         }
-        if(!colision && !colisionKeys && !colisionBoxDropKeys)
+        if(!colision && !colisionKeys && !colisionBoxDropKeys /*&& !colisionPlane*/)
             controls.moveForward(currentSpeed * -1 * delta);
     }
 
@@ -569,6 +555,7 @@ function moveAnimate(delta) {
         
         horizontalCaster.ray.direction.copy(LOOK.Right(controls)).normalize();
         const colision = INTER.intersection(horizontalCaster,scenario.objects, enemies, controls,speed*delta);
+        // const colisionPlane = INTER.intersection(horizontalCaster,boundingBoxPlane, enemies, controls,speed*delta);
         const colisionKeys = INTER.intersectionBoxs(horizontalCaster, BOX_KEYS, controls, speed*delta);
         const colisionBoxDropKeys = INTER.intersectionBoxs(horizontalCaster, BOX_DROP_KEYS, controls, speed*delta);
         if(colisionKeys){
@@ -585,7 +572,6 @@ function moveAnimate(delta) {
             }
         }
         if(colisionBoxDropKeys){
-            console.log("bateu na caixa que recebe chave");
             if(condition_key1.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA1, drop_key1, scene, chave1);
             if(condition_key2.value && !drop_key2.value)
@@ -593,12 +579,13 @@ function moveAnimate(delta) {
             if(condition_key3.value && !drop_key3.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA3, drop_key3, scene, chave3);
         }
-        if(!colision && !colisionKeys && !colisionBoxDropKeys)
+        if(!colision && !colisionKeys && !colisionBoxDropKeys /*&& !colisionPlane*/)
             controls.moveRight(currentSpeed * delta);
     }
     else if (moveLeft) {
         horizontalCaster.ray.direction.copy(LOOK.Left(controls)).normalize();
         const colision = INTER.intersection(horizontalCaster,scenario.objects, enemies, controls,speed*delta);
+        // const colisionPlane = INTER.intersection(horizontalCaster,boundingBoxPlane, enemies, controls,speed*delta);
         const colisionKeys = INTER.intersectionBoxs(horizontalCaster, BOX_KEYS, controls, speed*delta);
         const colisionBoxDropKeys = INTER.intersectionBoxs(horizontalCaster, BOX_DROP_KEYS, controls, speed*delta);
         if(colisionKeys){
@@ -615,7 +602,6 @@ function moveAnimate(delta) {
             }
         }
         if(colisionBoxDropKeys){
-            console.log("bateu na caixa que recebe chave");
             if(condition_key1.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA1, drop_key1, scene, chave1);
             if(condition_key2.value && !drop_key2.value)
@@ -623,12 +609,10 @@ function moveAnimate(delta) {
             if(condition_key3.value && !drop_key3.value)
                 INTER.dropKey(horizontalCaster, boxDropKeyA3, drop_key3, scene, chave3);
         }
-        if(!colision && !colisionKeys && !colisionBoxDropKeys)
+        if(!colision && !colisionKeys && !colisionBoxDropKeys /*&& !colisionPlane*/)
             controls.moveRight(currentSpeed * -1 * delta);
     }
 }
-
-
 
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
 initWeaponSystem(camera, renderer);
