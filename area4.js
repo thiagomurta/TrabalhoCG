@@ -110,5 +110,6 @@ wall4.translateZ(-50);
 // center.objects.push(wall2);
 // center.objects.push(wall3);
 // center.objects.push(wall4);
+center.walls4=[wall1,wall2,wall3,wall4];
 return center;
 }

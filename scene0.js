@@ -120,6 +120,7 @@ export function Scene0()
     {
       center.objects.push(a4.objects[i]);
     }
-    
+    center.walls4=a4.walls4;
+    center.porta=[hangar.objects[7]];
     return center;
 }
