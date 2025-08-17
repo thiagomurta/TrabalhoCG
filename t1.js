@@ -103,6 +103,7 @@ createPlayerHpBar();
 updatePlayerHpBar(player);
 
 // ---------------------Controles do mouse---------------------
+
 instructions.addEventListener('click', function () {
     controls.lock();
 }, false);
@@ -123,6 +124,7 @@ window.addEventListener('mouseup', function (event) {
 }, false);
 
 controls.addEventListener('lock', function () {
+    toggleBackgroundMusic();
     crosshair.style.display = 'block'
     instructions.style.display = 'none';
     blocker.style.display = 'none';
@@ -130,6 +132,7 @@ controls.addEventListener('lock', function () {
 });
 
 controls.addEventListener('unlock', function () {
+    toggleBackgroundMusic();
     crosshair.style.display = 'none';
     blocker.style.display = 'block';
     instructions.style.display = '';
@@ -578,6 +581,8 @@ function moveAnimate(delta) {
             controls.moveRight(currentSpeed * -1 * delta);
     }
 }
+
+
 
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
 initWeaponSystem(camera, renderer);

@@ -54,10 +54,9 @@ function loadSound(name, path, loop = false, volume = 0.5) {
         sound.setLoop(loop);
         sound.setVolume(volume);
         sounds[name] = sound;
-
+        
         if (name === 'BACKGROUND_MUSIC') {
             backgroundMusic = sound;
-            backgroundMusic.play();
         }
     });
 }
