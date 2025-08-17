@@ -97,7 +97,11 @@ export function Scene0()
     let boundingBoxPlane = new THREE.Mesh(new THREE.BoxGeometry(12,10,18), materialBoundingBox);
     boundingBoxPlane.visible = false;
 
-    let hangar = HANGAR.HANGAR(100,40, 38, 20);
+
+    let hangar = HANGAR.HANGAR(100, 40, 38, 20);
+    hangar.translateX(125);
+    hangar.translateY(0);
+    hangar.translateZ(-145);
                 //  0    1   2   3    4     5     6     7        8              9            10           11              12 
     center.objects=[bu0,bu1,wallU,wallR,wallD,wallL/*,boxDropKeyA1, boxTakeKeyA1, boxTakeKeyA2, boxTakeKeyA3, boundingBoxPlane*/];
     center.add(hangar);
