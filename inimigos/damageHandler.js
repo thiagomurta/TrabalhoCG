@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { applyDamageToEnemy } from './inimigos.js';
 import { updatePlayerHpBar } from '../player.js'; 
 import { playSound, playPositionalSound } from './../sons/sons.js';
-import { godModeState } from '../t1.js'; // Import God Mode state
+import { godModeState, playerHasEnteredFirstArea, playerHasEnteredSecondArea } from '../t1.js'; // Import God Mode state
 
 const CHAINGUN_DAMAGE = 2;
 const ROCKET_DAMAGE = 10;
@@ -81,7 +81,7 @@ function applyDamage(hitObject, damage, enemies) {
         } else if (enemyData.name === 'soldier') {
             playPositionalSound('SOLDIER_HURT', enemyData.obj);
         }
-        applyDamageToEnemy(enemyData, damage, enemies);
+        applyDamageToEnemy(enemyData, damage, enemies, playerHasEnteredFirstArea.value, playerHasEnteredSecondArea.value);
     }
 }
 

@@ -57,7 +57,7 @@ export function HANGAR(comprimento,raio1, raio2, altura){
     cubeMesh3.position.set(0, 0, -comprimento/2+thickness/2);
     cubeMesh4.position.set(raio1-(raio1/4)+(thickness/2), 0, comprimento/2-thickness/2);
     cubeMesh5.position.set(-raio1+(raio1/4)-(thickness/2), 0, comprimento/2-thickness/2);
-    cubeMesh6.position.set(0, 0, comprimento/2-thickness*0.375);
+    cubeMesh6.position.set(0, 0, comprimento/2-thickness*0.75);
 
     cylinderMesh.matrixAutoUpdate = false;
     cylinderMesh.updateMatrix();
@@ -73,8 +73,8 @@ export function HANGAR(comprimento,raio1, raio2, altura){
     cubeMesh4.updateMatrix();
     cubeMesh5.matrixAutoUpdate = false;
     cubeMesh5.updateMatrix();
-    cubeMesh6.matrixAutoUpdate = false;
-    cubeMesh6.updateMatrix();
+    //cubeMesh6.matrixAutoUpdate = false;
+    //cubeMesh6.updateMatrix();
 
     // parede cilíndrica
     let cylinderWall1 = new THREE.CylinderGeometry(raio2, raio2, thickness/2, 32, true, undefined, Math.PI, Math.PI);
@@ -122,5 +122,6 @@ export function HANGAR(comprimento,raio1, raio2, altura){
     /// translates
     /// translate em z para parede fundo e frente
     /// translate em x para parede fundo e frente
+   
     return centro;
 }

@@ -26,6 +26,7 @@ import {OBJLoader} from '../build/jsm/loaders/OBJLoader.js';
 import {MTLLoader} from '../build/jsm/loaders/MTLLoader.js';
 import { Plane } from './plane.js';
 import { CubeTextureLoaderSingleFile } from '../libs/util/cubeTextureLoaderSingleFile.js';
+import * as VA from './animMove.js'
 
 import { instancePlayer, createPlayerHpBar, updatePlayerHpBar } from './player.js';
 
@@ -63,9 +64,9 @@ let atElevador=false;
 let elevadorCanMove=true;
 let isAttached=false;
 let isMouseDown = false;
-let playerHasEnteredFirstArea = {value:false,name:"playerHasEnteredFirstArea", soundPlayed: false};
+export let playerHasEnteredFirstArea = {value: false, name:"playerHasEnteredFirstArea", soundPlayed: false};
 
-let playerHasEnteredSecondArea = {value:false,name:"playerHasEnteredSecondArea", soundPlayed: false}
+export let playerHasEnteredSecondArea = {value: false, name:"playerHasEnteredSecondArea", soundPlayed: false}
 
 // --------------------- GOD MODE ---------------------
 export const godModeState = { enabled: false };
@@ -409,7 +410,9 @@ const KEY_SPACE = 32;
 const KEY_1 = 49; // 1 key
 const KEY_2 = 50; // 2 key
 const KEY_SHIFT = 16; // Shift key
-const TAKE_ALL_KEYS = 67;
+const KEY_C = 67;
+const KEY_G = 71; 
+const KEY_Q = 81;
 const elSpeedo=10;
 // const SHOOT = ;
 let moveForward = false;
@@ -455,7 +458,8 @@ function movementControls(key, value) { // if xabu , go back here
                 toggleGun(camera); // Switch to ball launcher
             }
             break;
-        case TAKE_ALL_KEYS:
+
+        case KEY_C:
             if(value){
                 console.log("pegou as chaves")
                 apelacao.value = !apelacao.value;
@@ -482,6 +486,16 @@ function movementControls(key, value) { // if xabu , go back here
     
                 // drop_key3.value = value;
                 // drop_key3_complete.value = value;
+              
+            }
+          break;
+        case KEY_Q:
+            if (value) toggleBackgroundMusic(); // Ligar/desligar música
+            break;
+        case KEY_G:
+            if (value) { // Only toggle on keydown, not keyup
+                godModeState.enabled = !godModeState.enabled;
+                godModeText.style.display = godModeState.enabled ? 'block' : 'none';
             }
             break;
     }
@@ -648,6 +662,7 @@ initWeaponSystem(camera, renderer);
 const clock = new THREE.Clock();
 
 export let fadingObjects = [];
+let test={value:true};
 render();
 
 function render() {
@@ -661,8 +676,11 @@ function render() {
         if (enemies) moveEnemies(scene, scenario, player, enemies, playerHasEnteredFirstArea.value, playerHasEnteredSecondArea.value); // will move enemies
         moveBullet(scene, camera, enemies); // will move bullet if its isShooting attribute is truthy
     }
+
     renderer.shadowMap.enabled=true;
     renderer.shadowMap.type=THREE.PCFShadowMap;
     renderer.render(scene, camera) // Render scene
+    VA.animVert(scenario.walls4,30,drop_key2,-30)
+    VA.animVert(scenario.porta,40,drop_key3,-40);
     requestAnimationFrame(render);
 }
