@@ -6,6 +6,7 @@ import { playPositionalSound } from './../sons/sons.js';
 export const SKULL_STATE = {
     WANDERING: 'WANDERING',
     CHARGING: 'CHARGING',
+    CLIMBING: 'CLIMBING'
 };
 
 const PLAYER_DETECT_DISTANCE = {
@@ -42,11 +43,15 @@ export function moveSkull(skullData, scenario, player) {
             }
             handleChargingState(skullData, player);
             break;
+        case SKULL_STATE.CLIMBING:
+            handleClimbingState(skullData);
+            break;
     }
 
-    // Apply vertical collision logic to handle gravity and ground detection.
-    applyVerticalCollision(skullData);
+    if (skullData.state !== SKULL_STATE.CLIMBING)  applyVerticalCollision(skullData);
 }
+
+const VERTICAL_SMOOTHING_FACTOR = 0.1;
 
 function applyVerticalCollision(skullData) {
     const skull = skullData.obj;
@@ -64,7 +69,8 @@ function applyVerticalCollision(skullData) {
 
     if (intersects.length > 0) {
         const groundY = intersects[0].point.y;
-        skull.position.y = groundY + SKULL_VERTICAL_OFFSET;
+        const targetY = groundY + SKULL_VERTICAL_OFFSET;
+        skull.position.y += (targetY - skull.position.y) * VERTICAL_SMOOTHING_FACTOR;
 
     } else {
         skull.position.y -= gravity;
@@ -81,7 +87,7 @@ function handleWanderingState(skullData, player) {
     const skull = skullData.obj;
     const currentPosition = skull.position;
 
-        const horizontalPosition = currentPosition.clone();
+    const horizontalPosition = currentPosition.clone();
     horizontalPosition.y = 0;
     const horizontalTarget = skullData.targetPoint ? skullData.targetPoint.clone() : null;
     if (horizontalTarget) {
@@ -92,11 +98,25 @@ function handleWanderingState(skullData, player) {
         skullData.targetPoint = getNewWanderTarget(currentPosition);
     }
 
-    moveTowardsTarget(skullData, WANDER_SPEED, () => {
-        skullData.targetPoint = null;
-    });
+    moveTowardsTarget(skullData, WANDER_SPEED, (direction) => {
+            skullData.state = SKULL_STATE.CLIMBING;
+            const hitObject = skullData.hitObject;
+            const wallBBox = new THREE.Box3().setFromObject(hitObject);
+            const wallTopY = wallBBox.max.y;
+            
+            if ((wallTopY - currentPosition.y) < MAX_CLIMB_HEIGHT) {
+                const newTarget = skull.position.clone().add(direction.multiplyScalar(2));
+                newTarget.y = wallTopY + SKULL_VERTICAL_OFFSET; 
+
+                skullData.targetPoint = newTarget;
+            } else {
+                skullData.state = SKULL_STATE.WANDERING;
+                skullData.targetPoint = null;
+            }
+        });
 }
 
+const MAX_CLIMB_HEIGHT = 15;
 function handleChargingState(skullData, player) {
     const skull = skullData.obj;
     const currentPosition = skull.position;
@@ -115,9 +135,21 @@ function handleChargingState(skullData, player) {
     checkSkullCollision(skullData, player);
 
     moveTowardsTarget(skullData, CHARGE_SPEED,  
-        () => {
-            skullData.state = SKULL_STATE.WANDERING;
-            skullData.targetPoint = null;
+        (direction) => {
+            skullData.state = SKULL_STATE.CLIMBING;
+            const hitObject = skullData.hitObject;
+            const wallBBox = new THREE.Box3().setFromObject(hitObject);
+            const wallTopY = wallBBox.max.y;
+            
+            if ((wallTopY - currentPosition.y) < MAX_CLIMB_HEIGHT) {
+                const newTarget = skull.position.clone().add(direction.multiplyScalar(2));
+                newTarget.y = wallTopY + SKULL_VERTICAL_OFFSET; 
+
+                skullData.targetPoint = newTarget;
+            } else {
+                skullData.state = SKULL_STATE.WANDERING;
+                skullData.targetPoint = null;
+            }
         }
     );
 
@@ -125,6 +157,31 @@ function handleChargingState(skullData, player) {
     if (skullData.targetPoint) smoothEnemyRotation(skull, skullData.targetPoint);
 }
 
+function handleClimbingState(skullData) {
+    const skull = skullData.obj;
+    const current_x = skullData.obj.position.x;
+    const current_z = skullData.obj.position.z;
+    const target = skullData.targetPoint.clone();
+    target.x = current_x;
+    target.z = current_z;
+
+    if (!target) {
+        skullData.state = SKULL_STATE.WANDERING;
+        return;
+    }
+    
+    const climbSpeed = 0.05; // A slow, deliberate speed for climbing
+    
+    // Smoothly move (interpolate) the skull towards the target point
+    skull.position.lerp(target, climbSpeed);
+
+    // If it's very close to the target, the climb is finished.
+    if (skull.position.distanceTo(target) < 0.1) {
+        skull.position.copy(target); // Snap to the final position
+        skullData.state = SKULL_STATE.WANDERING;
+        //skullData.targetPoint = null; // Clear the target to find a new one
+    }
+}
 function moveTowardsTarget(skullData, speed, onBlockCallback) {
     const skull = skullData.obj;
     const currentPosition = skull.position;
@@ -140,7 +197,8 @@ function moveTowardsTarget(skullData, speed, onBlockCallback) {
     const intersects = raycaster.intersectObjects(skullData.collisionObjects);
 
     if (intersects.length > 0) {
-        onBlockCallback();
+        skullData.hitObject = intersects[0].object;
+        onBlockCallback(direction);
     } else {
         smoothEnemyRotation(skull, skullData.targetPoint);
         currentPosition.add(direction.multiplyScalar(speed));

@@ -10,7 +10,7 @@ import { CACODEMON_STATE } from './cacodemon.js';
 import { fadingObjects } from '../t3.js';
 import { movePainElemental, PAINELEMENTAL_STATE } from './painelemental.js';
 import { markEnemyGroup } from './damageHandler.js';
-import { playSound } from './../sons/sons.js';
+import { playSound, playPositionalSound } from './../sons/sons.js';
 
 export const AREA_DIMENSION = 100;
 export const AREAS_Z = -150;
@@ -89,6 +89,7 @@ export async function loadEnemies(scene) {
             targetPoint: null,
             state: SKULL_STATE.WANDERING,
             hasPlayed: false,
+            hitObject: null,    
             // HP Bar 
             hp: 20,
             maxHp: 20,
