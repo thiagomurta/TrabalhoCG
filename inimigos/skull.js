@@ -26,6 +26,15 @@ const SKULL_VERTICAL_OFFSET = 2;
 
 
 export function moveSkull(skullData, scenario, player) {
+    const skull = skullData.obj;
+
+    if (!skullData.stuckDetector) {
+        skullData.stuckDetector = {
+            lastPosition: skull.position.clone(),
+            timer: 0,
+            thresholdFrames: 120 // Approx 2 seconds at 60fps
+        };
+    }
 
     if (!skullData.collisionObjects) {
         skullData.collisionObjects = getCollisionObjects(scenario);
@@ -49,6 +58,21 @@ export function moveSkull(skullData, scenario, player) {
     }
 
     if (skullData.state !== SKULL_STATE.CLIMBING)  applyVerticalCollision(skullData);
+
+    const stuckDetector = skullData.stuckDetector;
+    if (skull.position.distanceTo(stuckDetector.lastPosition) < 0.05) {
+        stuckDetector.timer++;
+    } else {
+        stuckDetector.timer = 0;
+        stuckDetector.lastPosition.copy(skull.position);
+    }
+
+    if (stuckDetector.timer > stuckDetector.thresholdFrames) {
+        console.warn("Skull stuck, forcing a new wander target.");
+        skullData.state = SKULL_STATE.WANDERING;
+        skullData.targetPoint = null; 
+        stuckDetector.timer = 0;
+    }
 }
 
 const VERTICAL_SMOOTHING_FACTOR = 0.1;
@@ -235,23 +259,52 @@ function moveTowardsTarget(skullData, speed, onBlockCallback) {
     const horizontalTarget = skullData.targetPoint.clone();
     horizontalTarget.y = currentPosition.y; 
 
-    const direction = horizontalTarget.sub(currentPosition).normalize();
+    let direction = horizontalTarget.sub(currentPosition).normalize();
     const COLLISION_CHECK_DISTANCE = speed + COLLISION_CHECK_DISTANCE_DELTA;
-    const raycaster = new THREE.Raycaster(currentPosition, direction, 0, COLLISION_CHECK_DISTANCE);
-    const intersects = raycaster.intersectObjects(skullData.collisionObjects);
 
-    let wallBBox = 0;
+    // OBSTACLE AVOIDANCE WITH "WHISKERS"
+    const whiskerAngle = Math.PI / 6; // 30 degrees
+    const leftWhiskerDir = direction.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), whiskerAngle);
+    const rightWhiskerDir = direction.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), -whiskerAngle);
+
+    const centerRay = new THREE.Raycaster(currentPosition, direction, 0, COLLISION_CHECK_DISTANCE);
+    const leftRay = new THREE.Raycaster(currentPosition, leftWhiskerDir, 0, COLLISION_CHECK_DISTANCE);
+    const rightRay = new THREE.Raycaster(currentPosition, rightWhiskerDir, 0, COLLISION_CHECK_DISTANCE);
+
+    const centerIntersects = centerRay.intersectObjects(skullData.collisionObjects);
+    const leftIntersects = leftRay.intersectObjects(skullData.collisionObjects);
+    const rightIntersects = rightRay.intersectObjects(skullData.collisionObjects);
+
+    let intersects = centerIntersects; // Default to center
+
+    if (centerIntersects.length > 0) {
+        // Center is blocked, check whiskers to steer away.
+        if (leftIntersects.length === 0 && rightIntersects.length > 0) {
+            direction.lerp(leftWhiskerDir, 0.5).normalize(); // Steer left
+        } else if (rightIntersects.length === 0 && leftIntersects.length > 0) {
+            direction.lerp(rightWhiskerDir, 0.5).normalize(); // Steer right
+        }
+    }
+
     if (intersects.length > 0) {
-            const hitObject = intersects[0].object;
-            wallBBox = new THREE.Box3().setFromObject(hitObject); }
-    
-    const wallTopY = wallBBox ? wallBBox.max.y : 999;
+        const hitObject = intersects[0].object;
+        const wallBBox = new THREE.Box3().setFromObject(hitObject);
+        const wallTopY = wallBBox.max.y;
+        const hitNormal = intersects[0].face.normal;
 
-
-    if (intersects.length > 0 && (wallTopY - currentPosition.y) > 1) {
-        skullData.hitObject = intersects[0].object;
-        onBlockCallback(direction);
-    } else {
+        // CLIMBING TRIGGER WITH SURFACE NORMAL
+        // Only climb if the surface is vertical (normal.y is near 0) and it's not too high.
+        if ((wallTopY - currentPosition.y) > 1 && Math.abs(hitNormal.y) < 0.2) {
+            skullData.hitObject = hitObject;
+            onBlockCallback(direction); // Initiate climb
+        } else {
+            // WALL SLIDING
+            // Can't climb, so slide along the wall.
+            const slideVector = direction.clone();
+            slideVector.projectOnPlane(hitNormal).normalize();
+            currentPosition.add(slideVector.multiplyScalar(speed));
+        }
+   } else {
         smoothEnemyRotation(skull, skullData.targetPoint);
         currentPosition.add(direction.multiplyScalar(speed));
     }
