@@ -20,7 +20,7 @@ export const CHARGE_TARGET_DISTANCE = 1000;
 const CHARGE_SPEED = 0.8;
 const WANDER_SPEED = 0.1;
 const PROXIMITY_THRESHOLD = 0.5;
-const COLLISION_CHECK_DISTANCE = 0.5;
+const COLLISION_CHECK_DISTANCE_DELTA = 0.5;
 const SKULL_VERTICAL_OFFSET = 2;
 
 
@@ -140,10 +140,11 @@ function handleChargingState(skullData, player) {
             const hitObject = skullData.hitObject;
             const wallBBox = new THREE.Box3().setFromObject(hitObject);
             const wallTopY = wallBBox.max.y;
+
             
             if ((wallTopY - currentPosition.y) < MAX_CLIMB_HEIGHT) {
                 const newTarget = skull.position.clone().add(direction.multiplyScalar(2));
-                newTarget.y = wallTopY + SKULL_VERTICAL_OFFSET; 
+                newTarget.y = wallTopY + SKULL_VERTICAL_OFFSET + 1; 
 
                 skullData.targetPoint = newTarget;
             } else {
@@ -170,14 +171,12 @@ function handleClimbingState(skullData) {
         return;
     }
     
-    const climbSpeed = 0.05; // A slow, deliberate speed for climbing
+    const climbSpeed = 0.1; // A slow, deliberate speed for climbing
     
-    // Smoothly move (interpolate) the skull towards the target point
     skull.position.lerp(target, climbSpeed);
 
-    // If it's very close to the target, the climb is finished.
     if (skull.position.distanceTo(target) < 0.1) {
-        skull.position.copy(target); // Snap to the final position
+        skull.position.copy(target);
         skullData.state = SKULL_STATE.WANDERING;
         //skullData.targetPoint = null; // Clear the target to find a new one
     }
@@ -192,11 +191,19 @@ function moveTowardsTarget(skullData, speed, onBlockCallback) {
     horizontalTarget.y = currentPosition.y; 
 
     const direction = horizontalTarget.sub(currentPosition).normalize();
-
+    const COLLISION_CHECK_DISTANCE = speed + COLLISION_CHECK_DISTANCE_DELTA;
     const raycaster = new THREE.Raycaster(currentPosition, direction, 0, COLLISION_CHECK_DISTANCE);
     const intersects = raycaster.intersectObjects(skullData.collisionObjects);
 
+    let wallBBox = 0;
     if (intersects.length > 0) {
+            const hitObject = intersects[0].object;
+            wallBBox = new THREE.Box3().setFromObject(hitObject); }
+    
+    const wallTopY = wallBBox ? wallBBox.max.y : 999;
+
+
+    if (intersects.length > 0 && (wallTopY - currentPosition.y) > 1) {
         skullData.hitObject = intersects[0].object;
         onBlockCallback(direction);
     } else {
