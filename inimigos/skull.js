@@ -52,6 +52,13 @@ export function moveSkull(skullData, scenario, player) {
 }
 
 const VERTICAL_SMOOTHING_FACTOR = 0.1;
+const GROUND_CHECK_OFFSETS = [ // Define the offsets for the ground check rays from the skull's center
+    new THREE.Vector3(0, 0, 0),    // Center
+    new THREE.Vector3(0.5, 0, 0),   // Right
+    new THREE.Vector3(-0.5, 0, 0),  // Left
+    new THREE.Vector3(0, 0, 0.5),   // Forward
+    new THREE.Vector3(0, 0, -0.5)   // Back
+];
 
 function applyVerticalCollision(skullData) {
     const skull = skullData.obj;
@@ -59,20 +66,35 @@ function applyVerticalCollision(skullData) {
     const collisionObjects = skullData.collisionObjects;
     const gravity = 0.1; 
     const groundCheckOffset = 1; 
+    
+    let groundFound = false;
+    let highestGroundY = -Infinity;
 
-    const downRaycaster = new THREE.Raycaster(
-        new THREE.Vector3(currentPosition.x, currentPosition.y + groundCheckOffset, currentPosition.z),
-        new THREE.Vector3(0, -1, 0)
-    );
+    // Cast multiple rays downwards to check for ground
+    for (const offset of GROUND_CHECK_OFFSETS) {
+        const rayOrigin = currentPosition.clone().add(offset);
+        rayOrigin.y += groundCheckOffset;
 
-    const intersects = downRaycaster.intersectObjects(collisionObjects);
+        const downRaycaster = new THREE.Raycaster(
+            rayOrigin,
+            new THREE.Vector3(0, -1, 0)
+        );
 
-    if (intersects.length > 0) {
-        const groundY = intersects[0].point.y;
-        const targetY = groundY + SKULL_VERTICAL_OFFSET;
+        const intersects = downRaycaster.intersectObjects(collisionObjects);
+
+        if (intersects.length > 0) {
+            groundFound = true;
+            if (intersects[0].point.y > highestGroundY) {
+                highestGroundY = intersects[0].point.y;
+            }
+        }
+    }
+
+    if (groundFound) {
+        const targetY = highestGroundY + SKULL_VERTICAL_OFFSET;
         skull.position.y += (targetY - skull.position.y) * VERTICAL_SMOOTHING_FACTOR;
-
     } else {
+        // Only apply gravity if ALL rays miss the ground
         skull.position.y -= gravity;
     }
 }
@@ -116,7 +138,7 @@ function handleWanderingState(skullData, player) {
         });
 }
 
-const MAX_CLIMB_HEIGHT = 15;
+const MAX_CLIMB_HEIGHT = 6.5;
 function handleChargingState(skullData, player) {
     const skull = skullData.obj;
     const currentPosition = skull.position;
@@ -142,7 +164,7 @@ function handleChargingState(skullData, player) {
             const wallTopY = wallBBox.max.y;
 
             
-            if ((wallTopY - currentPosition.y) < MAX_CLIMB_HEIGHT) {
+            if ((wallTopY - (currentPosition.y - SKULL_VERTICAL_OFFSET)) < MAX_CLIMB_HEIGHT) {
                 const newTarget = skull.position.clone().add(direction.multiplyScalar(2));
                 newTarget.y = wallTopY + SKULL_VERTICAL_OFFSET + 1; 
 
@@ -158,10 +180,12 @@ function handleChargingState(skullData, player) {
     if (skullData.targetPoint) smoothEnemyRotation(skull, skullData.targetPoint);
 }
 
+const MAX_CHAIN_CLIMB_DISTANCE = 3; // How close the next object must be to chain a climb
+
 function handleClimbingState(skullData) {
     const skull = skullData.obj;
-    const current_x = skullData.obj.position.x;
-    const current_z = skullData.obj.position.z;
+    const current_x = skull.position.x;
+    const current_z = skull.position.z;
     const target = skullData.targetPoint.clone();
     target.x = current_x;
     target.z = current_z;
@@ -171,14 +195,35 @@ function handleClimbingState(skullData) {
         return;
     }
     
-    const climbSpeed = 0.1; // A slow, deliberate speed for climbing
-    
+    const climbSpeed = WANDER_SPEED;
     skull.position.lerp(target, climbSpeed);
 
     if (skull.position.distanceTo(target) < 0.1) {
-        skull.position.copy(target);
-        skullData.state = SKULL_STATE.WANDERING;
-        //skullData.targetPoint = null; // Clear the target to find a new one
+        skull.position.copy(target); 
+
+        // UPWARD CHECK FOR CHAINED CLIMB ---
+        const upRaycaster = new THREE.Raycaster(
+            skull.position, 
+            new THREE.Vector3(skullData.targetPoint.x - skull.position.x, 5, skullData.targetPoint.z - skull.position.z), 
+            0, 
+            MAX_CHAIN_CLIMB_DISTANCE
+        );
+        const intersects = upRaycaster.intersectObjects(skullData.collisionObjects);
+
+        if (intersects.length > 0) {
+            const hitObject = intersects[0].object;
+            const wallBBox = new THREE.Box3().setFromObject(hitObject);
+            const wallTopY = wallBBox.max.y;
+
+            const newTarget = skull.position.clone();
+            newTarget.y = wallTopY + SKULL_VERTICAL_OFFSET; 
+            skullData.targetPoint = newTarget;
+            
+        } else {
+            
+            skullData.state = SKULL_STATE.WANDERING;
+            skullData.targetPoint = null; 
+        }
     }
 }
 function moveTowardsTarget(skullData, speed, onBlockCallback) {
@@ -209,7 +254,6 @@ function moveTowardsTarget(skullData, speed, onBlockCallback) {
     } else {
         smoothEnemyRotation(skull, skullData.targetPoint);
         currentPosition.add(direction.multiplyScalar(speed));
-        //check if new currentPosition is outside boundaries, if so, reset targetPoint
     }
 }
 
