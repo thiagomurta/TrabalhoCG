@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { getCollisionObjects, smoothEnemyRotation, loadSkull, createHpBar, updateHpBar } from './inimigos.js';
+import { markEnemyGroup } from './damageHandler.js';
 import { SKULL_STATE, CHARGE_TARGET_DISTANCE } from './skull.js';
 import { playPositionalSound } from './../sons/sons.js';
 
@@ -183,6 +184,7 @@ async function shootSkull(painElementalData, scene, player, enemies, scenario) {
 
     const skullData = {
         name: 'skull',
+        region: 'lower',
         obj: enemyGroup,
         id: Date.now() + Math.random(), // Unique ID
         boundingBox: new THREE.Box3().setFromObject(skullModel),
@@ -208,4 +210,5 @@ async function shootSkull(painElementalData, scene, player, enemies, scenario) {
     enemies.skulls.push(skullData);
     scene.add(enemyGroup);
     updateHpBar(skullData);
+    markEnemyGroup(skullData);
 }
