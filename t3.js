@@ -197,8 +197,8 @@ dirLight.position.copy(positionLight);
 //dirLight2.position.copy(positionLight2);
 dirLight.castShadow = true;
 
-dirLight.shadow.mapSize.width = 2048;
-dirLight.shadow.mapSize.height = 2048;
+dirLight.shadow.mapSize.width = 4096;
+dirLight.shadow.mapSize.height = 4096;
 dirLight.shadow.camera.left = -300;
 dirLight.shadow.camera.right = 300;
 dirLight.shadow.camera.top = 300;
@@ -557,10 +557,12 @@ function moveAnimate(delta) {
     
     //MOVIMENTAÇÃO
     function handleMovement(directionFunc, moveFunc){
-        horizontalCaster.ray.direction.copy(LOOK.Foward(controls)).normalize();
+        //horizontalCaster.ray.direction.copy(LOOK.Foward(controls)).normalize();
 
         colisionDropBoxCaster.ray.direction.set(0, 0, -1);
         colisionDropBoxCaster.ray.direction.copy(controls.getObject().position);
+
+        horizontalCaster.ray.direction.copy(directionFunc).normalize();
 
         const colision = INTER.intersection(horizontalCaster,scenario.objects, enemies, controls,speed*delta);
         const colisionKeys = INTER.intersectionBoxs(horizontalCaster, BOX_KEYS, controls, speed*delta);
@@ -630,17 +632,17 @@ function moveAnimate(delta) {
             moveFunc(currentSpeed * delta);
     }
     if (moveForward) {
-        handleMovement(LOOK.Foward, v=> controls.moveForward(v));
+        handleMovement(LOOK.Foward(controls), v=> controls.moveForward(v));
     }
     else if (moveBackward) {
-        handleMovement(LOOK.Backward, v=> controls.moveForward(-v));
+        handleMovement(LOOK.Backward(controls), v=> controls.moveForward(-v));
     }
 
     if (moveRight) {
-        handleMovement(LOOK.Right, v=> controls.moveRight(v));
+        handleMovement(LOOK.Right(controls), v=> controls.moveRight(v));
     }
     else if (moveLeft) {
-        handleMovement(LOOK.Left, v=> controls.moveRight(-v));
+        handleMovement(LOOK.Left(controls), v=> controls.moveRight(-v));
     }
 }
 
