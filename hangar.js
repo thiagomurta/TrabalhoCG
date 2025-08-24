@@ -57,7 +57,7 @@ export function HANGAR(comprimento,raio1, raio2, altura){
     cubeMesh3.position.set(0, 0, -comprimento/2+thickness/2);
     cubeMesh4.position.set(raio1-(raio1/4)+(thickness/2), 0, comprimento/2-thickness/2);
     cubeMesh5.position.set(-raio1+(raio1/4)-(thickness/2), 0, comprimento/2-thickness/2);
-    cubeMesh6.position.set(0, 0, comprimento/2-thickness*0.375);
+    cubeMesh6.position.set(0, 0, comprimento/2-thickness*0.75);
 
     cylinderMesh.matrixAutoUpdate = false;
     cylinderMesh.updateMatrix();
@@ -73,8 +73,8 @@ export function HANGAR(comprimento,raio1, raio2, altura){
     cubeMesh4.updateMatrix();
     cubeMesh5.matrixAutoUpdate = false;
     cubeMesh5.updateMatrix();
-    cubeMesh6.matrixAutoUpdate = false;
-    cubeMesh6.updateMatrix();
+    //cubeMesh6.matrixAutoUpdate = false;
+    //cubeMesh6.updateMatrix();
 
     // parede cilíndrica
     let cylinderWall1 = new THREE.CylinderGeometry(raio2, raio2, thickness/2, 32, true, undefined, Math.PI, Math.PI);
@@ -108,16 +108,20 @@ export function HANGAR(comprimento,raio1, raio2, altura){
     tetoFinal.material.side=DoubleSide;
     tetoFinal.translateY(thickness/2);
     centro.teto = tetoFinal;
+    centro.teto.castShadow=true;
+    centro.teto.receiveShadow=true;
     centro.add(centro.teto);
     centro.teto.translateY(altura/2-(thickness));
-    centro.paredes = [cubeMesh, cubeMesh2, cubeMesh3, cylinderWall1Mesh, cylinderWall2Mesh, cubeMesh4, cubeMesh5, cubeMesh6/*cylinderDoor2Mesh*/];
-    for (let i = 0; i < centro.paredes.length; i++){
-        centro.add(centro.paredes[i]);
+    centro.objects = [cubeMesh, cubeMesh2, cubeMesh3, cylinderWall1Mesh, cylinderWall2Mesh, cubeMesh4, cubeMesh5, cubeMesh6/*cylinderDoor2Mesh*/];
+    for (let i = 0; i < centro.objects.length; i++){
+        centro.add(centro.objects[i]);
     }
-
+    centro.raio2=raio2;
+    centro.comprimento=comprimento;
+    centro.altura=altura;
     /// translates
     /// translate em z para parede fundo e frente
     /// translate em x para parede fundo e frente
-    
+   
     return centro;
 }

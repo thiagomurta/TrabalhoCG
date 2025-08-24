@@ -3,32 +3,78 @@ import Stats from '../build/jsm/libs/stats.module.js';
 import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
 
 import * as LOOK from './lookers.js'
+import { Scene } from '../build/three.module.js';
 
-export function takeKey(caster, object, hasKey, scene, keyMesh){
-    // let intersects = caster.intersectObject(object);
+export function takeKey(object, hasKey, keyMesh){
 
-    if(object.children.includes(keyMesh)){
-        if (!hasKey.value) {
-            console.log("Pegou a chave!");
-
-            hasKey.value = true;
-        }
+    if(object.children.includes(keyMesh) && !hasKey.value){
+        console.log("Pegou a chave!");
+        object.remove(keyMesh);
+        hasKey.value = true;
     }
 }
 
-export function dropKey(caster, object, hasKey, condition, keyMesh){
+export function dropKey(object, hasDropped, condition, keyMesh){
 
-    if (!hasKey.value) {
+    if(!object.children.includes(keyMesh) && condition && !hasDropped.value){
         console.log("Dropou a chave!");
-        
-        hasKey.value = true;
-        
-        // adiciona chave na caixa de drop
-        // if (object && keyMesh) {
-            //     object.add(keyMesh);
-            //     keyMesh.position.set(0, 1, 0);
-            // }
+        object.add(keyMesh);
+        keyMesh.position.set(0, 1, 0);
+        hasDropped.value = true;
     }
+}
+
+export function rayHit(caster, object){
+    return caster.intersectObject(object, false).length > 0;
+}
+
+export function directRayHitCheck(caster, objects) {
+    const ray = caster.ray;
+    const inverseMatrix = new THREE.Matrix4();
+    const localRay = new THREE.Ray();
+    const intersectionPoint = new THREE.Vector3();
+
+    for (const obj of objects) {
+        // Pega a matriz mundial do objeto
+        obj.updateMatrixWorld(true);
+        inverseMatrix.copy(obj.matrixWorld).invert();
+        
+        // Transforma o ray para espaço local do objeto
+        localRay.copy(ray).applyMatrix4(inverseMatrix);
+        
+        // Verifica interseção com a geometria
+        const geometry = obj.geometry;
+        if (geometry.boundingBox) {
+            const intersects = localRay.intersectBox(geometry.boundingBox, intersectionPoint);
+            if (intersects) {
+                console.log("Hit direto com:", obj.name);
+                return obj;
+            }
+        }
+    }
+    
+    return null;
+}
+
+export function reliableRayHitOne(caster, objects) {
+    let closestHit = null;
+    let closestDistance = Infinity;
+
+    // Verifica cada objeto individualmente
+    objects.forEach(obj => {
+        // Atualiza a matriz mundial do objeto
+        obj.updateMatrixWorld(true);
+        
+        const hits = caster.intersectObject(obj, true);
+        
+        if (hits.length > 0 && hits[0].distance < closestDistance) {
+            closestHit = obj;
+            closestDistance = hits[0].distance;
+            console.log("Hit mais próximo:", obj.name, "distância:", hits[0].distance);
+        }
+    });
+
+    return closestHit;
 }
 
 
@@ -94,10 +140,12 @@ export function intersection(caster, objects, enemies, controls, distance)
 }
 export function fixDir(normal,direction)
 {
+    console.log("normal: "+normal.x+" direction: "+direction.x);
     if((normal.x>0 && direction.x<0)||(normal.x<0 && direction.x>0))
         direction.x=0;
     if((normal.z>0 && direction.z<0)||(normal.z<0 && direction.z>0))
         direction.z=0;
+    
     direction.normalize();
 }
 export function fall(caster,objects,controls,distance)

@@ -55,10 +55,10 @@ export function cylDispTexture(path,pathDisp,height,radius1,radius2,segments)
     let fineTuneV=1;
     let fineTuneDispU=10;
     let fineTuneDispV=1;
-    let mat=[setDispMaterial(path,fineTuneU,fineTuneV,'rgba(114, 114, 114, 1)',pathDisp,fineTuneDispU,fineTuneDispV),setDispMaterial(path),setMaterial(path)];
+    let mat=[setDispMaterial(path,fineTuneU,fineTuneV,'rgba(114, 114, 114, 1)',pathDisp,fineTuneDispU,fineTuneDispV),setMaterial(/*path*/"./T3_assets/gate.jpg"),setMaterial(path)];
     return mat;
 }
-export function setMaterial(file, repeatU = 1, repeatV = 1, color="rgb(64,64,64)" ){
+export function setMaterial(file, repeatU = 1, repeatV = 1, color="rgba(32, 32, 32, 1)" ){
 
     let loader = new THREE.TextureLoader();
     let mat = new THREE.MeshLambertMaterial({ map: loader.load(file)});
@@ -68,22 +68,25 @@ export function setMaterial(file, repeatU = 1, repeatV = 1, color="rgb(64,64,64)
    mat.map.repeat.set(repeatU,repeatV); 
    return mat;
 }
-export function setDispMaterial(file, repeatU = 1, repeatV = 1, color="rgb(64,64,64)" ,dispMapPath,dispU,dispV){
+export function setDispMaterial(file, repeatU = 1, repeatV = 1, color="rgba(26, 26, 26, 1)" ,dispMapPath,dispU,dispV){
 
     let loader = new THREE.TextureLoader();
     let map=loader.load(file);
     let dispmap=loader.load(dispMapPath);
+    let normalMap=loader.load("./T3_assets/column_normal.jpg")
     //dispmap.repeat.set(dispU,dispV);
     map.colorSpace = THREE.SRGBColorSpace;
     map.wrapS = map.wrapT = THREE.RepeatWrapping;
     map.minFilter = map.magFilter = THREE.LinearFilter;
-    map.repeat.set(repeatU,repeatV); 
+    map.repeat.set(1,1); 
 
     let mat = new THREE.MeshStandardMaterial({
       map : map,
+      normalMap: normalMap,
       displacementMap:dispmap,
-      displacementScale:0.3,
+      displacementScale:0.6,
     });
+    mat.normalScale.set(0.7, 0.7);
     
      
 
@@ -91,6 +94,15 @@ export function setDispMaterial(file, repeatU = 1, repeatV = 1, color="rgb(64,64
 
    return mat;
 }
+export function setTextureOptions(material, repu, repv){
+    material.map.repeat.set(repu,repv);
+    material.displacementMap.repeat.set(repu,repv);
+    material.normalMap.repeat.set(repu,repv);
+    
+    material.map.wrapS = material.displacementMap.wrapS = material.normalMap.wrapS = THREE.RepeatWrapping;
+    material.map.wrapT = material.displacementMap.wrapT = material.normalMap.wrapT = THREE.RepeatWrapping;	
+}
+
 export function createGroundPlaneXZCust(width, height, widthSegments = 10, heightSegments = 10, material) {
    
    let planeGeometry = new THREE.PlaneGeometry(width, height, widthSegments, heightSegments);

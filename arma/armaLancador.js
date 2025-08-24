@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { handleProjectileCollision } from '../inimigos/damageHandler.js'; 
-import { teto } from '../t1.js';
+import { teto } from '../t3.js';
 import { playSound }  from '../sons/sons.js';
 // --------------------- ARMA ---------------------
 // MACROS

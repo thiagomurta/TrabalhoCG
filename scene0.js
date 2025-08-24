@@ -5,6 +5,7 @@ import * as A1 from './area1.js'
 import * as A2 from './area2.js'
 import * as EL from './elevador.js'
 import * as HANGAR from './hangar.js'
+import * as A4 from './area4.js'
 
 import {
         setDefaultMaterial,
@@ -31,10 +32,10 @@ export function Scene0()
     // let boxDropKeyA1 = new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,1.5), material4);
         
     let material5 = new THREE.MeshLambertMaterial({color: "rgb(71, 68, 68)"})
-    let wallU=new THREE.Mesh(new THREE.BoxGeometry(500,40,0.1),material5);
-    let wallD=new THREE.Mesh(new THREE.BoxGeometry(500,40,0.1),material5);
-    let wallL=new THREE.Mesh(new THREE.BoxGeometry(0.1,40,500),material5);
-    let wallR=new THREE.Mesh(new THREE.BoxGeometry(0.1,40,500),material5);
+    let wallU=new THREE.Mesh(new THREE.BoxGeometry(500,40,0.1),TF.boxTexture(["./T3_assets/outside_wall.jpg"],250,20,0.1));
+    let wallD=new THREE.Mesh(new THREE.BoxGeometry(500,40,0.1),TF.boxTexture(["./T3_assets/outside_wall.jpg"],250,20,0.1));
+    let wallL=new THREE.Mesh(new THREE.BoxGeometry(0.1,40,500),TF.boxTexture(["./T3_assets/outside_wall.jpg"],0.1,20,250));
+    let wallR=new THREE.Mesh(new THREE.BoxGeometry(0.1,40,500),TF.boxTexture(["./T3_assets/outside_wall.jpg"],0.1,20,250));
     
 
   
@@ -95,17 +96,32 @@ export function Scene0()
 
     let materialBoundingBox = new THREE.MeshLambertMaterial();
     let boundingBoxPlane = new THREE.Mesh(new THREE.BoxGeometry(12,10,18), materialBoundingBox);
+    center.add(boundingBoxPlane);
     boundingBoxPlane.visible = false;
+    boundingBoxPlane.translateX(150);
+    boundingBoxPlane.translateZ(-180);
 
 
     let hangar = HANGAR.HANGAR(100, 40, 38, 20);
                 //  0    1   2   3    4     5     6     7        8              9            10           11              12 
-    center.objects=[bu0,bu1,wallU,wallR,wallD,wallL/*,boxDropKeyA1, boxTakeKeyA1, boxTakeKeyA2, boxTakeKeyA3, boundingBoxPlane*/];
+    center.objects=[bu0,bu1,wallU,wallR,wallD,wallL/*,boxDropKeyA1, boxTakeKeyA1, boxTakeKeyA2, boxTakeKeyA3, boundingBoxPlane, hangar*/, boundingBoxPlane];
     center.add(hangar);
     hangar.translateX(150);
     hangar.translateZ(-150);
     
-    
-    
+    let a4=A4.area4();
+    center.add(a4);
+    a4.translateZ(150);
+    for(let i=0;i<hangar.objects.length;i++)
+    {
+      center.objects.push(hangar.objects[i]);
+    }
+    for(let i=0;i<a4.objects.length;i++)
+    {
+      center.objects.push(a4.objects[i]);
+    }
+    center.walls4=a4.walls4;
+    center.a4=a4.objects;
+    center.porta=[hangar.objects[7]];
     return center;
 }
