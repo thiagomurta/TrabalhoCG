@@ -3,32 +3,43 @@ import Stats from '../build/jsm/libs/stats.module.js';
 import {PointerLockControls} from '../build/jsm/controls/PointerLockControls.js';
 
 import * as LOOK from './lookers.js'
+import { Scene } from '../build/three.module.js';
 
-export function takeKey(caster, object, hasKey, scene, keyMesh){
-    // let intersects = caster.intersectObject(object);
+export function takeKey(object, hasKey, keyMesh){
 
-    if(object.children.includes(keyMesh)){
-        if (!hasKey.value) {
-            console.log("Pegou a chave!");
-
-            hasKey.value = true;
-        }
+    if(object.children.includes(keyMesh) && !hasKey.value){
+        console.log("Pegou a chave!");
+        object.remove(keyMesh);
+        hasKey.value = true;
     }
 }
 
-export function dropKey(caster, object, hasKey, condition, keyMesh){
+export function dropKey(object, hasDropped, condition, keyMesh){
 
-    if (!hasKey.value) {
+    if(!object.children.includes(keyMesh) && condition && !hasDropped.value){
         console.log("Dropou a chave!");
-        
-        hasKey.value = true;
-        
-        // adiciona chave na caixa de drop
-        // if (object && keyMesh) {
-            //     object.add(keyMesh);
-            //     keyMesh.position.set(0, 1, 0);
-            // }
+        object.add(keyMesh);
+        keyMesh.position.set(0, 1, 0);
+        hasDropped.value = true;
     }
+}
+
+export function rayHit(caster, object){
+    return caster.intersectObject(object, false).length > 0;
+}
+
+export function rayHitOne(caster, objects){
+    const hits = caster.intersectObjects(objects, false);
+    
+    if (hits.length > 0){
+        console.log()
+        let obj = hits[0].object;
+        return obj
+        while(obj && !objects.includes(obj))
+            obj = obj.parent;
+        return obj;
+    }
+    return null;
 }
 
 
