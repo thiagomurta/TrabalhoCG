@@ -28,18 +28,53 @@ export function rayHit(caster, object){
     return caster.intersectObject(object, false).length > 0;
 }
 
-export function rayHitOne(caster, objects){
-    const hits = caster.intersectObjects(objects, false);
-    
-    if (hits.length > 0){
-        console.log()
-        let obj = hits[0].object;
-        return obj
-        while(obj && !objects.includes(obj))
-            obj = obj.parent;
-        return obj;
+export function directRayHitCheck(caster, objects) {
+    const ray = caster.ray;
+    const inverseMatrix = new THREE.Matrix4();
+    const localRay = new THREE.Ray();
+    const intersectionPoint = new THREE.Vector3();
+
+    for (const obj of objects) {
+        // Pega a matriz mundial do objeto
+        obj.updateMatrixWorld(true);
+        inverseMatrix.copy(obj.matrixWorld).invert();
+        
+        // Transforma o ray para espaço local do objeto
+        localRay.copy(ray).applyMatrix4(inverseMatrix);
+        
+        // Verifica interseção com a geometria
+        const geometry = obj.geometry;
+        if (geometry.boundingBox) {
+            const intersects = localRay.intersectBox(geometry.boundingBox, intersectionPoint);
+            if (intersects) {
+                console.log("Hit direto com:", obj.name);
+                return obj;
+            }
+        }
     }
+    
     return null;
+}
+
+export function reliableRayHitOne(caster, objects) {
+    let closestHit = null;
+    let closestDistance = Infinity;
+
+    // Verifica cada objeto individualmente
+    objects.forEach(obj => {
+        // Atualiza a matriz mundial do objeto
+        obj.updateMatrixWorld(true);
+        
+        const hits = caster.intersectObject(obj, true);
+        
+        if (hits.length > 0 && hits[0].distance < closestDistance) {
+            closestHit = obj;
+            closestDistance = hits[0].distance;
+            console.log("Hit mais próximo:", obj.name, "distância:", hits[0].distance);
+        }
+    });
+
+    return closestHit;
 }
 
 

@@ -59,6 +59,7 @@ scene.background = textureEquirec;
 const crosshair = document.querySelector('.crosshair');
 const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0).normalize(), 0.01, 2);
 const horizontalCaster = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(0,0,-1).normalize(),0.01,2);
+const colisionDropBoxCaster = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(0,0,-1).normalize(),0.01,5);
 const verticalCaster= new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0).normalize(), 0.01, 2);
 let atElevador=false;
 let elevadorCanMove=true;
@@ -289,9 +290,21 @@ scene.add(boxDropKeyA2);
 scene.add(boxTakeKeyA3);
 scene.add(boxDropKeyA3);
 
+boxTakeKeyA1.name = "TakeBox_Key1";
+boxTakeKeyA2.name = "TakeBox_Key2";
+boxTakeKeyA3.name = "TakeBox_Key3";
+
+boxDropKeyA1.name = "DropBox_Key1";
+boxDropKeyA2.name = "DropBox_Key2";
+boxDropKeyA3.name = "DropBox_Key3";
+
 const BOX = [boxTakeKeyA1, boxTakeKeyA2, boxTakeKeyA3, boxDropKeyA1, boxDropKeyA2, boxDropKeyA3];
-const BOX_KEYS = BOX.slice(0, 3);//[boxTakeKeyA1, boxTakeKeyA2/*, boxTakeKeyA3*/];
-const BOX_DROP_KEYS = BOX.slice(3,6);//[boxDropKeyA1, boxDropKeyA2/*, boxDropKeyA3*/];
+const BOX_KEYS =  [boxTakeKeyA1, boxTakeKeyA2, boxTakeKeyA3];//[boxTakeKeyA1, boxTakeKeyA2/*, boxTakeKeyA3*/];
+const BOX_DROP_KEYS = [boxDropKeyA1, boxDropKeyA2, boxDropKeyA3];//[boxDropKeyA1, boxDropKeyA2/*, boxDropKeyA3*/];
+BOX.forEach(box => {
+    box.geometry.computeBoundingBox(); // Força cálculo do bounding box
+    box.updateMatrixWorld(true); // Atualiza matriz mundial
+});
 const BOXDROP1 = [boxDropKeyA1]
 const BOXDROP2 = [boxDropKeyA2]
 const BOXDROP3 = [boxDropKeyA3]
@@ -324,46 +337,49 @@ const posFinalBox2 = boxTakeKeyA2.position.y + 1.75;
 const posFinalBox3 = boxTakeKeyA3.position.y + 2.25;
 function operationKeys(){
     // ------------- TAKE KEYS -------------
-    if (take_key1.value/* || apelacao.value*/){
+    if (take_key1.value && !apelacao.value){
         if(boxTakeKeyA1.children.includes(chave1)){
             boxTakeKeyA1.remove(chave1);
         }
     }
-    if (take_key2.value /* || apelacao.value*/){
+    if (take_key2.value && !apelacao.value){
         if(boxTakeKeyA2.children.includes(chave2)){
             boxTakeKeyA2.remove(chave2);
         }
     }
-    if ((take_key3.value)/* || apelacao.value*/){
+    if (take_key3.value && !apelacao.value){
         if(boxTakeKeyA3.children.includes(chave3)){    
             boxTakeKeyA3.remove(chave3);
         }
     }
 
     // ------------- DROP KEYS -------------
-    if (drop_key1.value){
+    if (drop_key1.value && (!apelacao.value || take_key1.value)){
         console.log("entrou no dropar chave 1");
         if(!boxDropKeyA1.children.includes(chave1)){
             boxDropKeyA1.add(chave1);
             chave1.position.set(0,1,0);
         }
         gateMove.value = true;
+        take_key1.value = false;
     }
-    if (drop_key2.value){
+    if (drop_key2.value && (!apelacao.value || take_key2.value)){
         console.log("entrou no dropar chave 2");
         if(!boxDropKeyA2.children.includes(chave2)){
             boxDropKeyA2.add(chave2);
             chave2.position.set(0,1,0);
         }
         VA.animVert(scenario.porta,40,drop_key2,-40);
+        take_key2.value = false;
     }
-    if (drop_key3.value){
+    if (drop_key3.value && (!apelacao.value || take_key3.value)){
         console.log("entrou no dropar chave 3");
         if(!boxDropKeyA3.children.includes(chave3)){
             boxDropKeyA3.add(chave3);
             chave3.position.set(0,1,0);
         }
-        VA.animVert(scenario.walls4,30,drop_key3,-30)
+        VA.animVert(scenario.walls4,30,drop_key3,-30);
+        take_key3.value = false;
     }
 
     if(!apelacao.value){
@@ -509,6 +525,7 @@ function moveAnimate(delta) {
     raycaster.ray.origin.copy(controls.getObject().position);
     horizontalCaster.ray.origin.copy(controls.getObject().position);
     verticalCaster.ray.origin.copy(controls.getObject().position);
+    colisionDropBoxCaster.ray.origin.copy(controls.getObject().position);
     
     
     const LEFTMOST_BOX = scenario.objects[0];
@@ -540,7 +557,13 @@ function moveAnimate(delta) {
     
     //MOVIMENTAÇÃO
     function handleMovement(directionFunc, moveFunc){
+        //horizontalCaster.ray.direction.copy(LOOK.Foward(controls)).normalize();
+
+        colisionDropBoxCaster.ray.direction.set(0, 0, -1);
+        colisionDropBoxCaster.ray.direction.copy(controls.getObject().position);
+
         horizontalCaster.ray.direction.copy(directionFunc).normalize();
+
         const colision = INTER.intersection(horizontalCaster,scenario.objects, enemies, controls,speed*delta);
         const colisionKeys = INTER.intersectionBoxs(horizontalCaster, BOX_KEYS, controls, speed*delta);
         const colisionBoxDropKeys = INTER.intersectionBoxs(horizontalCaster, BOX_DROP_KEYS, controls, speed*delta);
@@ -559,28 +582,52 @@ function moveAnimate(delta) {
             }
         }
         // DROP KEYS
-        const hitTakeBox = INTER.rayHitOne(horizontalCaster, BOX_KEYS);
-        const hitDropBox = INTER.rayHitOne(horizontalCaster, BOX_DROP_KEYS);
+        let hitDropBox = null;
+        const directions = [
+            new THREE.Vector3(1, 0, 0),   // Direita
+            new THREE.Vector3(-1, 0, 0),  // Esquerda
+            new THREE.Vector3(0, 0, 1),   // Frente
+            new THREE.Vector3(0, 0, -1),  // Trás
+            new THREE.Vector3(1, 0, 1).normalize(),   // Diagonal frente-direita
+            new THREE.Vector3(-1, 0, 1).normalize(),  // Diagonal frente-esquerda
+            new THREE.Vector3(1, 0, -1).normalize(),  // Diagonal trás-direita
+            new THREE.Vector3(-1, 0, -1).normalize()  // Diagonal trás-esquerda
+        ];
+        for (const dir of directions){
+            colisionDropBoxCaster.ray.direction.copy(dir);
+            // hitDropBox = INTER.directRayHitCheck(colisionDropBoxCaster, BOX_DROP_KEYS);
+            hitDropBox = INTER.reliableRayHitOne(colisionDropBoxCaster, BOX_DROP_KEYS);
+            if(hitDropBox) break;
+        }
         // if(colisionBoxDropKeys){
-        console.log(hitDropBox);
-        // if(hitDropBox){
-            console.log(hitDropBox);
-            console.log(boxDropKeyA1);
-            console.log(hitDropBox === boxDropKeyA1)
-            if(/*(hitDropBox === boxDropKeyA1) &&*/ take_key1.value && !drop_key1.value && boxDropKeyA1){
-                INTER.dropKey(boxDropKeyA1, drop_key1, true, chave1);
-                console.log("AQUIII");
-                take_key1.value = false;
+        if(hitDropBox){
+            const playerPos = controls.getObject().position;
+            const boxPos = new THREE.Vector3();
+            hitDropBox.getWorldPosition(boxPos);
+            const distance = playerPos.distanceTo(boxPos);
+            if(distance < 3){
+
+                if(hitDropBox === boxDropKeyA1 && (take_key1.value || apelacao.value) && !drop_key1.value /*&& boxDropKeyA1*/){
+                    console.log("Dropando chave 1 na caixa 1");
+                    // INTER.dropKey(boxDropKeyA1, drop_key1, true, chave1);
+                    drop_key1.value = true;
+                    if(apelacao.value) apelacao.value = false;
+                }
+                else if(hitDropBox === boxDropKeyA2 && (take_key2.value || apelacao.value) && !drop_key2.value /*&& boxDropKeyA2*/){
+                    // INTER.dropKey(boxDropKeyA2, drop_key2, true, chave2);
+                    console.log("Dropando chave 2 na caixa 2");
+                    drop_key2.value = true;
+                    if(apelacao.value) apelacao.value = false;
+                }
+                else if(hitDropBox === boxDropKeyA3 && (take_key3.value || apelacao.value) && !drop_key3.value /*&& boxDropKeyA3*/){
+                    console.log("Dropando chave 3 na caixa 3");
+                    // INTER.dropKey(boxDropKeyA3, drop_key3, true, chave3);
+                    drop_key3.value = true;
+                    if(apelacao.value) apelacao.value = false;
+                }
+
             }
-            else if(/*(hitDropBox === boxDropKeyA2) &&*/ take_key2.value && !drop_key2.value && boxDropKeyA2){
-                INTER.dropKey(boxDropKeyA2, drop_key2, true, chave2);
-                take_key2.value = false;
-            }
-            else if(/*(hitDropBox === boxDropKeyA3) &&*/ take_key3.value && !drop_key3.value && boxDropKeyA3){
-                INTER.dropKey(boxDropKeyA3, drop_key3, true, chave3);
-                take_key3.value = false;
-            }
-        // }
+        }
         if(!colision && !colisionKeys && !colisionBoxDropKeys && !colisionAllBoxKeys)
             moveFunc(currentSpeed * delta);
     }
