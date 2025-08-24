@@ -540,7 +540,7 @@ function moveAnimate(delta) {
     
     //MOVIMENTAÇÃO
     function handleMovement(directionFunc, moveFunc){
-        horizontalCaster.ray.direction.copy(LOOK.Foward(controls)).normalize();
+        horizontalCaster.ray.direction.copy(directionFunc).normalize();
         const colision = INTER.intersection(horizontalCaster,scenario.objects, enemies, controls,speed*delta);
         const colisionKeys = INTER.intersectionBoxs(horizontalCaster, BOX_KEYS, controls, speed*delta);
         const colisionBoxDropKeys = INTER.intersectionBoxs(horizontalCaster, BOX_DROP_KEYS, controls, speed*delta);
@@ -585,17 +585,17 @@ function moveAnimate(delta) {
             moveFunc(currentSpeed * delta);
     }
     if (moveForward) {
-        handleMovement(LOOK.Foward, v=> controls.moveForward(v));
+        handleMovement(LOOK.Foward(controls), v=> controls.moveForward(v));
     }
     else if (moveBackward) {
-        handleMovement(LOOK.Backward, v=> controls.moveForward(-v));
+        handleMovement(LOOK.Backward(controls), v=> controls.moveForward(-v));
     }
 
     if (moveRight) {
-        handleMovement(LOOK.Right, v=> controls.moveRight(v));
+        handleMovement(LOOK.Right(controls), v=> controls.moveRight(v));
     }
     else if (moveLeft) {
-        handleMovement(LOOK.Left, v=> controls.moveRight(-v));
+        handleMovement(LOOK.Left(controls), v=> controls.moveRight(-v));
     }
 }
 

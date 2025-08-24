@@ -10,7 +10,7 @@ export function area1(staired_level,material)
   let cylinderGeo=new THREE.CylinderGeometry( radius, radius, height, 35 );
   //let numColLine=20;
   //let numDispLine=numColLine-1;
-  let displacement=(staired_level.vaultedBox.width - 20*2*radius*1.3)/19;
+  let displacement=(staired_level.vaultedBox.width - 10*2*radius*1.3)/9;
   let stairXStart=+(staired_level.vaultedBox.width*staired_level.vaultedBox.stair_displacement)-staired_level.vaultedBox.stair_w/2;
   let stairXFinish=stairXStart+staired_level.vaultedBox.stair_w;
   for(let i=0;i<38;i++)

@@ -105,10 +105,12 @@ export function intersection(caster, objects, enemies, controls, distance)
 }
 export function fixDir(normal,direction)
 {
+    console.log("normal: "+normal.x+" direction: "+direction.x);
     if((normal.x>0 && direction.x<0)||(normal.x<0 && direction.x>0))
         direction.x=0;
     if((normal.z>0 && direction.z<0)||(normal.z<0 && direction.z>0))
         direction.z=0;
+    
     direction.normalize();
 }
 export function fall(caster,objects,controls,distance)
