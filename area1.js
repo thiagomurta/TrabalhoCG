@@ -5,24 +5,25 @@ import * as TF from './texturingfuncs.js'
 import * as COL from './coluna.js'
 export function area1(staired_level,material)
 {
-  let radius=1;
+  let radius=0.75;
   let height=10;
+  let disHeight=1;
   let cylinderGeo=new THREE.CylinderGeometry( radius, radius, height, 35 );
   //let numColLine=20;
   //let numDispLine=numColLine-1;
   let displacement=(staired_level.vaultedBox.width - 10*2*radius*1.3)/9;
   let stairXStart=+(staired_level.vaultedBox.width*staired_level.vaultedBox.stair_displacement)-staired_level.vaultedBox.stair_w/2;
   let stairXFinish=stairXStart+staired_level.vaultedBox.stair_w;
-  for(let i=0;i<38;i++)
+  for(let i=0;i<36;i++)
   {
-    let collumn =COL.coluna(radius,1,height
+    let collumn =COL.coluna(radius,disHeight,height
     );
     staired_level.vaultedBox.add(collumn);
     collumn.translateY(staired_level.vaultedBox.height + height/2);
     
     if(i<10) // left line
     {
-        collumn.translateX(-(staired_level.vaultedBox.width/2)+radius+radius*0.3);
+        collumn.translateX(-(staired_level.vaultedBox.width/2)+radius+radius*0.3+disHeight);
         collumn.translateZ((staired_level.vaultedBox.length/2));
         collumn.translateZ(-(2*radius+displacement)*i-radius);
         
@@ -30,22 +31,22 @@ export function area1(staired_level,material)
     }
     if(i>9 && i<19) // right line
     {
-        collumn.translateX(+(staired_level.vaultedBox.width/2)-radius-radius*0.3);
+        collumn.translateX(+(staired_level.vaultedBox.width/2)-radius-radius*0.3-disHeight);
         collumn.translateZ((staired_level.vaultedBox.length/2));
-        collumn.translateZ(-(2*radius+displacement)*(i-10)-radius);
+        collumn.translateZ(-(2*radius+displacement)*(i-10)-radius-disHeight);
     }
     if(i>=19 && i<28)// upper line
     {
-        collumn.translateZ(-staired_level.vaultedBox.width/2 + radius+radius*0.3);
+        collumn.translateZ(-staired_level.vaultedBox.width/2 + radius+radius*0.3+disHeight);
         collumn.translateX(-(staired_level.vaultedBox.width/2)+radius);
-        collumn.translateX(+(2*radius+displacement)*(i-20+1));
+        collumn.translateX(+(2*radius+displacement)*(i-19+1));
         
     }
     if(i>=28)
     {
-        collumn.translateZ(+staired_level.vaultedBox.width/2 - radius -radius*0.3);
+        collumn.translateZ(+staired_level.vaultedBox.width/2 - radius -radius*0.3-disHeight);
         collumn.translateX(-(staired_level.vaultedBox.width/2)+radius);
-        collumn.translateX(+(2*radius+displacement)*(i-28+1));
+        collumn.translateX(+(2*radius+displacement)*(i-27+1));
        
     }
     staired_level.vaultedBox.meshes.push(collumn);
@@ -54,7 +55,7 @@ export function area1(staired_level,material)
         staired_level.vaultedBox.remove(collumn);
     }else
     {
-        let cylinderGeo1=new THREE.CylinderGeometry( radius+0.4, radius+0.4, height, 35 );
+        let cylinderGeo1=new THREE.CylinderGeometry( radius+0.7, radius+0.7, height, 35 );
         let collumnCol = new THREE.Mesh(cylinderGeo1,material);
         collumn.castShadow=true;
         collumn.receiveShadow=true;
@@ -84,23 +85,23 @@ export function area1(staired_level,material)
             {
                 block.translateX(0);
                 block.translateY(staired_level.height + 1 + height);
-                block.translateZ(-(staired_level.length/2));
+                block.translateZ(-(staired_level.length/2)+disHeight*2);
                 block.translateX(25);
             }else if(i==1)
             {
                 block.rotateY(Math.PI/2);
                 block.translateY(staired_level.height + 1 + height);
-                block.translateZ(-(staired_level.length/2));
+                block.translateZ(-(staired_level.length/2)+disHeight*2);
                 block.translateX(-25);
             }else if(i==2){
                 block.rotateY(Math.PI/2);
                 block.translateY(staired_level.height + 1 + height);
-                block.translateZ((staired_level.length/2));
+                block.translateZ((staired_level.length/2)-disHeight*2);
                 block.translateX(20);
             }else{
                 block.translateX(0);
                 block.translateY(staired_level.height + 1 + height);
-                block.translateZ((staired_level.length/2));
+                block.translateZ((staired_level.length/2)-disHeight*2);
                 block.translateX(5);
             }
         }
