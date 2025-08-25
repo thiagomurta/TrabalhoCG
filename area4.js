@@ -108,7 +108,8 @@ wall4.translateZ(-50);
 let saidaG=new THREE.BoxGeometry(5,0.15,5);
 let saida=SAI.saidaArea();
 center.add(saida);
-saida.translateZ(90);
+saida.translateZ(-50);
+
 center.saida=saida;
  center.objects.push(wall1);
  center.objects.push(wall2);

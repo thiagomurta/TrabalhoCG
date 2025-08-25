@@ -111,7 +111,7 @@ export function saidaArea()
     centro.coliders[2].translateX(-0.5);
     centro.coliders[3].translateZ(-0.5);
 
-    centro.portaSaida=[paredeFrente,paredeFrenteColision];
+    centro.portaSaida=[paredeTras,paredeTrasColision];
 
     console.log(centro.meshes);
     return centro;
