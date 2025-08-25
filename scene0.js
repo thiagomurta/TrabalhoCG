@@ -123,5 +123,7 @@ export function Scene0()
     center.walls4=a4.walls4;
     center.a4=a4.objects;
     center.porta=[hangar.objects[7]];
+    center.portaSaida=a4.portaSaida;
+    a4.translateY(-0.01);
     return center;
 }

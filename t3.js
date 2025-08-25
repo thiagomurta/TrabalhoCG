@@ -670,7 +670,6 @@ function render() {
     renderer.shadowMap.enabled=true;
     renderer.shadowMap.type=THREE.PCFShadowMap;
     renderer.render(scene, camera) // Render scene
-    // VA.animVert(scenario.porta,40,drop_key2,-40);
-    // VA.animVert(scenario.walls4,30,drop_key3,-30);
+     VA.animVert(scenario.portaSaida,16,playerHasEnteredSecondArea,-16);
     requestAnimationFrame(render);
 }

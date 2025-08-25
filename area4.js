@@ -5,6 +5,7 @@ import * as A1 from './area1.js'
 import * as A2 from './area2.js'
 import * as EL from './elevador.js'
 import * as HANGAR from './hangar.js'
+import * as SAI from './saida.js'
 
 import {
         setDefaultMaterial,
@@ -105,13 +106,20 @@ wall4.translateY(15);
 wall4.translateX(-125-2)
 wall4.translateZ(-50);
 let saidaG=new THREE.BoxGeometry(5,0.15,5);
-let saida=new THREE.Mesh(saidaG,TF.boxTexture(["./T3_assets/saida.jpg"],5,0.3,5));
+let saida=SAI.saidaArea();
 center.add(saida);
+saida.translateZ(90);
 center.saida=saida;
  center.objects.push(wall1);
  center.objects.push(wall2);
  center.objects.push(wall3);
  center.objects.push(wall4);
 center.walls4=[wall1,wall2,wall3,wall4];
+for(let i=0;i<saida.meshes.length;i++){
+    center.objects.push(saida.coliders[i]);
+    center.objects.push(saida.meshes[i]);
+    center.objects.push(saida.cantos[i]);
+}
+center.portaSaida=saida.portaSaida;
 return center;
 }
