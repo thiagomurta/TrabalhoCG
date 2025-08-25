@@ -404,7 +404,7 @@ function operationKeys(){
             }
         }
         // Adicionar a chave após a eliminação dos soldados
-        if (/*enemies.soldiers.length === 0 ||  &&*/ !take_key3.value && !drop_key3.value){
+        if (enemies.soldiers.length === 0  && !take_key3.value && !drop_key3.value){
             if(!boxTakeKeyA3.children.includes(chave3)){
                 boxTakeKeyA3.add(chave3);
                 chave3.position.set(0,1,0);

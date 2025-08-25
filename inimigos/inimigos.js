@@ -10,6 +10,8 @@ import { CACODEMON_STATE } from './cacodemon.js';
 import { fadingObjects } from '../t3.js';
 import { movePainElemental, PAINELEMENTAL_STATE } from './painelemental.js';
 import { markEnemyGroup } from './damageHandler.js';
+import { SpriteMixer } from '../../libs/sprites/SpriteMixer.js'; // Importar o SpriteMixer
+import { moveSoldier, SOLDIER_STATE } from './soldier.js'; // Importar o soldado
 import { playSound, playPositionalSound } from './../sons/sons.js';
 
 export const AREA_DIMENSION = 100;
@@ -40,14 +42,14 @@ const PAINELEMENTAL_SPAWN_POINTS = [
 ];
 
 const SOLDIER_SPAWN_POINTS = [
-    new THREE.Vector3(-100, 10, 100),
-    new THREE.Vector3(-50, 10, 110),
-    new THREE.Vector3(0, 10, 120),
-    new THREE.Vector3(50, 10, 110),
-    new THREE.Vector3(100, 10, 100),
-    new THREE.Vector3(-25, 18, -160),
-    new THREE.Vector3(0, 18, -170),
-    new THREE.Vector3(25, 18, -160),
+    new THREE.Vector3(130, 1, -150),
+    new THREE.Vector3(135, 1, -145),
+    new THREE.Vector3(140, 1, -150),
+    new THREE.Vector3(145, 1, -145),
+    new THREE.Vector3(150, 1, -150),
+    new THREE.Vector3(155, 1, -140),
+    new THREE.Vector3(160, 1, -140),
+    new THREE.Vector3(165, 1, -135),
 ];
 
 
@@ -66,6 +68,7 @@ export function moveEnemies(scene, scenario, player, enemies, playerHasEnteredFi
     const cacodemons = enemies.cacodemons;
     const skulls = enemies.skulls;
     const painElementals = enemies.painElementals;
+    const soldiers = enemies.soldiers;
 
     const activeCacodemons = cacodemons.filter(cacodemon => {
         // Return true for cacodemons that should be moved
@@ -490,7 +493,8 @@ export function applyDamageToEnemy(enemyData, damage, enemies, firstArea, second
     console.log(secondArea);
     if (enemyData.name.startsWith('cacodemon') && !secondArea && enemyData.region.startsWith('upper')) return;
     if (enemyData.name.startsWith('skull') && !firstArea && enemyData.region.startsWith('upper')) return;
-        
+    
+    if(enemyData.name.startsWith('soldier')){}
     enemyData.hp -= damage;
             if (enemyData.name.startsWith('cacodemon')) {
                 if (secondArea) playPositionalSound('CACODEMON_HURT', enemyData.obj);
@@ -515,8 +519,11 @@ export function applyDamageToEnemy(enemyData, damage, enemies, firstArea, second
         }
         if (enemyData.name.startsWith('soldier')) {
             playSound('SOLDIER_DEATH');
+            enemyData.state = SOLDIER_STATE.DYING;
+            enemyData.deathFrames = 0;
         }
-        startFadingAnimation(enemyData); // Inicia a animação de desaparecimento
+        if(!enemyData.name.startsWith('soldier'))
+            startFadingAnimation(enemyData); // Inicia a animação de desaparecimento
 
         let enemyArray;
         // Determina de qual array o inimigo deve ser removido
@@ -533,7 +540,8 @@ export function applyDamageToEnemy(enemyData, damage, enemies, firstArea, second
         if (enemyArray) {
             const index = enemyArray.indexOf(enemyData);
             if (index > -1) {
-                enemyArray.splice(index, 1);
+                if(!enemyData.name.startsWith('soldier'))
+                    enemyArray.splice(index, 1);
             }
         }
     }

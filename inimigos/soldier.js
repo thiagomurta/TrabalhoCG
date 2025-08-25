@@ -9,11 +9,12 @@ import { checkProjectileCollisionWithPlayer } from './damageHandler.js';
 export const SOLDIER_STATE = {
     WANDERING: 'WANDERING',
     LOOKING_AT_PLAYER: 'LOOKING_AT_PLAYER',
+    DYING: 'DYING'
 };
 
 // --- AI Behavior Constants ---
 const PLAYER_DETECT_DISTANCE = 30; // Distance at which a soldier can detect the player.
-const MAX_WANDER_DISTANCE = 20; // Maximum distance a soldier will wander from its current position.
+const MAX_WANDER_DISTANCE = 15; // Maximum distance a soldier will wander from its current position.
 const WANDER_SPEED = 0.04; // Movement speed while wandering.
 const PROXIMITY_THRESHOLD = 1.0; // How close a soldier needs to be to its target point to consider it "reached".
 const COLLISION_CHECK_DISTANCE = 1.0; // How far ahead to check for collisions when moving.
@@ -21,6 +22,7 @@ const COLLISION_CHECK_DISTANCE = 1.0; // How far ahead to check for collisions w
 // --- Timing Constants (in frames) ---
 const LOOK_AT_PLAYER_DURATION_FRAMES = 120; // How long the soldier stares at the player before shooting.
 const LOOK_AT_PLAYER_COOLDOWN_FRAMES = -90; // Cooldown period after looking at the player.
+const DEATH_ANIMATION_DURATION = 60;
 
 // --- Physics & Positioning Constants ---
 const SOLDIER_VERTICAL_OFFSET = 2; // How high the soldier hovers above the ground.
@@ -34,15 +36,48 @@ const PROJECTILE_RADIUS = 0.2;
 const PROJECTILE_COLOR = 0xff8800;
 const PROJECTILE_PLAYER_HITBOX_RADIUS = 2; // Hitbox radius around the player for projectile collision.
 const PROJECTILE_TARGET_Y_OFFSET = 1.5; // Vertical offset for aiming at the player.
+const PROJECTILE_DAMAGE = 2;
 
 // =============================================================================
 // MAIN SOLDIER LOGIC
 // =============================================================================
 
+function getCollisionObjectsForHangar(soldierData, scenario){
+    if(!scenario || !scenario.parent) return [];
+
+    const collisionObjects = [];
+
+    if(scenario.objects && scenario.objects.length > 0){
+        const hangar = scenario.objects[scenario.objects.length -1];
+        if(hangar && hangar.objects){
+            collisionObjects.push(...hangar.objects);
+        }
+    }
+
+    const plane = scenario.parent.children.find(child =>
+        child.isMesh && child.geometry && child.geometry.type === 'PlaneGeometry'
+    );
+
+    if(plane)
+        collisionObjects.push(plane);
+
+    return collisionObjects;
+}
+
 export function moveSoldier(soldierData, scenario, player, scene, camera) {
     // Initialize collision objects once.
+    if(soldierData.state === SOLDIER_STATE.DYING){
+        handleDyingState(soldierData, scene);
+        return;
+    }
+
     if (!soldierData.collisionObjects) {
         soldierData.collisionObjects = getCollisionObjects(scenario);
+        soldierData.hangarCollisionObjects = getCollisionObjectsForHangar(soldierData, scenario);
+        soldierData.allCollisionObjects = [
+            ...soldierData.collisionObjects, 
+            ...soldierData.hangarCollisionObjects
+        ];
     }
 
     // Update animations.
@@ -80,6 +115,7 @@ export function moveSoldier(soldierData, scenario, player, scene, camera) {
 // =============================================================================
 
 function handleWanderingState(soldierData, player) {
+    if(soldierData.state === SOLDIER_STATE.DYING) return;
     // If the player is detected and the cooldown is over, switch to LOOKING state.
     if (tryDetectPlayer(soldierData, player) && soldierData.lookAtFrames >= 0) {
         soldierData.hasShot = false;
@@ -106,6 +142,8 @@ function handleWanderingState(soldierData, player) {
 }
 
 function handleLookingState(soldierData, player, scene) {
+    if(soldierData.state === SOLDIER_STATE.DYING) return;
+
     soldierData.targetPoint = null; // Stop wandering.
 
     // Shoot at the halfway point of the "looking" duration.
@@ -122,6 +160,24 @@ function handleLookingState(soldierData, player, scene) {
     }
 }
 
+function handleDyingState(soldierData, scene){
+    soldierData.deathFrames = (soldierData.deathFrames || 0) + 1;
+
+    soldierData.obj.position.y -= 0.1;
+    soldierData.actionSprite.material.opacity = 1.0 - (soldierData.deathFrames / DEATH_ANIMATION_DURATION);
+
+    if(soldierData.projectileArray) {
+        soldierData.projectileArray.forEach(projectile => {
+            scene.remove(projectile.mesh);
+            projectile.mesh.geometry.dispose();
+            projectile.mesh.material.dispose();
+        });
+        soldierData.projectileArray = [];
+    }
+    if(soldierData.deathFrames >= DEATH_ANIMATION_DURATION){
+        scene.remove(soldierData.obj);
+    }
+}
 
 // =============================================================================
 // MOVEMENT & COLLISION
@@ -135,7 +191,7 @@ function moveTowardsTarget(soldierData, speed, onBlockCallback) {
 
     // Raycast forward to check for obstacles.
     const raycaster = new THREE.Raycaster(soldier.position, direction, 0, COLLISION_CHECK_DISTANCE);
-    const intersects = raycaster.intersectObjects(soldierData.collisionObjects);
+    const intersects = raycaster.intersectObjects(soldierData.allCollisionObjects);
 
     if (intersects.length > 0) {
         onBlockCallback();
@@ -149,6 +205,7 @@ function tryDetectPlayer(soldierData, player) {
 }
 
 function applyVerticalCollision(soldierData) {
+    if(soldierData.state === SOLDIER_STATE.DYING) return;
     const soldier = soldierData.obj;
 
     // Raycast downwards to find the ground.
@@ -182,11 +239,16 @@ function getNewWanderTarget(currentPosition) {
 // =============================================================================
 
 function updateSoldierAnimation(soldierData, player, camera) {
+    if(soldierData.state === SOLDIER_STATE.DYING){
+        Object.values(soldierData.actions).forEach(action => action.stop());
+        soldierData.actionSprite.setFrame(6, 0);
+        return;
+    }
     const { obj: soldier, actions, actionSprite } = soldierData;
 
     // 1. Determine the soldier's world-space action vector.
     let actionVector = new THREE.Vector3();
-    if (soldierData.targetPoint) {
+    if (soldierData.targetPoint && soldierData.state === SOLDIER_STATE.WANDERING) {
         // If wandering, the action is the movement direction.
         actionVector.subVectors(soldierData.targetPoint, soldier.position);
     } else {
@@ -197,17 +259,17 @@ function updateSoldierAnimation(soldierData, player, camera) {
     actionVector.normalize();
 
     // 2. Get the camera's direction on the horizontal plane.
-    const cameraDirection = new THREE.Vector3();
-    camera.getWorldDirection(cameraDirection);
-    cameraDirection.y = 0;
-    cameraDirection.normalize();
+    const soldierDirection = new THREE.Vector3();
+    soldier.getWorldDirection(soldierDirection);
+    soldierDirection.y = 0;
+    soldierDirection.normalize();
 
     // 3. Calculate the angle of the action relative to the camera's view.
     const actionAngle = Math.atan2(actionVector.x, actionVector.z);
-    const cameraAngle = Math.atan2(cameraDirection.x, cameraDirection.z);
+    const soldierAngle = Math.atan2(soldierDirection.x, soldierDirection.z);
     
-    // The final angle determines which sprite to show (e.g., "run up" is for moving away from camera).
-    const relativeAngle = actionAngle - cameraAngle;
+    // The final angle determines which sprite to show (e.g., "run up" is for moving away from soldier).
+    const relativeAngle = actionAngle - soldierAngle;
 
     // 4. Convert the relative angle to an 8-way direction string.
     const direction = getDirectionFromAngle(relativeAngle);
@@ -216,13 +278,19 @@ function updateSoldierAnimation(soldierData, player, camera) {
     // 5. Play the correct animation based on state and the calculated direction.
     if (soldierData.state === SOLDIER_STATE.LOOKING_AT_PLAYER) {
         const shootingDirection = direction.replace('run', 'Shooting');
-        if (actions[shootingDirection] && !actions[shootingDirection].isInLoop) {
-            actions[shootingDirection].playLoop();
+        if (actions[shootingDirection]){
+            if (!actions[shootingDirection].isInLoop) {
+                Object.values(actions).forEach(action => action.stop());
+                actions[shootingDirection].playLoop();
+            }
         }
-    } else if (soldierData.targetPoint) {
+    } else if (soldierData.targetPoint && soldierData.state === SOLDIER_STATE.WANDERING) {
         // If wandering towards a point, play the run animation.
-        if (actions[direction] && !actions[direction].isInLoop) {
-            actions[direction].playLoop();
+        if (actions[direction]){
+            if (!actions[direction].isInLoop) {
+                Object.values(actions).forEach(action => action.stop());
+                actions[direction].playLoop();
+            }
         }
     } else {
         // If idle, set a static frame based on the direction to the player.
@@ -233,6 +301,7 @@ function updateSoldierAnimation(soldierData, player, camera) {
         };
         const frame = frameMap[direction];
         if (frame) {
+            Object.values(actions).forEach(action => action.stop());
             actionSprite.setFrame(frame[0], frame[1]);
         }
     }
@@ -287,6 +356,8 @@ function shootProjectile(soldierData, scene, player) {
         mesh: projectileMesh,
         velocity: direction.multiplyScalar(PROJECTILE_SPEED),
         targetPoint: targetPosition,
+        damage: PROJECTILE_DAMAGE,
+        shooter: soldierData
     };
 
     soldierData.projectileArray.push(projectileData);
@@ -306,13 +377,35 @@ function moveProjectiles(soldierData, scene, player) {
         // Check for collision with the player.
         const hitPlayer = checkProjectileCollisionWithPlayer(pData.mesh, player, PROJECTILE_PLAYER_HITBOX_RADIUS);
 
-        // Check if the projectile has reached its target destination.
-        const reachedTarget = pData.mesh.position.distanceTo(pData.targetPoint) < PROJECTILE_SPEED;
+        if(hitPlayer){
+            if(typeof player.applyDamage === 'function'){
+                player.applyDamage(pData.damage);
+            }
+            removeProjectile(pData, soldierData.projectileArray, i, scene);
+            continue;
+        }
+        const raycaster = new THREE.Raycaster(
+            pData.mesh.position.clone().sub(pData.velocity),
+            pData.velocity.clone().normalize(),
+            0,
+            pData.velocity.length()
+        );
+        const intersects = raycaster.intersectObjects(soldierData.allCollisionObjects);
+        if(intersects.length > 0){
+            removeProjectile(pData, soldierData.projectileArray, i, scene);
+            continue;
+        }
 
-        if (hitPlayer || reachedTarget) {
-            // Remove projectile from the scene and the array.
+        if(pData.mesh.position.distanceTo(pData.targetPoint) < PROJECTILE_SPEED * 2){
             removeProjectile(pData, soldierData.projectileArray, i, scene);
         }
+        // Check if the projectile has reached its target destination.
+        // const reachedTarget = pData.mesh.position.distanceTo(pData.targetPoint) < PROJECTILE_SPEED;
+
+        // if (hitPlayer || reachedTarget) {
+        //     // Remove projectile from the scene and the array.
+        //     removeProjectile(pData, soldierData.projectileArray, i, scene);
+        // }
     }
 }
 
