@@ -16,7 +16,6 @@ export const SOLDIER_STATE = {
 const PLAYER_DETECT_DISTANCE = 30; // Distance at which a soldier can detect the player.
 const MAX_WANDER_DISTANCE = 15; // Maximum distance a soldier will wander from its current position.
 const WANDER_SPEED = 0.04; // Movement speed while wandering.
-const PROXIMITY_THRESHOLD = 1.0; // How close a soldier needs to be to its target point to consider it "reached".
 const COLLISION_CHECK_DISTANCE = 1.0; // How far ahead to check for collisions when moving.
 
 // --- Timing Constants (in frames) ---
@@ -71,9 +70,9 @@ export function moveSoldier(soldierData, scenario, player, scene, camera) {
         ];
     }
 
-    keyboardUpdateSimulador(soldierData);
+    keyboardUpdateSimulador(soldierData, camera);
 
-    spriteUpdate(soldierData, camera);
+    spriteUpdate(soldierData, camera, player);
     
     applyVerticalCollision(soldierData);
     
@@ -83,16 +82,17 @@ export function moveSoldier(soldierData, scenario, player, scene, camera) {
 // AI STATE HANDLERS
 // =============================================================================
 
-function keyboardUpdateSimulador(soldierData) {
+function keyboardUpdateSimulador(soldierData, camera) {
     const dead = soldierData.dead;
-    const actionSprite = soldierData.actionSprite;
+    const actionSprite = soldierData.obj;
     const actions = soldierData.actions;
     let running = soldierData.running;
     let lastRunning = soldierData.lastRunning;
     let key = soldierData.key;
+    let shooting = soldierData.shooting;
     
 
-    let keyboard = simulateKeysHeld(soldierData);
+    let keyboard = simulateKeysHeld(soldierData, camera);
 
    if (dead) return;
 
@@ -151,7 +151,7 @@ function keyboardUpdateSimulador(soldierData) {
    if ( keyboard.up("up"))    key[2] = 0;      
    if ( keyboard.up("right")) key[3] = 0;   
    resetIsInLoopFlags(soldierData); // Reset the isInLoop flags for all actions       
-
+   /*
    // play shooting action of if the sprite is not running
    if( running == undefined) {      
       if(shooting){
@@ -178,7 +178,7 @@ function keyboardUpdateSimulador(soldierData) {
          if (lastRunning == 'right') actionSprite.setFrame(4, 6);      
          if (lastRunning == 'rd')    actionSprite.setFrame(4, 7);            
       }
-   }
+   }*/
    if(!key[0] && !key[1] && !key[2] && !key[3]) running = undefined
 
    soldierData.running = running;
@@ -187,10 +187,10 @@ function keyboardUpdateSimulador(soldierData) {
    soldierData.dead = dead;
 }
 
-function spriteUpdate(soldierData, camera) {
+function spriteUpdate(soldierData, camera, player) {
     const clock = soldierData.clock;
     const spriteMixer = soldierData.spriteMixer;
-    const actionSprite = soldierData.actionSprite;
+    const actionSprite = soldierData.obj;
     const running = soldierData.running;
     
 
@@ -227,44 +227,51 @@ function spriteUpdate(soldierData, camera) {
     // Rotate the action sprite local axes to face the camera
     if (actionSprite) {
           const euler = new THREE.Euler(); // Converter o quaternion da câmera para Euler
-          euler.setFromQuaternion(camera.quaternion, 'YXZ'); // Acerta ordem da transformação    
+          euler.setFromQuaternion(player.quaternion, 'YXZ'); // Acerta ordem da transformação    
           actionSprite.rotation.y = euler.y; // Copia rotação para o sprite para mantê-lo perpendicular à camera
     }
 }
 
-function simulateKeysHeld(soldierData) {
+function simulateKeysHeld(soldierData, camera) {
     const soldier = soldierData.obj;
     const simulatedKeys = { up: false, down: false, left: false, right: false, delete: false };
 
-    if (!soldierData.wanderTarget || soldier.position.distanceTo(soldierData.wanderTarget) < PROXIMITY_THRESHOLD) {
-        soldierData.wanderTarget = getWanderTarget(soldier.position);
+    const tendencyChance = 0.8; 
+
+    if (soldierData.lastRunning && Math.random() < tendencyChance) {
+        if (soldierData.lastRunning.includes('l')) simulatedKeys.left = true;
+        if (soldierData.lastRunning.includes('r')) simulatedKeys.right = true;
+        if (soldierData.lastRunning.includes('u')) simulatedKeys.up = true;
+        if (soldierData.lastRunning.includes('d')) simulatedKeys.down = true;
+        
+    } else {
+    
+        const vertical = ['up', 'down'];
+        const horizontal = ['left', 'right'];
+        const numKeysToPress = Math.floor(Math.random() * 2) + 1; // Result is 1 or 2
+
+        if (numKeysToPress === 1) {
+            if (Math.random() < 0.5) {
+                const key = vertical[Math.floor(Math.random() * vertical.length)];
+                simulatedKeys[key] = true;
+            } else {
+                const key = horizontal[Math.floor(Math.random() * horizontal.length)];
+                simulatedKeys[key] = true;
+            }
+        } else { 
+            const verticalKey = vertical[Math.floor(Math.random() * vertical.length)];
+            const horizontalKey = horizontal[Math.floor(Math.random() * horizontal.length)];
+            
+            simulatedKeys[verticalKey] = true;
+            simulatedKeys[horizontalKey] = true;
+        }
     }
 
-    if (soldierData.wanderTarget) {
-        // Create a vector pointing from the soldier to the target
-        const direction = new THREE.Vector3().subVectors(soldierData.wanderTarget, soldier.position).normalize();
+    // --- Implementation End ---
 
-        // 3. Determine which "keys" to "press" based on the direction
-        // We use a threshold (e.g., 0.3) to avoid jittery diagonal movement
-        const threshold = 0.3;
-
-        if (direction.z < -threshold) {
-            simulatedKeys.up = true;
-        } else if (direction.z > threshold) {
-            simulatedKeys.down = true;
-        }
-
-        if (direction.x < -threshold) {
-            simulatedKeys.left = true;
-        } else if (direction.x > threshold) {
-            simulatedKeys.right = true;
-        }
-    }
-
-    // 4. Return the simulated keyboard object
     return {
         down: (key) => simulatedKeys[key] || false,
-        up: (key) => !simulatedKeys[key] // The 'up' state is simply the opposite of 'down'
+        up: (key) => !simulatedKeys[key]
     };
 }
 
@@ -302,10 +309,6 @@ function applyVerticalCollision(soldierData) {
 // =============================================================================
 // ANIMATION
 // =============================================================================
-
-function getWanderTarget() {
-
-}
 
 
 function resetIsInLoopFlags(soldierData) 

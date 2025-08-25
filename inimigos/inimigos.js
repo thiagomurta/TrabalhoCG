@@ -232,6 +232,7 @@ export async function loadEnemies(scene) {
             lastRunning: null,
             key: [0, 0, 0, 0],
             dead: false,
+            shooting: false,
 
             // HP Bar
             hp: 30,
