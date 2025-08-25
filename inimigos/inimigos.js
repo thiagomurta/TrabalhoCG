@@ -222,13 +222,16 @@ export async function loadEnemies(scene) {
             targetPoint: null,
             state: SOLDIER_STATE.WANDERING,
             hasShot: false,
-            lastDirection: 'runDown',
 
             // Recursos do sprite
             spriteMixer: soldierResources.spriteMixer,
             actionSprite: soldierResources.actionSprite,
             actions: soldierResources.actions,
             clock: new THREE.Clock(),
+            running: null,
+            lastRunning: null,
+            key: [0, 0, 0, 0],
+            dead: false,
 
             // HP Bar
             hp: 30,
@@ -313,7 +316,8 @@ async function loadSoldierSprite() {
                 ShootingUp:     spriteMixer.Action(actionSprite, 100, 4, 4, 5, 4),
                 ShootingRU:     spriteMixer.Action(actionSprite, 100, 4, 5, 5, 5),
                 ShootingRight:  spriteMixer.Action(actionSprite, 100, 4, 6, 5, 6),
-                ShootingRD:     spriteMixer.Action(actionSprite, 100, 4, 7, 5, 7)
+                ShootingRD:     spriteMixer.Action(actionSprite, 100, 4, 7, 5, 7),
+                Die:            spriteMixer.Action(actionSprite, 150, 7, 0, 7, 3) // Die action
             };
             
             // Pausa todas as animações para evitar que comecem automaticamente
